@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0a0320">
+<title>MEME ARENA 3D — Brainrot Survival</title>
+<meta name="description" content="Jogo 3D de arena no navegador: sobreviva a ondas infinitas de memes da internet, enfrente chefes e escolha perks. Feito com Three.js, sem instalar nada.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="MEME ARENA 3D — Brainrot Survival">
+<meta property="og:description" content="Sobreviva a ondas infinitas de memes 3D. 16 inimigos, 5 chefes, 5 armas, 20 perks. Jogue direto no navegador.">
+<meta property="og:image" content="assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app"></div>
+<div id="vig"></div>
+
+<!-- ========================================================= HUD ==== -->
+<div id="hud" class="hid">
+  <div id="topleft" class="panel">
+    <div class="phead">😎 <span>CHILL GUY</span></div>
+    <div class="barwrap">
+      <div class="barlabel"><span>VIDA</span><span id="hpt">100</span></div>
+      <div class="bar"><i id="hpf"></i></div>
+    </div>
+    <div class="barwrap">
+      <div class="barlabel"><span>ENERGIA</span><span id="ent">100</span></div>
+      <div class="bar"><i id="enf"></i></div>
+    </div>
+    <div class="barwrap">
+      <div class="barlabel"><span>BRAINROT</span><span id="rzt">0%</span></div>
+      <div class="bar"><i id="rzf"></i></div>
+    </div>
+    <div class="dashrow"><span>DASH</span><div id="dashpips"></div></div>
+    <div id="powers"></div>
+    <div id="perkbar"></div>
+  </div>
+
+  <div id="topright" class="panel">
+    <div class="lbl">PONTOS</div>
+    <div id="score">0</div>
+    <div id="waveTxt">ONDA 1</div>
+    <div id="combo">x1</div>
+  </div>
+
+  <div id="bossbar" class="hid">
+    <div id="bossname">BOSS</div>
+    <div class="bbar"><i id="bossfill"></i></div>
+  </div>
+
+  <div id="killfeed"></div>
+
+  <div id="bottomleft" class="panel">
+    <div class="wrow"><span id="wicon">✨</span><b id="wname">Laser de Doge</b></div>
+    <div id="wdesc" class="dim"></div>
+    <div id="weaponList"></div>
+  </div>
+
+  <div id="minimapwrap" class="panel">
+    <canvas id="minimap" width="156" height="156"></canvas>
+    <div class="mmlbl">RADAR</div>
+  </div>
+
+  <div id="crosshair"><span></span><span></span><span></span><span></span><em></em></div>
+  <div id="hitmark">✕</div>
+  <div id="fps">60 FPS</div>
+</div>
+
+<div id="floats"></div>
+<div id="banner"><div id="bannerT"></div><div id="bannerS"></div></div>
+
+<!-- ================================================= CONTROLES TOUCH -->
+<div id="touch" class="hid">
+  <div id="stick"><div id="nub"></div></div>
+  <div class="tbtns">
+    <button id="tUlt"  class="tb small">🧠</button>
+    <button id="tSwap" class="tb small">🔄</button>
+    <button id="tDash" class="tb small">💨</button>
+    <button id="tJump" class="tb small">⤴</button>
+    <button id="tFire" class="tb big">🔫</button>
+  </div>
+</div>
+
+<button id="muteBtn" title="Som (M)">🔊</button>
+
+<!-- ================================================== TELA INICIAL === -->
+<div id="start" class="screen">
+  <div class="sheet wide">
+    <h1 class="title">MEME ARENA <span>3D</span></h1>
+    <div class="subtitle">BRAINROT SURVIVAL</div>
+    <p class="intro">
+      A internet colapsou e o <b>Brainrot</b> vazou dos servidores: os memes ganharam forma 3D.
+      Você é o <b class="pink">Chill Guy</b>, o último com dopamina suficiente pra resistir.
+      Segure a arena, escolha seus <b class="cyan">perks</b> e derrube os <b class="yellow">chefes</b>.
+    </p>
+    <div id="menuStats" class="mstats"></div>
+
+    <div class="seclbl">ESCOLHA A DIFICULDADE</div>
+    <div id="diffList" class="difflist"></div>
+
+    <div class="btnrow">
+      <button id="playBtn" class="btn">▶ JOGAR</button>
+      <button id="helpBtn" class="btn sec">COMO JOGAR</button>
+      <button id="boardBtn" class="btn sec">RECORDES</button>
+      <button id="setBtn" class="btn sec">⚙ OPÇÕES</button>
+    </div>
+    <div class="foot">Dica: clique na tela pra travar o mouse · <b>ESC</b> pausa · <b>Enter</b> começa</div>
+  </div>
+</div>
+
+<!-- ======================================================= AJUDA ==== -->
+<div id="help" class="screen hid">
+  <div class="sheet wide">
+    <h2 class="h2">COMO JOGAR</h2>
+    <div class="keys">
+      <div class="k"><b>W A S D</b>mover</div>
+      <div class="k"><b>MOUSE</b>olhar e mirar</div>
+      <div class="k"><b>CLIQUE ESQ.</b>atirar</div>
+      <div class="k"><b>ESPAÇO</b>pular</div>
+      <div class="k"><b>SHIFT</b>dash (i-frames)</div>
+      <div class="k"><b>Q / RODA / 1-5</b>trocar arma</div>
+      <div class="k"><b>E</b>ultimate (Brainrot 100%)</div>
+      <div class="k"><b>ESC / P</b>pausar</div>
+      <div class="k"><b>M</b>mudo</div>
+    </div>
+
+    <div class="seclbl">ARSENAL</div>
+    <div id="helpWeapons" class="roster"></div>
+
+    <div class="seclbl">MECÂNICAS</div>
+    <ul class="bul">
+      <li><b>Combo:</b> abates em sequência multiplicam os pontos (reseta se você levar dano).</li>
+      <li><b>Brainrot:</b> enche matando memes. Em 100% aperte <b>E</b>: invencível, dano x1.8 e cadência dobrada.</li>
+      <li><b>Perks:</b> ao limpar cada onda você escolhe 1 de 3 cartas permanentes. Elas acumulam.</li>
+      <li><b>Elites:</b> inimigos com coroa dourada — muito mais vida e pontos.</li>
+      <li><b>Chefes:</b> a cada 5 ondas, com 3 fases e invocação de lacaios.</li>
+      <li><b>Itens:</b> caem dos inimigos. Cura, dano dobrado, velocidade, escudo, overdrive e a nuke.</li>
+    </ul>
+
+    <div class="seclbl">BESTIÁRIO</div>
+    <div id="roster" class="roster"></div>
+
+    <button id="helpClose" class="btn">VOLTAR</button>
+  </div>
+</div>
+
+<!-- ==================================================== RECORDES ==== -->
+<div id="board" class="screen hid">
+  <div class="sheet">
+    <h2 class="h2">🏆 RECORDES LOCAIS</h2>
+    <div id="boardList" class="boardlist"></div>
+    <div class="btnrow">
+      <button id="boardClose" class="btn">VOLTAR</button>
+      <button id="boardClear" class="btn sec danger">APAGAR TUDO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== OPÇÕES ===== -->
+<div id="settings" class="screen hid">
+  <div class="sheet">
+    <h2 class="h2">⚙ OPÇÕES</h2>
+    <div class="opt"><label>Sensibilidade do mouse</label>
+      <input id="sSens" type="range" min=".2" max="3" step=".05"><span id="sSensV"></span></div>
+    <div class="opt"><label>Volume geral</label>
+      <input id="sVol" type="range" min="0" max="1" step=".02"><span id="sVolV"></span></div>
+    <div class="opt"><label>Volume da música</label>
+      <input id="sMus" type="range" min="0" max="1" step=".02"><span id="sMusV"></span></div>
+    <div class="opt"><label>Campo de visão</label>
+      <input id="sFov" type="range" min="60" max="100" step="1"><span id="sFovV"></span></div>
+    <div class="opt"><label>Tremor de câmera</label>
+      <input id="sShake" type="range" min="0" max="1.5" step=".05"><span id="sShakeV"></span></div>
+    <div class="opt"><label>Qualidade gráfica</label>
+      <select id="sQual">
+        <option value="low">Baixa (mais FPS)</option>
+        <option value="med">Média</option>
+        <option value="high">Alta</option>
+      </select><span></span></div>
+    <div class="opt"><label>Inverter eixo Y</label>
+      <input id="sInv" type="checkbox"><span></span></div>
+    <button id="setClose" class="btn">FECHAR</button>
+  </div>
+</div>
+
+<!-- ====================================================== PAUSA ===== -->
+<div id="pausebox" class="screen hid">
+  <div class="sheet narrow">
+    <h2 class="h2">PAUSADO</h2>
+    <p class="dim">respira fundo, guerreiro</p>
+    <div class="btnrow col">
+      <button id="resumeBtn" class="btn">CONTINUAR</button>
+      <button id="setBtn2" class="btn sec">⚙ OPÇÕES</button>
+      <button id="quitBtn" class="btn sec">SAIR PRO MENU</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================ ESCOLHA DE PERK = -->
+<div id="perkScreen" class="screen hid">
+  <div class="sheet wide">
+    <div class="perktop">ONDA LIMPA · ESCOLHA UMA MELHORIA</div>
+    <div id="perkCards" class="cards"></div>
+    <div class="foot">Use <b>1</b>, <b>2</b> ou <b>3</b> no teclado</div>
+  </div>
+</div>
+
+<!-- =================================================== GAME OVER ==== -->
+<div id="over" class="screen hid">
+  <div class="sheet">
+    <h1 class="title small">BRAINROT TOTAL</h1>
+    <div class="subtitle">seu cérebro virou feed infinito</div>
+    <div id="newbest" class="newbest hid">🎉 NOVO RECORDE!</div>
+    <div id="gostats" class="stats"></div>
+    <div id="rank" class="rank"></div>
+    <div id="goperks" class="goperks"></div>
+    <div id="bestline" class="dim"></div>
+    <div class="btnrow">
+      <button id="againBtn" class="btn">JOGAR DE NOVO</button>
+      <button id="menuBtn" class="btn sec">MENU</button>
+    </div>
+  </div>
+</div>
+
+<div id="loading"><div class="ldot"></div><span>CARREGANDO A INTERNET…</span></div>
+
+<script src="lib/three.min.js"></script>
+<script src="src/utils.js"></script>
+<script src="src/data.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/textures.js"></script>
+<script src="src/world.js"></script>
+<script src="src/entities.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/game.js"></script>
+<script>
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>

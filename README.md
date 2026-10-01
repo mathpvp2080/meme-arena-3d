@@ -1,0 +1,142 @@
+<div align="center">
+
+![MEME ARENA 3D](assets/og.png)
+
+# 🧠 MEME ARENA 3D — Brainrot Survival
+
+**Um shooter de arena 3D que roda direto no navegador.**
+Sobreviva a ondas infinitas de memes, escolha perks, derrube chefes gigantes.
+
+`Three.js` · `WebGL` · `WebAudio` · **zero dependências em runtime** · **zero build**
+
+> ⚠️ **Ainda não publicado.** Siga o passo a passo em [🚀 Publicar no GitHub Pages](#-publicar-no-github-pages)
+> e depois troque a linha abaixo pelo seu endereço real:
+>
+> `[▶ JOGAR AGORA](https://SEU-USUARIO.github.io/meme-arena-3d/)`
+
+</div>
+
+---
+
+## 🎮 Sobre
+
+A internet colapsou e o **Brainrot** vazou dos servidores: os memes ganharam forma 3D.
+Você é o **Chill Guy**, o último com dopamina suficiente pra resistir. Segure a arena.
+
+Tudo é **gerado proceduralmente** — não existe um único arquivo de imagem, modelo 3D ou
+áudio no projeto. Texturas são desenhadas em `<canvas>`, modelos são montados com
+geometrias primitivas e toda a trilha sonora e efeitos vêm de osciladores WebAudio.
+
+## ✨ Funcionalidades
+
+| | |
+|---|---|
+| 🧟 **16 inimigos** | Trollface, Amogus, Pepe, Skibidi Toilet, Doge, Rizzler, Nyan Cat, Bluescreen, Ohio, Stonks, Sigma, Grimace, Tralalero, Tung Tung, Bombardiro, Goofy Ahh |
+| 👹 **5 chefes** | Com **3 fases**, barragens em leque, investidas com onda de impacto e invocação de lacaios |
+| 🔫 **5 armas** | Laser, Shotgun, RPG com dano em área, Minigun e Railgun perfurante — liberadas conforme as ondas |
+| 🃏 **20 perks** | Escolha 1 de 3 cartas a cada onda. Comuns, raras e épicas. Acumulam entre si |
+| 🧠 **Ultimate** | Encha o medidor de Brainrot e vire invencível com dano x1.8 e cadência dobrada |
+| 🎁 **6 itens** | Cura, dano dobrado, velocidade, escudo, overdrive e a Nuke de Meme |
+| 👑 **Elites** | Inimigos com coroa dourada: 2.6x vida e 2.4x pontos |
+| 🤖 **7 tipos de IA** | Perseguir, flanquear, orbitar, atirar, investir, teleportar e bombardear |
+| 📊 **4 dificuldades** | Normie, Meme Lord, Sigma e Brainrot |
+| 🏆 **Progressão** | Combo multiplicador, 7 ranks, recordes locais e estatísticas de fim de partida |
+| 📱 **Mobile** | Joystick virtual, botões de ação e layout responsivo |
+| 🔌 **Offline** | PWA com service worker — instala e joga sem internet |
+
+## 🕹️ Controles
+
+| Tecla | Ação |
+|---|---|
+| `W` `A` `S` `D` | Mover |
+| `Mouse` | Olhar / mirar |
+| `Clique esquerdo` | Atirar |
+| `Espaço` | Pular |
+| `Shift` | Dash (com frames de invencibilidade) |
+| `Q` / `Roda` / `1`–`5` | Trocar de arma |
+| `E` | Ultimate (Brainrot em 100%) |
+| `Esc` / `P` | Pausar |
+| `M` | Mudo |
+
+No celular: joystick à esquerda, botões de ação à direita, arraste na tela para olhar.
+
+## 🚀 Publicar no GitHub Pages
+
+O projeto é **estático puro** — não precisa de build, bundler nem Node.
+
+```bash
+git init
+git add .
+git commit -m "feat: Meme Arena 3D"
+git branch -M main
+git remote add origin https://github.com/SEU-USUARIO/meme-arena-3d.git
+git push -u origin main
+```
+
+Depois, no GitHub: **Settings → Pages → Source: `Deploy from a branch` → Branch: `main` / `(root)` → Save**.
+
+Em ~1 minuto o jogo estará em `https://SEU-USUARIO.github.io/meme-arena-3d/`.
+
+> Já existe um workflow em `.github/workflows/deploy.yml` caso prefira usar
+> **Settings → Pages → Source: GitHub Actions**. Os dois caminhos funcionam.
+
+Depois de publicar, troque os links `SEU-USUARIO` neste README e a `og:image`
+do `index.html` continuará funcionando normalmente (caminho relativo).
+
+## 💻 Rodar localmente
+
+Precisa de um servidor HTTP — abrir o `index.html` por `file://` não funciona
+(o navegador bloqueia o carregamento dos scripts).
+
+```bash
+python3 -m http.server 3000
+# ou
+npx serve .
+```
+
+Acesse `http://localhost:3000`.
+
+## 📁 Estrutura
+
+```
+meme-arena-3d/
+├── index.html              # markup do jogo e de todas as telas
+├── css/style.css           # HUD, menus, cards de perk, responsivo
+├── src/
+│   ├── utils.js            # helpers, storage, polyfill de CapsuleGeometry
+│   ├── data.js             # inimigos, chefes, armas, perks, dificuldades
+│   ├── audio.js            # síntese WebAudio + trilha gerativa adaptativa
+│   ├── textures.js         # texturas procedurais em canvas
+│   ├── world.js            # arena, luzes, céu, obstáculos e colisão
+│   ├── entities.js         # pool de partículas, jogador, inimigos, itens
+│   ├── ui.js               # HUD, radar, feed de abates, telas
+│   └── game.js             # loop, input, combate, ondas e fluxo
+├── lib/three.min.js        # Three.js r128 (local, sem CDN)
+├── assets/                 # favicon e capa
+├── sw.js                   # service worker (offline)
+└── manifest.webmanifest    # PWA
+```
+
+## 🛠️ Detalhes técnicos
+
+- **Pool de partículas** de 520 meshes reutilizadas — sem alocação durante o combate.
+- **Cache de geometrias** por tipo de inimigo; só os materiais são clonados.
+- **3 níveis de qualidade** que ajustam pixel ratio, sombras, número de luzes e densidade de partículas.
+- **Trilha adaptativa**: a intensidade da música sobe junto com o número da onda e no Ultimate.
+- **Correção de cor**: todas as texturas em `sRGBEncoding` com tone mapping ACES Filmic.
+- Testado em Chromium headless — sem erros de runtime em todo o fluxo do jogo.
+
+### Console de debug
+
+```js
+MEMEARENA.skipToWave(5)   // pula direto pro primeiro chefe
+MEMEARENA.god()           // vida infinita
+MEMEARENA.perk('crit')    // concede um perk
+MEMEARENA.nuke()          // limpa a tela
+MEMEARENA.kill()          // força o game over
+```
+
+## 📄 Licença
+
+MIT — use, modifique e publique à vontade.
+Three.js é distribuído sob a licença MIT (© three.js authors).

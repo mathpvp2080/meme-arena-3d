@@ -1,0 +1,14 @@
+{
+  "name": "MEME ARENA 3D — Brainrot Survival",
+  "short_name": "Meme Arena 3D",
+  "description": "Jogo 3D de arena no navegador: sobreviva a ondas infinitas de memes da internet.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#05030f",
+  "theme_color": "#0a0320",
+  "icons": [
+    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
