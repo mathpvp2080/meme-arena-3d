@@ -9,6 +9,15 @@
 -- SALAS: lista pública de partidas abertas (o jogo em si roda por
 -- Realtime; esta tabela é só o "mural" para achar sala sem código).
 -- ------------------------------------------------------------------
+-- carimbo de atualizacao (normalmente vem do schema.sql da Etapa 1;
+-- recriado aqui para este arquivo rodar sozinho sem erro)
+create or replace function public.touch_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at = now();
+  return new;
+end $$;
+
 create table if not exists public.rooms (
   code        text primary key,
   host_id     uuid not null references auth.users (id) on delete cascade,
