@@ -116,17 +116,40 @@
       const mapa = MA.mapById(M.map);
       $('mpLobbyInfo').innerHTML =
         (M.mode === 'pvp' ? '⚔️ PVP' : '🤝 CO-OP') + ' · ' + mapa.icon + ' ' + mapa.name +
-        (MA.Net.online ? '' : ' · <b>modo local</b> (só outras abas deste navegador)');
+        (MA.Net.online
+          ? ' · <b class="okdot">🌐 online</b>'
+          : ' · <b class="warndot">⚠️ MODO LOCAL</b> — só enxerga outras abas deste navegador. ' +
+            'Saia, volte e entre com sua conta para jogar pela internet.');
       $('mpHint').innerHTML = M.isHost
         ? 'Você é o anfitrião: quando todo mundo estiver aqui, clique em <b>COMEÇAR PARTIDA</b>.'
         : 'Esperando o anfitrião começar a partida…';
       this.renderPlayers();
+      this._diag();
+    },
+
+    /* se ninguem aparecer, explica os motivos mais comuns em vez de deixar o
+       jogador olhando uma tela parada */
+    _diag() {
+      clearTimeout(this._diagT);
+      const base = $('mpHint').innerHTML;
+      this._diagT = setTimeout(() => {
+        const M = MA.Multi;
+        if (!M.active || M.count > 1 || document.getElementById('multi').classList.contains('hid')) return;
+        $('mpHint').innerHTML = base +
+          '<div class="mpdiag">Ninguém entrou ainda. Se o seu amigo diz que já entrou, confira:' +
+          '<br>• Os dois precisam estar <b>conectados com a conta</b> (aqui aparece ' +
+          (MA.Net.online ? '<b class="okdot">🌐 online</b>' : '<b class="warndot">⚠️ MODO LOCAL</b>') + ').' +
+          '<br>• O código é <b>' + M.code + '</b> — confira letra por letra.' +
+          '<br>• Se um dos dois estiver com uma versão antiga do jogo, aperte <b>Ctrl+Shift+R</b> ' +
+          '(no celular: fechar e abrir a aba de novo).</div>';
+      }, 12000);
     },
 
     renderPlayers() {
       const M = MA.Multi;
       const box = $('mpPlayers');
       if (!box || !M.active) return;
+      if (M.count > 1) clearTimeout(this._diagT);
       const eu = M.me;
       const todos = [{ name: eu.name, level: eu.level, skin: eu.skin, host: M.isHost, eu: true }]
         .concat(M.peerList.map(p => ({ name: p.name, level: p.level, skin: p.skin, host: false })));

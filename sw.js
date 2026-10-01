@@ -1,5 +1,5 @@
 /* MEME ARENA 3D — service worker (offline-first) */
-const CACHE = 'meme-arena-3d-v9';
+const CACHE = 'meme-arena-3d-v10';
 const ASSETS = [
   './', './index.html', './css/style.css', './manifest.webmanifest',
   './assets/favicon.svg', './lib/three.min.js',
@@ -19,13 +19,19 @@ self.addEventListener('activate', e => {
   );
 });
 
+/* Rede primeiro para os arquivos do proprio site: assim uma atualizacao
+   chega na hora. O cache fica como reserva para quando estiver sem internet. */
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const mesmaOrigem = new URL(req.url).origin === self.location.origin;
+  if (!mesmaOrigem) return;
+
   e.respondWith(
-    caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
+    fetch(req).then(res => {
       const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+      caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
       return res;
-    }).catch(() => caches.match('./index.html')))
+    }).catch(() => caches.match(req).then(hit => hit || caches.match('./index.html')))
   );
 });
