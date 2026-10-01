@@ -263,10 +263,12 @@
       if (!r.error) this.user = r.user;
       return r;
     },
+    /* devolve só o PERFIL (ou null) — é isso que MA.Profile.set espera */
     async restore() {
       const r = await this.impl.restore();
-      if (r) this.user = r.user;
-      return r;
+      if (!r) return null;
+      this.user = r.user;
+      return r.profile || null;
     },
     async signOut() { this.user = null; return this.impl.signOut(); },
 

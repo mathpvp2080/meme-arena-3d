@@ -13,8 +13,8 @@
    ===================================================================== */
 window.MA = window.MA || {};
 window.MA.CONFIG = {
-  SUPABASE_URL: '',
-  SUPABASE_ANON_KEY: '',
+  SUPABASE_URL: 'https://qmxjpgetdigryjwzpzvk.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFteGpwZ2V0ZGlncnlqd3pwenZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4NzY1NDAsImV4cCI6MjEwNjQ1MjU0MH0.OQQDTan6K-dObvBVDsuuQNVpMNeodo808S4Zt8Wu_to',
 
   /* economia */
   START_COINS: 600,          // moedas que todo jogador novo recebe
