@@ -26,6 +26,15 @@
   };
 
   /* ====================================================== PERFIL / META */
+  /* ============================== ETAPA 3: atalhos de multiplayer ====== */
+  let netSeq = 0;                      // id de rede dos inimigos (host)
+  const remoteEnemies = {};            // netId -> inimigo (cliente)
+  function mpOn()     { return !!(MA.Multi && MA.Multi.active && MA.Multi.started); }
+  function mpHost()   { return mpOn() && MA.Multi.isHost; }
+  function mpClient() { return mpOn() && !MA.Multi.isHost; }
+  function mpPvP()    { return mpOn() && MA.Multi.mode === 'pvp'; }
+  function mpSend(m)  { if (mpOn()) MA.Multi.send(m); }
+
   function currentSkin()  { return MA.Profile.data ? MA.Profile.equippedSkin()  : MA.SKINS[0]; }
   function currentArmor() { return MA.Profile.data ? MA.Profile.equippedArmor() : MA.ARMORS[0]; }
   function currentWeapons() {
@@ -74,6 +83,7 @@
 
   async function initMeta() {
     MA.MetaUI.bind();
+    if (MA.MPUI) MA.MPUI.init();
     try { await MA.Net.init(); } catch (e) { console.warn('rede:', e); }
     MA.MetaUI.initAuth();
     let prof = null;
@@ -95,7 +105,8 @@
     player.obj.position.set(0, 0, 26);
   }
   MA._rebuildLook = rebuildPlayerLook;
-  MA._dbg = { get cam() { return camera; }, get player() { return player; }, get scene() { return scene; } };
+  setTimeout(() => { if (MA._bindMulti) MA._bindMulti(); }, 0);
+  MA._dbg = { get cam() { return camera; }, get player() { return player; }, get scene() { return scene; }, get G() { return G; }, get enemies() { return enemies; } };
 
   /* troca de mapa: limpa o cenário antigo e constrói o novo */
   function setMap(id) {
@@ -146,6 +157,7 @@
 
   /* ============================================================== ONDAS */
   function startWave(n) {
+    if (mpClient() || mpPvP()) { G.wave = n; G.waveTarget = 0; G.spawnQueue = 0; return; }
     G.wave = n;
     G.waveKills = 0;
     G.interWave = 0;
@@ -163,6 +175,7 @@
       });
       const sp = MA.World.spawnPoint(player.pos, 34);
       boss.obj.position.set(sp.x, 0, sp.z);
+      boss.netId = ++netSeq;
       enemies.push(boss);
       G.bossAlive = boss;
       G.waveTarget = 1; G.spawnQueue = 0;
@@ -179,11 +192,13 @@
       MA.Audio.waveUp();
     }
 
+    if (mpHost()) mpSend({ t: 'wave', n });
     MA.UI.updateWeaponList(player, G);
     MA.Audio.setIntensity(clamp(n / 14, .15, 1));
   }
 
   function spawnTick(dt) {
+    if (mpClient() || mpPvP()) return;
     if (G.spawnQueue <= 0) return;
     G.spawnT -= dt;
     if (G.spawnT > 0) return;
@@ -310,6 +325,10 @@
 
   function dealDamage(e, dmg, hitPos, allowCrit) {
     if (e.dead) return 0;
+    if (mpClient() && e.netId) {
+      /* quem manda na vida do inimigo é o host; aqui só prevemos o efeito */
+      mpSend({ t: 'hit', i: e.netId, d: Math.round(dmg) });
+    }
     let final = dmg, crit = false;
     if (allowCrit !== false && Math.random() < player.crit) { final *= 2.5; crit = true; }
     e.hp -= final;
@@ -369,10 +388,208 @@
         pickups.push(MA.createPickup(scene, e.obj.position.x, e.obj.position.z, weightedPickup()));
     }
 
+    if (mpHost() && e.netId) mpSend({ t: 'ekill', i: e.netId, by: e.lastHitBy || MA.Multi.me.id });
+    scene.remove(e.obj); MA.disposeObject(e.obj);
+    const i = enemies.indexOf(e); if (i >= 0) enemies.splice(i, 1);
+    if (e.netId) delete remoteEnemies[e.netId];
+    if (G.bossAlive === e) G.bossAlive = null;
+  }
+
+
+  /* ==================================================================
+     ETAPA 3 — multiplayer: inimigos replicados, PvP, morte e renascer
+     ================================================================== */
+
+  /* cliente: inimigos chegam prontos pelo snapshot do host */
+  function applySnapshot(m) {
+    if (!mpClient() || !G.running) return;
+    G.wave = m.w; G.waveTarget = m.tgt; G.spawnQueue = m.q;
+    const vistos = {};
+    m.e.forEach(d => {
+      vistos[d.i] = 1;
+      let e = remoteEnemies[d.i];
+      if (!e) {
+        const def = MA.MEMES.concat(MA.BOSSES).filter(x => x.id === d.d)[0] || MA.MEMES[0];
+        e = MA.createEnemy(scene, def, { boss: !!d.b, elite: !!d.e, hpScale: 1, dmgScale: 1, spdScale: 1 });
+        e.netId = d.i; e.remote = true;
+        e.obj.position.set(d.x, 0, d.z);
+        e.target = new THREE.Vector3(d.x, 0, d.z);
+        remoteEnemies[d.i] = e; enemies.push(e);
+        if (d.b) { G.bossAlive = e; MA.UI.banner('CHEFE', def.emoji + '  ' + def.name, 3000, 'boss'); }
+      }
+      e.target.set(d.x, 0, d.z);
+      e.targetYaw = d.r; e.hp = d.h; e.hpMax = d.m;
+    });
+    /* sumiu do snapshot = já morreu lá no host */
+    Object.keys(remoteEnemies).forEach(k => {
+      if (!vistos[k]) dropRemote(remoteEnemies[k], false);
+    });
+  }
+
+  function dropRemote(e, fx) {
+    if (!e) return;
+    if (fx) {
+      MA.FX.burst(e.obj.position.clone().setY(1.2), new THREE.Color(e.def.color), e.isBoss ? 90 : 20, 11, .28);
+      MA.Audio.kill();
+    }
     scene.remove(e.obj); MA.disposeObject(e.obj);
     const i = enemies.indexOf(e); if (i >= 0) enemies.splice(i, 1);
     if (G.bossAlive === e) G.bossAlive = null;
+    delete remoteEnemies[e.netId];
   }
+
+  function updateRemoteEnemies(dt) {
+    for (let i = enemies.length - 1; i >= 0; i--) {
+      const e = enemies[i];
+      if (!e.target) continue;
+      e.obj.position.lerp(e.target, Math.min(1, dt * 10));
+      if (e.targetYaw !== undefined) {
+        let d = e.targetYaw - e.obj.rotation.y;
+        while (d > Math.PI) d -= Math.PI * 2;
+        while (d < -Math.PI) d += Math.PI * 2;
+        e.obj.rotation.y += d * Math.min(1, dt * 10);
+      }
+      e.animT += dt;
+      if (e.anim) e.anim.forEach(fn => { try { fn(e, e.animT, dt); } catch (err) { /* ignora */ } });
+      /* encostou em mim? no co-op o corpo a corpo é local, pra não ter atraso */
+      const dist = Math.hypot(e.obj.position.x - player.pos.x, e.obj.position.z - player.pos.z);
+      if (dist < 1.6 && player.invuln <= 0 && !G.over) hurtPlayer(e.dmg || 8, e.obj.position.clone(), null);
+    }
+  }
+
+  /* host: aplica o dano que os outros jogadores pediram */
+  function onRemoteHit(m) {
+    if (!mpHost()) return;
+    const e = enemies.filter(x => x.netId === m.i)[0];
+    if (!e || e.dead) return;
+    e.lastHitBy = m.from;
+    dealDamage(e, m.d, e.obj.position.clone().setY(1.4), false);
+  }
+
+  /* todos: o host confirmou uma morte */
+  function onEnemyKill(m) {
+    const e = remoteEnemies[m.i];
+    if (!e) return;
+    if (m.by === MA.Multi.me.id) {       // o abate foi meu: ganho pontos
+      const pts = Math.round(e.pts * Math.min(G.combo, 25) * G.diff.pts * player.mScore);
+      G.score += pts; G.kills++; G.waveKills++;
+      G.combo = Math.min(99, G.combo + 1); G.comboT = 3.2;
+      G.maxCombo = Math.max(G.maxCombo, G.combo);
+      G.brainrot = clamp(G.brainrot + (e.isBoss ? 70 : 4.6 * player.brainGain), 0, 100);
+      MA.UI.kill(e.def.name, e.def.emoji, e.elite ? '#ffd400' : e.def.color);
+      MA.FX.popup(e.obj.position.clone().setY(2.6), '+' + MA.fmt(pts), '#ffe600', 1);
+      if (e.isBoss) G.bossesKilled++;
+    }
+    dropRemote(e, true);
+  }
+
+  /* ------------------------------------------------------------- PvP */
+  function pvpBulletCheck(b, p) {
+    if (!mpPvP()) return false;
+    const peers = MA.Multi.peerList;
+    for (let i = 0; i < peers.length; i++) {
+      const q = peers[i];
+      if (q.dead || !q.obj) continue;
+      const d = Math.hypot(p.x - q.pos.x, p.z - q.pos.z);
+      if (d < 1.15 && p.y > .2 && p.y < 3.2) {
+        mpSend({ t: 'pvp', to: q.id, d: Math.round(b.dmg) });
+        MA.FX.burst(p.clone(), 0xff3d7f, 10, 8, .18);
+        MA.UI.float('ACERTOU!', '#ff3d7f', 22);
+        MA.Audio.tone(820, .07, 'square', .12);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  let lastAttacker = null;
+  function onPvpDamage(m) {
+    if (!mpPvP()) return;
+    if (m.frag) {                        // alguém caiu: foi abate meu?
+      if (m.by === MA.Multi.me.id) {
+        G.pvpKills = (G.pvpKills || 0) + 1;
+        G.score += 250;
+        MA.UI.kill('Abate em ' + (m.name || 'jogador'), '💀', '#ff3d7f');
+        MA.UI.float('ABATE! (' + G.pvpKills + '/10)', '#ff3d7f', 34);
+        MA.Audio.kill();
+        if (G.pvpKills >= 10) {
+          mpSend({ t: 'over', winner: MA.Multi.me.name });
+          MA.UI.banner('VITÓRIA', 'Você venceu o PvP!', 3200, 'boss');
+          setTimeout(() => { if (G.running) toMenu(); }, 3400);
+        }
+      }
+      return;
+    }
+    if (m.to !== MA.Multi.me.id || G.over) return;
+    lastAttacker = m.from;
+    hurtPlayer(m.d, null, null);
+  }
+
+  /* ------------------------------------------- abatido e renascimento */
+  let downT = 0;
+  function mpDown(source) {
+    if (G.over || downT > 0) return;
+    downT = mpPvP() ? 4 : 7;
+    player.obj.visible = false;
+    player.invuln = 999;
+    G.combo = 1;
+    MA.FX.burst(player.pos.clone().setY(1.3), 0xff2d6f, 50, 12, .4);
+    MA.UI.banner('VOCÊ CAIU', 'Renascendo em ' + downT + 's…', 2200, 'boss');
+    mpSend({ t: 'p', x: player.pos.x, y: 0, z: player.pos.z, r: 0, h: 0, hm: player.hpMax, d: true, s: G.score | 0, k: G.kills | 0 });
+    if (mpPvP() && lastAttacker) {
+      mpSend({ t: 'pvp', frag: true, by: lastAttacker, name: MA.Multi.me.name });
+      lastAttacker = null;
+    }
+  }
+
+  function mpRespawnTick(dt) {
+    if (downT <= 0) return;
+    downT -= dt;
+    if (downT > 0) return;
+    downT = 0;
+    const sp = MA.World.spawnPoint(V3().set(0, 0, 0), 20);
+    player.obj.position.set(sp.x, 0, sp.z);
+    player.pos.set(sp.x, 0, sp.z);
+    player.vel.set(0, 0, 0);
+    player.hp = Math.max(1, Math.round(player.hpMax * (mpPvP() ? 1 : .6)));
+    player.invuln = 2.2;
+    player.obj.visible = true;
+    MA.UI.banner('DE VOLTA', 'Vai lá!', 1400);
+    MA.FX.ring(player.pos.clone(), new THREE.Color(0x49ffb0), 8, .6);
+  }
+
+  /* ------------------------------------- começar/terminar uma partida online */
+  function startMultiMatch() {
+    const m = MA.Multi;
+    setMap(m.map);
+    const d = MA.DIFFS.filter(x => x.id === m.diff)[0];
+    if (d) { G.diff = d; MA.store.set('diff', d.id); }
+    startGame();
+    if (m.mode === 'pvp') {
+      G.wave = 0; G.spawnQueue = 0; G.waveTarget = 0;
+      clearAll();
+      MA.UI.banner('PVP', 'Primeiro a 10 abates vence!', 2800, 'boss');
+    }
+    downT = 0;
+  }
+  MA._startMultiMatch = startMultiMatch;
+
+  function bindMulti() {
+    const m = MA.Multi;
+    if (!m || m._bound) return;
+    m._bound = true;
+    m.on('start', () => { if (!m.isHost) startMultiMatch(); });
+    m.on('snap', applySnapshot);
+    m.on('hit', onRemoteHit);
+    m.on('ekill', onEnemyKill);
+    m.on('pvp', onPvpDamage);
+    m.on('wave', d => { if (mpClient()) MA.UI.banner('ONDA ' + d.n, 'O grupo avança!', 2000); });
+    m.on('over', d => {
+      MA.UI.banner('FIM', (d.winner || '') + ' venceu!', 3200, 'boss');
+      setTimeout(() => { if (G.running) toMenu(); }, 3400);
+    });
+  }
+  MA._bindMulti = bindMulti;
 
   function weightedPickup() {
     const total = MA.PICKUPS.reduce((s, p) => s + p.w, 0);
@@ -403,7 +620,10 @@
     if (player.thorns > 0 && source && !source.dead) {
       dealDamage(source, final * player.thorns, source.obj.position.clone().setY(1.5), false);
     }
-    if (player.hp <= 0) { player.hp = 0; gameOver(); }
+    if (player.hp <= 0) {
+      player.hp = 0;
+      if (mpOn()) mpDown(source); else gameOver();
+    }
   }
 
   function explode(pos, radius, dmg, color, selfHurt) {
@@ -592,8 +812,15 @@
     spawnTick(dt);
 
     /* fim de onda */
-    if (!G.over && !G.choosing && G.spawnQueue <= 0 && enemies.length === 0) {
+    if (!mpClient() && !mpPvP() && !G.over && !G.choosing && G.spawnQueue <= 0 && enemies.length === 0) {
       if (G.interWave <= 0) { G.interWave = 99; waveCleared(); }
+    }
+
+    if (MA.Multi && MA.Multi.active) {
+      MA.Multi.tick(dt, player, G);
+      MA.Multi.updateAvatars(scene, dt);
+      MA.Multi.hostSnapshot(dt, enemies, G);
+      mpRespawnTick(dt);
     }
 
     MA.UI.update(G, player);
@@ -629,6 +856,8 @@
           break;
         }
       }
+
+      if (!done && pvpBulletCheck(b, p)) done = true;
 
       if (!done) {
         const hitWall = MA.World.outside(p) || MA.World.blocks(p);
@@ -701,6 +930,7 @@
 
   /* ----------------------------------------------------------- inimigos */
   function updateEnemies(dt) {
+    if (mpClient()) { updateRemoteEnemies(dt); return; }
     const pp = player.pos;
     for (let i = enemies.length - 1; i >= 0; i--) {
       const e = enemies[i];
@@ -952,6 +1182,7 @@
 
   /* ============================================================== FLUXO */
   function clearAll() {
+    Object.keys(remoteEnemies).forEach(k => delete remoteEnemies[k]);
     [enemies, bullets, eBullets, pickups].forEach(arr => {
       arr.forEach(o => { scene.remove(o.obj); MA.disposeObject(o.obj); });
       arr.length = 0;
@@ -980,7 +1211,7 @@
 
   function startGame() {
     MA.Audio.init(); MA.Audio.resume();
-    ['start', 'over', 'pausebox', 'settings', 'board', 'perkScreen', 'help', 'auth', 'hub', 'shop', 'inventory']
+    ['start', 'over', 'pausebox', 'settings', 'board', 'perkScreen', 'help', 'auth', 'hub', 'shop', 'inventory', 'multi']
       .forEach(id => $(id).classList.add('hid'));
     $('hud').classList.remove('hid');
     if (isTouch) $('touch').classList.remove('hid');

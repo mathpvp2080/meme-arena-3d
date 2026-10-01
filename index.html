@@ -191,6 +191,63 @@
   </div>
 </div>
 
+
+<!-- ================================================== MULTIPLAYER === -->
+<div id="multi" class="screen hid">
+  <div class="sheet wide tall">
+    <div class="hubtop">
+      <h2 class="h2">🌐 MULTIPLAYER</h2>
+      <div class="hubwallet" id="mpModeTag">CO-OP</div>
+    </div>
+
+    <!-- ----- menu de entrada ----- -->
+    <div id="mpHome">
+      <div class="seclbl">MODO DE JOGO</div>
+      <div class="mpmodes">
+        <div class="mpmode sel" data-mode="coop">
+          <div class="mpico">🤝</div>
+          <div class="mpname">CO-OP</div>
+          <div class="mpdesc">Até 4 amigos contra as ondas de memes. Vida e abates somam pro grupo.</div>
+        </div>
+        <div class="mpmode" data-mode="pvp">
+          <div class="mpico">⚔️</div>
+          <div class="mpname">PVP</div>
+          <div class="mpdesc">Todos contra todos em tempo real. Primeiro a 10 abates leva.</div>
+        </div>
+      </div>
+
+      <div class="seclbl">CRIAR OU ENTRAR</div>
+      <div class="mprow">
+        <button id="mpCreate" class="btn">➕ CRIAR SALA</button>
+        <input id="mpCode" class="inp code" maxlength="4" placeholder="CÓDIGO" autocomplete="off">
+        <button id="mpJoin" class="btn sec">ENTRAR</button>
+      </div>
+      <div id="mpMsg" class="formerr"></div>
+
+      <div class="seclbl">SALAS ABERTAS <button id="mpRefresh" class="minibtn">↻ atualizar</button></div>
+      <div id="mpRooms" class="mprooms"><div class="dim">Procurando salas…</div></div>
+    </div>
+
+    <!-- ----- sala ----- -->
+    <div id="mpLobby" class="hid">
+      <div class="mpcodebox">
+        <div class="dim">CÓDIGO DA SALA — passe pros seus amigos</div>
+        <div id="mpBigCode" class="bigcode">----</div>
+        <div class="dim" id="mpLobbyInfo"></div>
+      </div>
+      <div class="seclbl">JOGADORES NA SALA</div>
+      <div id="mpPlayers" class="mpplayers"></div>
+      <div id="mpHint" class="dim" style="margin-top:10px"></div>
+    </div>
+
+    <div class="btnrow">
+      <button id="mpStart" class="btn hid">▶ COMEÇAR PARTIDA</button>
+      <button id="mpLeave" class="btn sec hid">SAIR DA SALA</button>
+      <button id="mpClose" class="btn sec">← VOLTAR</button>
+    </div>
+  </div>
+</div>
+
 <!-- ================================================== TELA INICIAL === -->
 <div id="start" class="screen hid">
   <div class="sheet wide">
@@ -352,6 +409,8 @@
 <script src="src/net.js"></script>
 <script src="src/profile.js"></script>
 <script src="src/ui.js"></script>
+<script src="src/multi.js"></script>
+<script src="src/mpui.js"></script>
 <script src="src/metaui.js"></script>
 <script src="src/game.js"></script>
 <script>

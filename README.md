@@ -170,3 +170,21 @@ Three.js é distribuído sob a licença MIT (© three.js authors).
 | 🚽 Esgoto Skibidi | 9 |
 | 🦈 Praia Italiana | 15 |
 | 🧠 Servidor do Algoritmo | 22 |
+
+## 🌐 Multiplayer (Etapa 3 — parte 1)
+
+Libera no **nível 5**. No hub, botão **🌐 MULTIPLAYER**.
+
+- **CO-OP** — até 4 jogadores contra as ondas de memes. O anfitrião comanda os
+  inimigos e todo mundo vê exatamente os mesmos monstros, no mesmo lugar.
+- **PVP** — todos contra todos em tempo real; primeiro a 10 abates vence.
+- Sala com **código de 4 letras** para chamar os amigos, mais a lista de
+  **salas abertas** para entrar em um clique.
+- Quem cai renasce sozinho (7s no co-op, 4s no PvP).
+
+Para funcionar pela internet é preciso rodar `supabase/schema_multiplayer.sql`
+no SQL Editor do Supabase. Sem isso, o multiplayer ainda funciona em **modo
+local** entre abas do mesmo navegador.
+
+O mercado de itens (vender/presentear) já tem as tabelas e as funções prontas
+nesse mesmo SQL — a tela chega na parte 2.

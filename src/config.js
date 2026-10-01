@@ -17,7 +17,7 @@ window.MA.CONFIG = {
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFteGpwZ2V0ZGlncnlqd3pwenZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4NzY1NDAsImV4cCI6MjEwNjQ1MjU0MH0.OQQDTan6K-dObvBVDsuuQNVpMNeodo808S4Zt8Wu_to',
 
   /* economia */
-  START_COINS: 600,          // moedas que todo jogador novo recebe
+  START_COINS: 600,         // moedas que todo jogador novo recebe
   MULTIPLAYER_LEVEL: 5,      // nível mínimo pra entrar no multiplayer
   SELL_RATE: 0.5,            // quanto do preço você recebe ao vender
   MAX_LEVEL: 60

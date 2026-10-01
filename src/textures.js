@@ -139,6 +139,25 @@
       return t;
     },
 
+    /* etiqueta com o nome do jogador (multiplayer) */
+    nameTag(name, color) {
+      const key = 'tag|' + name + '|' + color;
+      if (this.cache[key]) return this.cache[key];
+      const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+      const x = c.getContext('2d');
+      x.fillStyle = 'rgba(8,4,20,.55)';
+      x.fillRect(0, 10, 256, 44);
+      x.strokeStyle = color; x.lineWidth = 3; x.strokeRect(1.5, 11.5, 253, 41);
+      x.font = 'bold 30px system-ui, sans-serif';
+      x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillStyle = color;
+      x.fillText(String(name).slice(0, 14), 128, 33);
+      const t = new THREE.CanvasTexture(c);
+      t.anisotropy = 4;
+      this.cache[key] = t;
+      return t;
+    },
+
     glow(color) {
       const key = 'g|' + color;
       if (this.cache[key]) return this.cache[key];

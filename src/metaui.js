@@ -20,7 +20,7 @@
     },
 
     screen(id) {
-      ['auth', 'hub', 'shop', 'inventory', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
+      ['auth', 'hub', 'shop', 'inventory', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
         .forEach(s => { const e = $(s); if (e) e.classList.add('hid'); });
       if (id) $(id).classList.remove('hid');
     },
@@ -94,6 +94,13 @@
     openHub() {
       if (MA._prepHub) MA._prepHub();
       this.renderHub();
+      const mp = $('mpBtn');
+      if (mp) {
+        const liberado = MA.Profile.canMultiplayer();
+        mp.classList.toggle('locked', !liberado);
+        mp.textContent = liberado ? '🌐 MULTIPLAYER'
+          : '🔒 MULTIPLAYER (nv ' + MA.CONFIG.MULTIPLAYER_LEVEL + ')';
+      }
       this.screen('hub');
     },
 
@@ -288,13 +295,7 @@
       });
       on('shopBtn', () => this.openShop());
       on('invBtn', () => this.openInventory());
-      on('mpBtn', () => {
-        if (!MA.Profile.canMultiplayer()) {
-          this.toast('🔒 Chegue ao nível ' + MA.CONFIG.MULTIPLAYER_LEVEL + ' para liberar o multiplayer.', 'bad');
-          MA.Audio.deny(); return;
-        }
-        this.toast('⚔️ Multiplayer chega na próxima atualização!');
-      });
+      on('mpBtn', () => MA.MPUI.open());
       on('hubSettings', () => $('settings').classList.remove('hid'));
       on('logoutBtn', async () => {
         await MA.Net.signOut();
