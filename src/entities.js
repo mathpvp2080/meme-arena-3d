@@ -167,20 +167,49 @@
       const sh2 = sh.clone(); sh2.position.x = .78 * bulk; g.add(sh2);
     }
 
+    /* pescoço discreto para a cabeça não "flutuar" */
+    const neck = new THREE.Mesh(
+      new THREE.CylinderGeometry(.21, .26, .3, 14),
+      new THREE.MeshStandardMaterial({
+        color: MA.shade(skin.skinTone, -28), roughness: .7,
+        transparent: trans, opacity: trans ? .7 : 1
+      })
+    );
+    neck.position.y = 1.76; g.add(neck);
+
+    /* capuz caído sobre as costas (não atravessa mais o queixo) */
     const hood = new THREE.Mesh(
-      new THREE.SphereGeometry(.47 * bulk, 18, 12, 0, TAU, 0, Math.PI / 2),
+      new THREE.SphereGeometry(.44 * bulk, 18, 12, 0, TAU, 0, Math.PI / 2),
       mkMat(skin.hood, .8)
     );
-    hood.position.y = 1.73; hood.rotation.x = Math.PI; g.add(hood);
+    hood.position.set(0, 1.62, .30);
+    hood.rotation.x = Math.PI + .5;
+    hood.scale.set(1, .85, 1.1);
+    g.add(hood);
 
     const head = new THREE.Mesh(
       new THREE.SphereGeometry(.56, 26, 20),
       new THREE.MeshStandardMaterial({
-        map: MA.Tex.face(skin.face, skin.skinTone, '#2a1a08'),
-        roughness: .55, transparent: trans, opacity: trans ? .7 : 1
+        color: MA.shade(skin.skinTone, -12), roughness: .62,
+        transparent: trans, opacity: trans ? .7 : 1
       })
     );
     head.position.y = 2.18; head.castShadow = true; g.add(head);
+
+    /* rosto desenhado, virado pra frente (igual aos inimigos) */
+    const pFace = new THREE.Mesh(
+      new THREE.SphereGeometry(.568, 26, 20, -0.95, 1.9, 0.42, 2.3),
+      new THREE.MeshStandardMaterial({
+        map: MA.Tex.face(Object.assign({}, skin, {
+          id: 'skin:' + skin.id,
+          color: skin.skinTone,
+          ring: MA.shade(skin.skinTone, -55)
+        })),
+        roughness: .5, transparent: true, opacity: trans ? .75 : 1
+      })
+    );
+    pFace.rotation.y = -Math.PI / 2;
+    head.add(pFace);
 
     /* chapéu / acessório de cabeça */
     const hc = skin.hatColor !== undefined ? skin.hatColor : 0xffffff;
@@ -190,7 +219,7 @@
       cap.position.y = 2.58; g.add(cap);
       const brim = new THREE.Mesh(new THREE.BoxGeometry(.9, .07, .55),
         new THREE.MeshStandardMaterial({ color: hc, roughness: .5 }));
-      brim.position.set(0, 2.5, -.5); g.add(brim);
+      brim.position.set(0, 2.5, -.5); /* aba na testa (frente = -Z) */ g.add(brim);
     } else if (skin.hat === 'crown') {
       const base = new THREE.Mesh(new THREE.CylinderGeometry(.56, .56, .18, 20),
         new THREE.MeshStandardMaterial({ color: hc, metalness: .95, roughness: .18 }));
@@ -225,24 +254,47 @@
 
     /* acessório de costas */
     if (skin.extra === 'cape') {
-      const cape = new THREE.Mesh(new THREE.PlaneGeometry(1.25 * bulk, 1.7, 4, 6),
-        new THREE.MeshStandardMaterial({
-          color: skin.extraColor, side: THREE.DoubleSide, roughness: .85,
-          transparent: true, opacity: .96
-        }));
-      cape.position.set(0, 1.35, .5); cape.rotation.x = -.14;
+      /* capa curva: meio-cilindro cônico que abraça as costas e abre embaixo */
+      const capeGeo = new THREE.CylinderGeometry(
+        .52 * bulk, .92 * bulk, 1.65, 18, 6, true, Math.PI * .62, Math.PI * .76
+      );
+      const cape = new THREE.Mesh(capeGeo, new THREE.MeshStandardMaterial({
+        color: skin.extraColor, side: THREE.DoubleSide, roughness: .82,
+        metalness: .12, transparent: true, opacity: .97
+      }));
+      cape.position.set(0, 1.28, .14); cape.rotation.x = .1;
       cape.castShadow = true; g.add(cape);
+      /* gola: arco só nas costas, bem atrás da cabeça */
+      const collar = new THREE.Mesh(
+        new THREE.TorusGeometry(.46 * bulk, .085, 8, 18, Math.PI * .9),
+        new THREE.MeshStandardMaterial({ color: MA.shade(skin.extraColor, 28), roughness: .6 })
+      );
+      collar.position.set(0, 1.97, .14);
+      collar.rotation.set(Math.PI / 2, 0, Math.PI * .05);
+      g.add(collar);
       g.userData.cape = cape;
     } else if (skin.extra === 'wings') {
+      /* asas de morcego recortadas (Shape) em vez de retângulos */
+      const sh = new THREE.Shape();
+      sh.moveTo(0, 0);
+      sh.quadraticCurveTo(.55, .52, 1.12, .40);
+      sh.quadraticCurveTo(.92, .20, 1.02, -.02);
+      sh.quadraticCurveTo(.80, .04, .74, -.22);
+      sh.quadraticCurveTo(.58, -.10, .48, -.34);
+      sh.quadraticCurveTo(.30, -.16, .20, -.40);
+      sh.quadraticCurveTo(.08, -.20, 0, 0);
+      const wGeo = new THREE.ShapeGeometry(sh, 14);
       const wmat = new THREE.MeshStandardMaterial({
-        color: skin.extraColor, side: THREE.DoubleSide, roughness: .7,
-        transparent: true, opacity: .92
+        color: skin.extraColor, side: THREE.DoubleSide, roughness: .62,
+        metalness: .1, transparent: true, opacity: .95,
+        emissive: MA.shade(skin.extraColor, -45), emissiveIntensity: .45
       });
       const wings = [];
       [-1, 1].forEach(s => {
-        const w = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .95, 3, 2), wmat);
-        w.position.set(s * .75, 1.6, .42);
-        w.rotation.y = s * .62; w.rotation.z = s * .22;
+        const w = new THREE.Mesh(wGeo, wmat);
+        w.scale.set(s * 1.18, 1.18, 1);
+        w.position.set(s * .42, 1.68, .34);
+        w.rotation.y = s * .72;
         g.add(w); wings.push(w);
       });
       g.userData.wings = wings;
@@ -277,19 +329,19 @@
       new THREE.BoxGeometry(.22, .22, 1.4),
       new THREE.MeshStandardMaterial({ color: 0x14142a, metalness: .92, roughness: .22 })
     );
-    barrel.position.z = .58; gun.add(barrel);
+    barrel.position.z = -.58; gun.add(barrel);
     const tip = new THREE.Mesh(new THREE.SphereGeometry(.17, 14, 10),
       new THREE.MeshBasicMaterial({ color: 0xffe600 }));
-    tip.position.z = 1.26; gun.add(tip);
+    tip.position.z = -1.26; gun.add(tip);
     const muzzle = new THREE.Sprite(new THREE.SpriteMaterial({
       map: MA.Tex.glow('#ffffff'), color: 0xffe600, transparent: true,
       blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0
     }));
-    muzzle.scale.setScalar(2.4); muzzle.position.z = 1.4; gun.add(muzzle);
+    muzzle.scale.setScalar(2.4); muzzle.position.z = -1.4; gun.add(muzzle);
     const mag = new THREE.Mesh(new THREE.BoxGeometry(.2, .36, .32),
       new THREE.MeshStandardMaterial({ color: skin.aura, emissive: skin.aura, emissiveIntensity: .6 }));
-    mag.position.set(0, -.26, .18); gun.add(mag);
-    gun.position.set(.74 * bulk, 1.36, .3);
+    mag.position.set(0, -.26, -.18); gun.add(mag);
+    gun.position.set(.74 * bulk, 1.36, -.3);
     g.add(gun);
 
     const aura = new THREE.Mesh(
@@ -310,6 +362,7 @@
     );
     shieldMesh.position.y = 1.25; shieldMesh.visible = false; g.add(shieldMesh);
 
+    MA.linearizeColors(g);
     scene.add(g);
 
     const bonusHp = (armorDef && armorDef.hp) || 0;

@@ -246,6 +246,7 @@
             const r = MA.Profile.equip(type, id);
             if (r.error) { this.toast('❌ ' + r.error, 'bad'); MA.Audio.deny(); return; }
             MA.Profile.save();
+            if ((type === 'skin' || type === 'armor') && MA._rebuildLook) MA._rebuildLook();
             this.toast(r.equipped ? '✅ Equipado: <b>' + item.name + '</b>' : 'Desequipado: ' + item.name);
             this.renderInventory();
           } else if (act === 'sell') {

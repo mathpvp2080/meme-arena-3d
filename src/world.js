@@ -14,7 +14,7 @@
       this.scene = scene;
       this.map = map = map || (MA.MAPS ? MA.MAPS[0] : null);
       this.obstacles.length = 0; this.lights.length = 0; this.billboards.length = 0;
-      this.drips = null; this.monument = null;
+      this.drips = null; this.monument = null; this._ringHSL = null;
 
       scene.background = new THREE.Color(map.bg);
       scene.fog = new THREE.FogExp2(map.fog, map.fogD);
@@ -187,23 +187,56 @@
       return { r: r * 1.1, h: h + r };
     },
 
-    /* canos do esgoto */
+    /* canos do esgoto — torres finas, canos deitados e válvulas */
     _obs_pipe(scene, x, z, col) {
       const g = new THREE.Group();
-      const r = MA.rand(1.1, 2.1), h = MA.rand(3.5, 9);
-      const mat = new THREE.MeshStandardMaterial({ color: col, roughness: .45, metalness: .75 });
-      const tube = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 14), mat);
-      tube.position.y = h / 2; tube.castShadow = tube.receiveShadow = true; g.add(tube);
-      const flange = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.3, r * 1.3, .35, 14), mat);
-      flange.position.y = h * .72; g.add(flange);
-      const elbow = new THREE.Mesh(new THREE.TorusGeometry(r * 1.6, r * .62, 8, 16, Math.PI / 2), mat);
-      elbow.position.set(0, h, 0); elbow.rotation.y = MA.rand(0, TAU); g.add(elbow);
-      const valve = new THREE.Mesh(new THREE.TorusGeometry(r * .8, r * .14, 6, 14),
-        new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: .5, metalness: .6 }));
-      valve.position.set(0, h * .45, r * 1.05); valve.rotation.x = Math.PI / 2; g.add(valve);
+      const mat = new THREE.MeshStandardMaterial({ color: col, roughness: .5, metalness: .7 });
+      const dark = new THREE.MeshStandardMaterial({ color: MA.shade('#' + col.toString(16).padStart(6, '0'), -45), roughness: .6, metalness: .6 });
+      const kind = Math.random();
+      let rad, hgt;
+
+      if (kind < .45) {
+        /* coluna de cano com flanges */
+        rad = MA.rand(.6, 1.1); hgt = MA.rand(5, 11);
+        const tube = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, hgt, 12), mat);
+        tube.position.y = hgt / 2; tube.castShadow = tube.receiveShadow = true; g.add(tube);
+        for (let i = 1; i <= 3; i++) {
+          const fl = new THREE.Mesh(new THREE.CylinderGeometry(rad * 1.35, rad * 1.35, .28, 12), dark);
+          fl.position.y = hgt * i / 4; g.add(fl);
+        }
+        const valve = new THREE.Mesh(new THREE.TorusGeometry(rad * .85, rad * .16, 6, 14),
+          new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: .5, metalness: .6 }));
+        valve.position.set(0, hgt * .62, rad * 1.1); valve.rotation.x = Math.PI / 2; g.add(valve);
+      } else if (kind < .78) {
+        /* cano deitado sobre dois apoios (dá pra usar de cobertura) */
+        rad = MA.rand(.7, 1.2); hgt = rad * 2.4;
+        const len = MA.rand(7, 13);
+        const tube = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, len, 12), mat);
+        tube.rotation.z = Math.PI / 2; tube.position.y = rad * 1.9;
+        tube.castShadow = tube.receiveShadow = true; g.add(tube);
+        [-1, 1].forEach(sx => {
+          const leg = new THREE.Mesh(new THREE.BoxGeometry(.4, rad * 1.9, rad * 2.2), dark);
+          leg.position.set(sx * len * .36, rad * .95, 0); g.add(leg);
+        });
+        const flange = new THREE.Mesh(new THREE.CylinderGeometry(rad * 1.3, rad * 1.3, .3, 12), dark);
+        flange.rotation.z = Math.PI / 2; flange.position.set(len * .5, rad * 1.9, 0); g.add(flange);
+        rad = len * .45;
+      } else {
+        /* saída de esgoto com cotovelo virado pro chão */
+        rad = MA.rand(.8, 1.3); hgt = MA.rand(3.5, 6);
+        const tube = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, hgt, 12), mat);
+        tube.position.y = hgt / 2; tube.castShadow = true; g.add(tube);
+        const elbow = new THREE.Mesh(new THREE.TorusGeometry(rad * 1.5, rad * .92, 10, 16, Math.PI / 2), mat);
+        elbow.position.set(0, hgt, 0); elbow.rotation.x = Math.PI; elbow.rotation.y = MA.rand(0, TAU);
+        elbow.castShadow = true; g.add(elbow);
+        const mouth = new THREE.Mesh(new THREE.CircleGeometry(rad * .85, 14),
+          new THREE.MeshBasicMaterial({ color: 0x062a24 }));
+        mouth.position.y = hgt + .02; mouth.rotation.x = -Math.PI / 2; g.add(mouth);
+      }
+
       g.position.set(x, 0, z); g.rotation.y = MA.rand(0, TAU);
       scene.add(g);
-      return { r: r * 1.4, h: h + r };
+      return { r: Math.max(1, rad * 1.25), h: hgt + 1 };
     },
 
     /* guarda-sol da praia */
@@ -438,7 +471,13 @@
       });
       if (this.skyMesh) this.skyMesh.rotation.y += dt * .005;
       if (this.ringMesh) {
-        this.ringMesh.material.color.setHSL((time * .07) % 1, 1, .55);
+        const base = this._ringHSL || (this._ringHSL =
+          new THREE.Color(this.map ? this.map.ring : 0xff00c8).getHSL({ h: 0, s: 0, l: 0 }));
+        this.ringMesh.material.color.setHSL(
+          (base.h + Math.sin(time * .5) * .05 + 1) % 1,
+          Math.min(1, base.s + .15),
+          base.l + Math.sin(time * 1.6) * .08
+        );
       }
       if (this.drips) {
         for (let i = 0; i < this.drips.length; i++) {

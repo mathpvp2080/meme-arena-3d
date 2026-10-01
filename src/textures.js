@@ -20,9 +20,12 @@
 
       const S = 256, c = this._c(S), x = c.getContext('2d');
 
+      let drawn = false;
       if (drawer) {
-        drawer(x, S, def);
-      } else {
+        try { drawer(x, S, def); drawn = true; }
+        catch (err) { console.warn('[MemeArena] rosto falhou:', def.id, err); }
+      }
+      if (!drawn) {
         const g = x.createRadialGradient(S * .34, S * .28, 8, S * .5, S * .5, S * .62);
         g.addColorStop(0, '#ffffff'); g.addColorStop(.32, bg); g.addColorStop(1, MA.shade(bg, -55));
         x.fillStyle = g; x.fillRect(0, 0, S, S);

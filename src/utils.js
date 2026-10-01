@@ -65,6 +65,22 @@ window.MA = window.MA || {};
     };
   }
 
+  /* three r128 não gerencia espaço de cor: cores hex entram como se já
+     fossem lineares e o renderer (outputEncoding sRGB) clareia tudo.
+     Converter para linear devolve a cor que a gente realmente escolheu.   */
+  MA.linearizeColors = function (root) {
+    root.traverse(o => {
+      const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+      mats.forEach(m => {
+        if (!m || m.userData.__lin) return;
+        m.userData.__lin = true;
+        if (m.color) m.color.convertSRGBToLinear();
+        if (m.emissive) m.emissive.convertSRGBToLinear();
+      });
+    });
+    return root;
+  };
+
   MA.disposeObject = function (obj) {
     obj.traverse(o => {
       if (o.geometry && !o.geometry.userData.shared) o.geometry.dispose();

@@ -235,7 +235,7 @@
     _saveTimer: null,
 
     async init() {
-      const hasKeys = CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY;
+      const hasKeys = CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && !window.__forceLocal;
       if (hasKeys) {
         try {
           await Remote.init();

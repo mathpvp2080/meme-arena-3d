@@ -533,6 +533,220 @@
     }
   };
 
+
+  /* ===================================================================
+     ROSTOS DAS SKINS DO JOGADOR  (chave 'skin:<id>')
+     =================================================================== */
+  function skinBase(x, S, tone) {
+    tone = tone || '#e8b07a';
+    const g = x.createRadialGradient(S * .36, S * .3, 10, S / 2, S / 2, S * .66);
+    g.addColorStop(0, MA.shade(tone, 26)); g.addColorStop(.6, tone);
+    g.addColorStop(1, MA.shade(tone, -38));
+    x.fillStyle = g; x.fillRect(0, 0, S, S);
+  }
+  function brows(x, S, y1, y2, color, w) {
+    x.beginPath(); x.moveTo(S * .24, S * y1); x.quadraticCurveTo(S * .34, S * y2, S * .45, S * y1); stroke(x, color, w || 9);
+    x.beginPath(); x.moveTo(S * .55, S * y1); x.quadraticCurveTo(S * .66, S * y2, S * .76, S * y1); stroke(x, color, w || 9);
+  }
+  function shades(x, S, lens, glint) {
+    x.fillStyle = lens || '#15151d';
+    x.beginPath();
+    x.moveTo(S * .15, S * .41); x.lineTo(S * .45, S * .41);
+    x.lineTo(S * .43, S * .57); x.lineTo(S * .19, S * .57); x.closePath(); x.fill();
+    x.beginPath();
+    x.moveTo(S * .55, S * .41); x.lineTo(S * .85, S * .41);
+    x.lineTo(S * .81, S * .57); x.lineTo(S * .57, S * .57); x.closePath(); x.fill();
+    x.fillRect(S * .45, S * .44, S * .10, S * .035);
+    if (glint) {
+      x.strokeStyle = glint; x.lineWidth = 5;
+      x.beginPath(); x.moveTo(S * .19, S * .55); x.lineTo(S * .31, S * .43); x.stroke();
+      x.beginPath(); x.moveTo(S * .59, S * .55); x.lineTo(S * .71, S * .43); x.stroke();
+    }
+  }
+
+  const SK = {
+    /* 😎 Chill Guy — olhos semicerrados e sorrisinho tranquilo */
+    chill(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      brows(x, S, .36, .31, '#6b4226', 8);
+      [-1, 1].forEach(s => {
+        x.beginPath(); x.ellipse(S / 2 + s * S * .17, S * .47, S * .085, S * .055, 0, 0, TAU);
+        x.fillStyle = '#fff'; x.fill(); stroke(x, '#6b4226', 4);
+        circ(x, S / 2 + s * S * .17, S * .48, S * .036, '#2a1a08');
+      });
+      // bochechas
+      circ(x, S * .24, S * .60, S * .055, 'rgba(255,140,130,.35)');
+      circ(x, S * .76, S * .60, S * .055, 'rgba(255,140,130,.35)');
+      smile(x, S, S * .66, S * .17, S * .12, '#5a3318', 8);
+    },
+
+    /* 🕶️ Hacker — capuz escuro e óculos com reflexo verde */
+    hacker(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      x.fillStyle = 'rgba(0,0,0,.55)';
+      x.beginPath(); x.moveTo(0, 0); x.lineTo(S, 0); x.lineTo(S, S * .34);
+      x.quadraticCurveTo(S / 2, S * .18, 0, S * .34); x.closePath(); x.fill();
+      shades(x, S, '#0b0f0c', '#39ff88');
+      line(x, S * .40, S * .74, S * .60, S * .74, '#2a2f2a', 7);
+      // chuva de código
+      x.fillStyle = 'rgba(57,255,136,.5)'; x.font = '15px monospace';
+      for (let i = 0; i < 16; i++) x.fillText(Math.random() < .5 ? '1' : '0', Math.random() * S, S * (.78 + Math.random() * .2));
+    },
+
+    /* 🐕 Doge Dourado */
+    doge(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      ell(x, S / 2, S * .66, S * .28, S * .22, MA.shade(d.skinTone, 42));
+      brows(x, S, .30, .24, MA.shade(d.skinTone, -55), 9);
+      eyes(x, S, S * .44, S * .17, S * .075, S * .085, '#2a1a08', S * .04);
+      x.beginPath();
+      x.moveTo(S / 2 - S * .07, S * .58); x.quadraticCurveTo(S / 2, S * .52, S / 2 + S * .07, S * .58);
+      x.quadraticCurveTo(S / 2, S * .66, S / 2 - S * .07, S * .58);
+      x.fillStyle = '#2a1a08'; x.fill();
+      x.beginPath();
+      x.moveTo(S / 2, S * .64); x.lineTo(S / 2, S * .70);
+      x.moveTo(S / 2, S * .70); x.quadraticCurveTo(S * .40, S * .78, S * .34, S * .68);
+      x.moveTo(S / 2, S * .70); x.quadraticCurveTo(S * .60, S * .78, S * .66, S * .68);
+      stroke(x, '#2a1a08', 7);
+    },
+
+    /* 🤡 Palhaço do Lobby */
+    clown(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      // olhos com X de maquiagem
+      [-1, 1].forEach(s => {
+        const cx = S / 2 + s * S * .19;
+        circ(x, cx, S * .44, S * .105, '#ffffff'); stroke(x, '#c0392b', 5);
+        circ(x, cx, S * .45, S * .045, '#111');
+        line(x, cx - S * .13, S * .31, cx + S * .13, S * .57, '#2bb3ff', 7);
+        line(x, cx + S * .13, S * .31, cx - S * .13, S * .57, '#2bb3ff', 7);
+      });
+      // nariz vermelho
+      circ(x, S / 2, S * .60, S * .085, '#ff2d2d');
+      circ(x, S * .48, S * .58, S * .025, 'rgba(255,255,255,.7)');
+      // sorriso pintado
+      x.beginPath(); x.moveTo(S * .24, S * .70); x.quadraticCurveTo(S / 2, S * .92, S * .76, S * .70);
+      stroke(x, '#c0392b', 12);
+      smile(x, S, S * .72, S * .13, S * .09, '#5a1414', 6);
+    },
+
+    /* 😏 Rizzler */
+    rizzler(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      x.beginPath();
+      x.moveTo(S * .10, S * .32); x.quadraticCurveTo(S * .30, S * .00, S * .62, S * .12);
+      x.quadraticCurveTo(S * .88, S * .20, S * .90, S * .36);
+      x.quadraticCurveTo(S / 2, S * .20, S * .10, S * .32);
+      x.fillStyle = '#231a16'; x.fill();
+      x.beginPath(); x.moveTo(S * .23, S * .42); x.quadraticCurveTo(S * .33, S * .28, S * .45, S * .37); stroke(x, '#231a16', 9);
+      x.beginPath(); x.moveTo(S * .56, S * .41); x.quadraticCurveTo(S * .66, S * .37, S * .77, S * .43); stroke(x, '#231a16', 9);
+      [-1, 1].forEach(s => {
+        x.beginPath(); x.ellipse(S / 2 + s * S * .17, S * .51, S * .08, S * .045, 0, 0, TAU);
+        x.fillStyle = '#fff'; x.fill(); stroke(x, '#231a16', 4);
+        circ(x, S / 2 + s * S * .17, S * .515, S * .032, '#1a1a1a');
+      });
+      x.beginPath(); x.moveTo(S * .34, S * .70); x.quadraticCurveTo(S * .54, S * .80, S * .70, S * .63); stroke(x, '#5a3318', 8);
+      circ(x, S * .66, S * .665, S * .017, '#ffffff');
+    },
+
+    /* 🗿 Sigma Grindset */
+    sigma(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      brows(x, S, .38, .33, '#3a3f46', 13);
+      shades(x, S, '#0b0b11', '#00e5ff');
+      line(x, S * .40, S * .75, S * .60, S * .75, '#2b3038', 9);
+      x.globalAlpha = .28; x.fillStyle = '#39414a';
+      for (let i = 0; i < 180; i++) {
+        const a = Math.random() * Math.PI, r = S * (.29 + Math.random() * .07);
+        x.fillRect(S / 2 + Math.cos(a) * r, S * .66 + Math.sin(a) * r * .55, 3, 3);
+      }
+      x.globalAlpha = 1;
+    },
+
+    /* 👻 Fantasma do Chat */
+    ghost(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      x.globalAlpha = .9;
+      ell(x, S * .37, S * .45, S * .085, S * .12, '#2b3a55');
+      ell(x, S * .63, S * .45, S * .085, S * .12, '#2b3a55');
+      x.globalAlpha = 1;
+      circ(x, S * .355, S * .41, S * .028, 'rgba(255,255,255,.9)');
+      circ(x, S * .615, S * .41, S * .028, 'rgba(255,255,255,.9)');
+      ell(x, S / 2, S * .70, S * .09, S * .07, '#2b3a55');
+      // névoa
+      x.globalAlpha = .18; x.fillStyle = '#ffffff';
+      for (let i = 0; i < 6; i++) ell(x, Math.random() * S, S * (.8 + Math.random() * .2), S * .18, S * .05, '#ffffff');
+      x.globalAlpha = 1;
+    },
+
+    /* 😈 Demônio do Ratio */
+    demon(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      brows(x, S, .40, .28, '#2a0309', 12);
+      [-1, 1].forEach(s => {
+        const cx = S / 2 + s * S * .18;
+        ell(x, cx, S * .48, S * .095, S * .065, '#ffd400');
+        x.globalAlpha = .55; circ(x, cx, S * .48, S * .13, '#ff6a00'); x.globalAlpha = 1;
+        ell(x, cx, S * .48, S * .02, S * .055, '#1a0000');
+      });
+      // sorriso de dentes afiados
+      x.beginPath(); x.moveTo(S * .24, S * .64); x.quadraticCurveTo(S / 2, S * .90, S * .76, S * .64);
+      x.quadraticCurveTo(S / 2, S * .72, S * .24, S * .64);
+      x.fillStyle = '#1a0000'; x.fill();
+      x.save();
+      x.beginPath(); x.moveTo(S * .24, S * .64); x.quadraticCurveTo(S / 2, S * .90, S * .76, S * .64);
+      x.quadraticCurveTo(S / 2, S * .72, S * .24, S * .64); x.clip();
+      x.fillStyle = '#fff';
+      for (let i = 0; i < 7; i++) {
+        const w = S * .075, x1 = S * .25 + i * w;
+        x.beginPath(); x.moveTo(x1, S * .64); x.lineTo(x1 + w / 2, S * .76); x.lineTo(x1 + w, S * .64); x.fill();
+      }
+      x.restore();
+    },
+
+    /* 🗿 Gigachad */
+    gigachad(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      x.globalAlpha = .4; x.fillStyle = '#5c666d';
+      x.beginPath(); x.moveTo(S * .16, S * .60); x.quadraticCurveTo(S / 2, S * 1.04, S * .84, S * .60);
+      x.quadraticCurveTo(S / 2, S * .72, S * .16, S * .60); x.fill();
+      x.globalAlpha = 1;
+      ell(x, S * .36, S * .45, S * .09, S * .035, '#39424a', -.12);
+      ell(x, S * .64, S * .45, S * .09, S * .035, '#39424a', .12);
+      line(x, S * .24, S * .37, S * .46, S * .41, '#5c666d', 12);
+      line(x, S * .54, S * .41, S * .76, S * .37, '#5c666d', 12);
+      x.beginPath(); x.moveTo(S * .50, S * .41); x.lineTo(S * .46, S * .62); x.lineTo(S * .55, S * .62); stroke(x, '#8d979e', 6);
+      line(x, S * .38, S * .75, S * .62, S * .75, '#4a545c', 9);
+      x.globalAlpha = .35; x.fillStyle = '#6b767d';
+      for (let i = 0; i < 200; i++) {
+        const a = Math.random() * Math.PI, r = S * (.30 + Math.random() * .08);
+        x.fillRect(S / 2 + Math.cos(a) * r, S * .65 + Math.sin(a) * r * .55, 3, 3);
+      }
+      x.globalAlpha = 1;
+    },
+
+    /* 👑 Rei do Brainrot */
+    king(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      brows(x, S, .35, .29, '#6b4a00', 9);
+      [-1, 1].forEach(s => {
+        const cx = S / 2 + s * S * .18;
+        ell(x, cx, S * .46, S * .095, S * .075, '#ffffff'); stroke(x, '#7a5a00', 4);
+        circ(x, cx, S * .47, S * .04, '#2b1d00');
+        circ(x, cx - S * .025, S * .44, S * .016, '#fff');
+      });
+      // barba dourada
+      x.fillStyle = 'rgba(255,215,0,.55)';
+      x.beginPath(); x.moveTo(S * .22, S * .62); x.quadraticCurveTo(S / 2, S * 1.05, S * .78, S * .62);
+      x.quadraticCurveTo(S / 2, S * .74, S * .22, S * .62); x.fill();
+      smile(x, S, S * .68, S * .14, S * .10, '#6b4a00', 8);
+      // brilho
+      circ(x, S * .80, S * .26, S * .03, 'rgba(255,255,255,.9)');
+    }
+  };
+
+  Object.keys(SK).forEach(k => { F['skin:' + k] = SK[k]; });
+
   /* aliases: chefes que reaproveitam o rosto do inimigo comum */
   MA.FACES = F;
 })(window.MA);

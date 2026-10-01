@@ -1,5 +1,5 @@
 /* MEME ARENA 3D — service worker (offline-first) */
-const CACHE = 'meme-arena-3d-v5';
+const CACHE = 'meme-arena-3d-v6';
 const ASSETS = [
   './', './index.html', './css/style.css', './manifest.webmanifest',
   './assets/favicon.svg', './lib/three.min.js',

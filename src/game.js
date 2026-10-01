@@ -95,6 +95,7 @@
     player.obj.position.set(0, 0, 26);
   }
   MA._rebuildLook = rebuildPlayerLook;
+  MA._dbg = { get cam() { return camera; }, get player() { return player; }, get scene() { return scene; } };
 
   /* troca de mapa: limpa o cenário antigo e constrói o novo */
   function setMap(id) {
@@ -507,16 +508,24 @@
     player.legL.rotation.x = sw; player.legR.rotation.x = -sw;
     player.armL.rotation.x = -sw * .8;
     player.obj.position.y += Math.abs(Math.sin(player.bob)) * (moving ? .07 : .02);
-    player.gun.rotation.x = pitch;
+    player.gun.rotation.x = -pitch;
     player.armR.rotation.x = pitch - .2;
     player.recoil = MA.damp(player.recoil, 0, 16, dt);
-    player.gun.position.z = .3 - player.recoil * .36;
+    player.gun.position.z = -.3 + player.recoil * .36;
     player.muzzle.material.opacity = Math.max(0, player.muzzle.material.opacity - dt * 9);
     player.aura.rotation.z += dt * 1.6;
 
     /* acessórios de skin */
     const ud = player.obj.userData;
-    if (ud.cape) { ud.cape.rotation.x = -.14 + Math.sin(G.time * 4) * .12 + (moving ? .18 : 0); }
+    if (ud.cape) { ud.cape.rotation.x = -.1 + Math.sin(G.time * 4) * .09 + (moving ? .14 : 0); }
+    if (ud.wings) {
+      const f = Math.sin(G.time * (moving ? 7 : 2.6)) * (moving ? .34 : .14);
+      ud.wings.forEach((w, i) => {
+        const s2 = i === 0 ? -1 : 1;
+        w.rotation.y = s2 * (.72 + f);
+        w.rotation.z = s2 * f * .35;
+      });
+    }
     if (ud.wings) ud.wings.forEach((w, i) => {
       const s2 = i === 0 ? -1 : 1;
       w.rotation.z = s2 * (.22 + Math.sin(G.time * 6) * .26);

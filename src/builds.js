@@ -180,14 +180,14 @@
       const RB = ['#ff0000', '#ff9900', '#ffff00', '#33dd33', '#0099ff', '#6633ff'];
       const trail = [];
       RB.forEach((col, i) => {
-        const seg = Pl(c.R * 2.6, c.R * .24, new THREE.MeshBasicMaterial({
+        const seg = Pl(c.R * 1.5, c.R * .17, new THREE.MeshBasicMaterial({
           color: col, side: THREE.DoubleSide, transparent: true, opacity: .85
         }));
-        seg.position.set(0, c.R * 1.25 + (2.5 - i) * c.R * .24, -c.R * 2.1);
+        seg.position.set(0, c.R * 1.25 + (2.5 - i) * c.R * .17, -c.R * 1.25);
         trail.push(seg); c.add(seg);
       });
       c.anim.push((o, t) => {
-        trail.forEach((s, i) => { s.position.y = c.R * 1.25 + (2.5 - i) * c.R * .24 + Math.sin(t * 8 + i * .6) * c.R * .12; });
+        trail.forEach((s, i) => { s.position.y = c.R * 1.25 + (2.5 - i) * c.R * .17 + Math.sin(t * 8 + i * .6) * c.R * .07; });
       });
 
       const tail = new THREE.Mesh(new THREE.CapsuleGeometry(c.R * .14, c.R * .7, 4, 8), M(0x9a9a9a, { rough: .7 }));
