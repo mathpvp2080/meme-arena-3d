@@ -731,12 +731,13 @@
     player.gun.rotation.x = -pitch;
     player.armR.rotation.x = pitch - .2;
     player.recoil = MA.damp(player.recoil, 0, 16, dt);
-    player.gun.position.z = -.3 + player.recoil * .36;
+    player.gun.position.z = -.22 + player.recoil * .36;
     player.muzzle.material.opacity = Math.max(0, player.muzzle.material.opacity - dt * 9);
     player.aura.rotation.z += dt * 1.6;
 
     /* acessórios de skin */
     const ud = player.obj.userData;
+    if (ud.panim) ud.panim.forEach(fn => { try { fn(G.time, dt); } catch (e) { /* ignora */ } });
     if (ud.cape) { ud.cape.rotation.x = -.1 + Math.sin(G.time * 4) * .09 + (moving ? .14 : 0); }
     if (ud.wings) {
       const f = Math.sin(G.time * (moving ? 7 : 2.6)) * (moving ? .34 : .14);

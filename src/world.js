@@ -366,16 +366,57 @@
     },
 
     /* ======================================================= PROPS === */
+    /* milharal de verdade: caule + folhas + espiga, desenhado em
+       InstancedMesh (milhares de peças, só 3 chamadas de desenho) */
     _props_cornfield(scene) {
-      const mat = new THREE.MeshStandardMaterial({ color: 0x6aa845, roughness: .9, side: THREE.DoubleSide });
-      const geo = new THREE.PlaneGeometry(1.1, 4.5);
-      for (let i = 0; i < 230; i++) {
-        const a = MA.rand(0, TAU), r = MA.rand(this.ARENA * .72, this.ARENA * 1.5);
-        const m = new THREE.Mesh(geo, mat);
-        m.position.set(Math.cos(a) * r, 2.2, Math.sin(a) * r);
-        m.rotation.y = MA.rand(0, TAU);
-        scene.add(m);
+      const N = 260;
+      const FOLHAS = 4;
+      const caule = new THREE.InstancedMesh(
+        new THREE.CylinderGeometry(.055, .09, 1, 5),
+        new THREE.MeshStandardMaterial({ color: 0x4e7a2e, roughness: .95 }), N);
+      const folha = new THREE.InstancedMesh(
+        new THREE.PlaneGeometry(1.5, .34, 3, 1),
+        new THREE.MeshStandardMaterial({
+          color: 0x7cb83f, roughness: .9, side: THREE.DoubleSide
+        }), N * FOLHAS);
+      const espiga = new THREE.InstancedMesh(
+        new THREE.CylinderGeometry(.12, .16, .8, 7),
+        new THREE.MeshStandardMaterial({
+          color: 0xe0b429, roughness: .75, emissive: 0x3a2a00, emissiveIntensity: .4
+        }), N);
+
+      const d = new THREE.Object3D();
+      let fi = 0;
+      for (let i = 0; i < N; i++) {
+        const a = MA.rand(0, TAU), r = MA.rand(this.ARENA * .78, this.ARENA * 1.55);
+        const x = Math.cos(a) * r, z = Math.sin(a) * r;
+        const h = MA.rand(3.4, 5.2);
+        const tilt = MA.rand(-.07, .07);
+
+        d.position.set(x, h / 2, z);
+        d.rotation.set(tilt, MA.rand(0, TAU), tilt * .6);
+        d.scale.set(1, h, 1);
+        d.updateMatrix(); caule.setMatrixAt(i, d.matrix);
+
+        for (let k = 0; k < FOLHAS; k++) {
+          const ang = MA.rand(0, TAU);
+          const alt = h * (.35 + k * .16);
+          d.position.set(x + Math.cos(ang) * .42, alt, z + Math.sin(ang) * .42);
+          d.rotation.set(MA.rand(-.25, .25), -ang, MA.rand(.25, .7));
+          d.scale.set(MA.rand(.8, 1.2), 1, 1);
+          d.updateMatrix(); folha.setMatrixAt(fi++, d.matrix);
+        }
+
+        d.position.set(x + Math.cos(a) * .18, h * .78, z + Math.sin(a) * .18);
+        d.rotation.set(.18, a, .1);
+        d.scale.set(1, 1, 1);
+        d.updateMatrix(); espiga.setMatrixAt(i, d.matrix);
       }
+      [caule, folha, espiga].forEach(m => {
+        m.instanceMatrix.needsUpdate = true;
+        m.castShadow = false; m.receiveShadow = false;
+        scene.add(m);
+      });
     },
 
     _props_drips(scene) {

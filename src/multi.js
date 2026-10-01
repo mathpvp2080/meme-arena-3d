@@ -99,8 +99,17 @@
 
     _identity() {
       const p = MA.Profile.data;
+      /* id ÚNICO POR ABA: duas abas do mesmo navegador compartilham a sessão
+         do Supabase, então usar só o id da conta faria as duas se ignorarem. */
+      let cid = null;
+      try { cid = sessionStorage.getItem('memearena.cid'); } catch (e) { /* ignora */ }
+      if (!cid) {
+        cid = 'c' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+        try { sessionStorage.setItem('memearena.cid', cid); } catch (e) { /* ignora */ }
+      }
       return {
-        id: (MA.Net.user && MA.Net.user.id) || ('L' + Math.random().toString(36).slice(2, 9)),
+        id: cid,
+        uid: (MA.Net.user && MA.Net.user.id) || null,
         name: p.username, level: p.level,
         skin: (p.equipped && p.equipped.skin) || 'chill',
         armor: (p.equipped && p.equipped.armor) || 'hoodie'
@@ -110,10 +119,10 @@
     /* --------------------------------------------------- criar / entrar */
     async createRoom(mode, map, diff) {
       const r = await this._open(code4(), true, mode, map, diff);
-      if (!r.error && MA.Net.online && MA.Net.impl.sb) {
+      if (!r.error && MA.Net.online && MA.Net.impl.sb && this.me.uid) {
         try {
           await MA.Net.impl.sb.from('rooms').insert({
-            code: this.code, host_id: this.me.id, host_name: this.me.name,
+            code: this.code, host_id: this.me.uid, host_name: this.me.name,
             mode, map, diff, players: 1, state: 'lobby'
           });
         } catch (e) { console.warn('[MP] não deu pra anunciar a sala', e); }
@@ -126,10 +135,15 @@
       if (code.length !== 4) return { error: 'O código tem 4 letras.' };
       let mode = 'coop', map = 'arena', diff = 'normal';
       if (MA.Net.online && MA.Net.impl.sb) {
-        const { data } = await MA.Net.impl.sb.from('rooms').select('*').eq('code', code).maybeSingle();
-        if (!data) return { error: 'Sala não encontrada.' };
-        if (data.players >= data.max_players) return { error: 'Sala cheia.' };
-        mode = data.mode; map = data.map; diff = data.diff;
+        /* o cadastro da sala é só um atalho: se a tabela não existir ou a
+           consulta falhar, dá pra entrar do mesmo jeito pelo código. */
+        try {
+          const { data } = await MA.Net.impl.sb.from('rooms').select('*').eq('code', code).maybeSingle();
+          if (data) {
+            if (data.players >= data.max_players) return { error: 'Sala cheia.' };
+            mode = data.mode; map = data.map; diff = data.diff;
+          }
+        } catch (e) { console.warn('[MP] lista de salas indisponível', e); }
       }
       const r = await this._open(code, false, mode, map, diff);
       if (!r.error) this.send({ t: 'hello', ...this.me });

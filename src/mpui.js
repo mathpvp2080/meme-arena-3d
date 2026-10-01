@@ -84,6 +84,7 @@
       $('mpLeave').classList.remove('hid');
       $('mpStart').classList.toggle('hid', !M.isHost);
       $('mpBigCode').textContent = M.code;
+      this.msg('');
       const mapa = MA.mapById(M.map);
       $('mpLobbyInfo').innerHTML =
         (M.mode === 'pvp' ? '⚔️ PVP' : '🤝 CO-OP') + ' · ' + mapa.icon + ' ' + mapa.name +
@@ -150,7 +151,10 @@
         const { data } = await sb.from('rooms').select('*')
           .eq('state', 'lobby').order('updated_at', { ascending: false }).limit(12);
         if (!data || !data.length) {
-          box.innerHTML = '<div class="dim">Nenhuma sala aberta agora. Crie a sua!</div>';
+          box.innerHTML = '<div class="dim">Nenhuma sala aberta agora. Crie a sua! ' +
+            '<br>(Se nenhuma sala aparecer nunca, falta rodar o arquivo ' +
+            '<b>supabase/schema_multiplayer.sql</b> no Supabase — mesmo assim dá ' +
+            'para jogar normalmente entrando pelo <b>código</b>.)</div>';
           return;
         }
         box.innerHTML = data.map(r => {

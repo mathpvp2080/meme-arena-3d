@@ -341,7 +341,7 @@
     const mag = new THREE.Mesh(new THREE.BoxGeometry(.2, .36, .32),
       new THREE.MeshStandardMaterial({ color: skin.aura, emissive: skin.aura, emissiveIntensity: .6 }));
     mag.position.set(0, -.26, -.18); gun.add(mag);
-    gun.position.set(.74 * bulk, 1.36, -.3);
+    gun.position.set(.92 * bulk, 1.26, -.22);
     g.add(gun);
 
     const aura = new THREE.Mesh(
@@ -361,6 +361,19 @@
       new THREE.MeshBasicMaterial({ color: 0xb9c4cc, transparent: true, opacity: .22, wireframe: true })
     );
     shieldMesh.position.y = 1.25; shieldMesh.visible = false; g.add(shieldMesh);
+
+    /* peças exclusivas da skin (orelhas do doge, terno do sigma, ...) */
+    const panim = [];
+    if (MA.PBUILDS && MA.PBUILDS[skin.id]) {
+      try {
+        MA.PBUILDS[skin.id]({
+          g, body, head, neck, hood, armL, armR, legL, legR, gun, skin, trans,
+          add: m => { m.castShadow = true; g.add(m); return m; },
+          anim: fn => panim.push(fn)
+        });
+      } catch (err) { console.warn('[MemeArena] skin 3D falhou:', skin.id, err); }
+    }
+    g.userData.panim = panim;
 
     MA.linearizeColors(g);
     scene.add(g);
