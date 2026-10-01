@@ -9,7 +9,7 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="MEME ARENA 3D — Brainrot Survival">
 <meta property="og:description" content="Sobreviva a ondas infinitas de memes 3D. 16 inimigos, 5 chefes, 5 armas, 20 perks. Jogue direto no navegador.">
-<meta property="og:image" content="assets/og.png">
+<meta property="og:image" content="assets/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
@@ -87,8 +87,112 @@
 
 <button id="muteBtn" title="Som (M)">🔊</button>
 
+<div id="toasts"></div>
+
+<!-- ================================================= LOGIN / CONTA === -->
+<div id="auth" class="screen">
+  <div class="sheet">
+    <h1 class="title">MEME ARENA <span>3D</span></h1>
+    <div class="subtitle">entre pra começar a farmar</div>
+    <div class="modeline"><span id="modeBadge" class="modebadge off">💾 LOCAL</span>
+      <span id="modeHint" class="dim"></span></div>
+
+    <div class="tabs">
+      <button class="tab sel" data-tab="login">ENTRAR</button>
+      <button class="tab" data-tab="register">CRIAR CONTA</button>
+    </div>
+
+    <form id="authForm" autocomplete="off">
+      <input type="hidden" id="authMode" value="login">
+      <label class="field"><span>NOME DE JOGADOR</span>
+        <input id="authUser" type="text" maxlength="16" required placeholder="ex.: ChillGuy99"></label>
+      <label class="field"><span>SENHA</span>
+        <input id="authPass" type="password" minlength="6" required placeholder="mínimo 6 caracteres"></label>
+      <label class="field hid" id="authConfirmRow"><span>REPETIR SENHA</span>
+        <input id="authPass2" type="password" minlength="6" placeholder="digite de novo"></label>
+      <div id="authError" class="autherr hid"></div>
+      <button id="authAction" type="submit" class="btn wide">ENTRAR</button>
+    </form>
+
+    <div class="btnrow">
+      <button id="authGuest" class="btn sec">JOGAR COMO CONVIDADO</button>
+    </div>
+    <div class="foot">Todo jogador começa com a mesma skin e <b>600 moedas</b> — o bastante
+      pra comprar a primeira arma.</div>
+  </div>
+</div>
+
+<!-- ============================================================ HUB === -->
+<div id="hub" class="screen hid">
+  <div class="sheet wide">
+    <div class="hubtop">
+      <div class="hubid">
+        <div class="hubavatar" id="hubSkin">😎 Chill Guy</div>
+        <div>
+          <div class="hubname" id="hubName">—</div>
+          <div class="hubsub">NÍVEL <b id="hubLevel">1</b> · <span id="hubArmor">🛡️ Moletom</span></div>
+        </div>
+      </div>
+      <div class="hubwallet">🪙 <b id="hubCoins">0</b></div>
+    </div>
+
+    <div class="xpbar"><div id="hubXpFill" class="xpfill"></div></div>
+    <div class="xptxt dim" id="hubXpTxt">0 / 0 XP</div>
+
+    <div class="seclbl">ARSENAL EQUIPADO</div>
+    <div id="hubWeapons" class="chips"></div>
+
+    <div class="seclbl">ESTATÍSTICAS</div>
+    <div id="hubStats" class="hstats"></div>
+
+    <div class="btnrow">
+      <button id="playBtnHub" class="btn">▶ JOGAR</button>
+      <button id="shopBtn" class="btn sec">🛒 LOJA</button>
+      <button id="invBtn" class="btn sec">🎒 INVENTÁRIO</button>
+      <button id="mpBtn" class="btn sec locked">🔒 MULTIPLAYER</button>
+      <button id="hubSettings" class="btn sec">⚙</button>
+      <button id="logoutBtn" class="btn sec">SAIR</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================== LOJA === -->
+<div id="shop" class="screen hid">
+  <div class="sheet wide tall">
+    <div class="hubtop">
+      <h2 class="h2">🛒 LOJA</h2>
+      <div class="hubwallet">🪙 <b id="shopCoins">0</b></div>
+    </div>
+    <div class="tabs">
+      <button class="tab sel" data-tab="weapon">ARMAS</button>
+      <button class="tab" data-tab="skin">SKINS</button>
+      <button class="tab" data-tab="armor">ARMADURAS</button>
+    </div>
+    <div id="shopGrid" class="igrid"></div>
+    <div class="btnrow"><button id="shopClose" class="btn sec">← VOLTAR</button></div>
+  </div>
+</div>
+
+<!-- ===================================================== INVENTÁRIO === -->
+<div id="inventory" class="screen hid">
+  <div class="sheet wide tall">
+    <div class="hubtop">
+      <h2 class="h2">🎒 INVENTÁRIO <span class="dim" id="invCount"></span></h2>
+      <div class="hubwallet">🪙 <b id="invCoins">0</b></div>
+    </div>
+    <div class="tabs">
+      <button class="tab sel" data-tab="all">TUDO</button>
+      <button class="tab" data-tab="weapon">ARMAS</button>
+      <button class="tab" data-tab="skin">SKINS</button>
+      <button class="tab" data-tab="armor">ARMADURAS</button>
+    </div>
+    <div id="invGrid" class="igrid"></div>
+    <div class="btnrow"><button id="invClose" class="btn sec">← VOLTAR</button></div>
+  </div>
+</div>
+
 <!-- ================================================== TELA INICIAL === -->
-<div id="start" class="screen">
+<div id="start" class="screen hid">
   <div class="sheet wide">
     <h1 class="title">MEME ARENA <span>3D</span></h1>
     <div class="subtitle">BRAINROT SURVIVAL</div>
@@ -104,6 +208,7 @@
 
     <div class="btnrow">
       <button id="playBtn" class="btn">▶ JOGAR</button>
+      <button id="startBack" class="btn sec">← HUB</button>
       <button id="helpBtn" class="btn sec">COMO JOGAR</button>
       <button id="boardBtn" class="btn sec">RECORDES</button>
       <button id="setBtn" class="btn sec">⚙ OPÇÕES</button>
@@ -217,10 +322,12 @@
     <div id="gostats" class="stats"></div>
     <div id="rank" class="rank"></div>
     <div id="goperks" class="goperks"></div>
+    <div id="rewardBox" class="rewards"></div>
     <div id="bestline" class="dim"></div>
     <div class="btnrow">
       <button id="againBtn" class="btn">JOGAR DE NOVO</button>
       <button id="menuBtn" class="btn sec">MENU</button>
+      <button id="backToHub" class="btn sec">🏠 HUB</button>
     </div>
   </div>
 </div>
@@ -229,12 +336,17 @@
 
 <script src="lib/three.min.js"></script>
 <script src="src/utils.js"></script>
+<script src="src/config.js"></script>
 <script src="src/data.js"></script>
+<script src="src/items.js"></script>
 <script src="src/audio.js"></script>
 <script src="src/textures.js"></script>
 <script src="src/world.js"></script>
 <script src="src/entities.js"></script>
+<script src="src/net.js"></script>
+<script src="src/profile.js"></script>
 <script src="src/ui.js"></script>
+<script src="src/metaui.js"></script>
 <script src="src/game.js"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {

@@ -1,18 +1,15 @@
 <div align="center">
 
-![MEME ARENA 3D](assets/og.png)
+![MEME ARENA 3D](assets/og.jpg)
 
 # 🧠 MEME ARENA 3D — Brainrot Survival
 
 **Um shooter de arena 3D que roda direto no navegador.**
 Sobreviva a ondas infinitas de memes, escolha perks, derrube chefes gigantes.
 
-`Three.js` · `WebGL` · `WebAudio` · **zero dependências em runtime** · **zero build**
+[**▶ JOGAR AGORA**](https://mathpvp2080.github.io/meme-arena-3d/)
 
-> ⚠️ **Ainda não publicado.** Siga o passo a passo em [🚀 Publicar no GitHub Pages](#-publicar-no-github-pages)
-> e depois troque a linha abaixo pelo seu endereço real:
->
-> `[▶ JOGAR AGORA](https://SEU-USUARIO.github.io/meme-arena-3d/)`
+`Three.js` · `WebGL` · `WebAudio` · **zero dependências em runtime** · **zero build**
 
 </div>
 
@@ -69,19 +66,16 @@ git init
 git add .
 git commit -m "feat: Meme Arena 3D"
 git branch -M main
-git remote add origin https://github.com/SEU-USUARIO/meme-arena-3d.git
+git remote add origin https://github.com/mathpvp2080/meme-arena-3d.git
 git push -u origin main
 ```
 
 Depois, no GitHub: **Settings → Pages → Source: `Deploy from a branch` → Branch: `main` / `(root)` → Save**.
 
-Em ~1 minuto o jogo estará em `https://SEU-USUARIO.github.io/meme-arena-3d/`.
+Em ~1 minuto o jogo estará em `https://mathpvp2080.github.io/meme-arena-3d/`.
 
 > Já existe um workflow em `.github/workflows/deploy.yml` caso prefira usar
 > **Settings → Pages → Source: GitHub Actions**. Os dois caminhos funcionam.
-
-Depois de publicar, troque os links `SEU-USUARIO` neste README e a `og:image`
-do `index.html` continuará funcionando normalmente (caminho relativo).
 
 ## 💻 Rodar localmente
 
@@ -140,3 +134,20 @@ MEMEARENA.kill()          // força o game over
 
 MIT — use, modifique e publique à vontade.
 Three.js é distribuído sob a licença MIT (© three.js authors).
+
+## 👤 Contas, economia e progressão (novo)
+
+- **Conta com nome e senha** — sem e-mail. Funciona de cara salvando no próprio
+  navegador (modo 💾 LOCAL) e vira nuvem (🌐 ONLINE) assim que você configurar o
+  Supabase: veja [`docs/SUPABASE.md`](docs/SUPABASE.md).
+- **Todo jogador começa igual**: skin *Chill Guy*, armadura *Moletom Básico* e
+  **600 moedas** — o bastante para comprar a arma inicial (Laser de Doge, 450).
+- **Nível e XP** até o nível 60. Ganhe XP e moedas a cada partida (pontos,
+  abates, ondas e chefes, multiplicados pela dificuldade).
+- **Loja** com 10 skins, 6 armaduras e 5 armas. As armaduras dão **+HP** e
+  **redução de dano**, e aparecem no boneco 3D.
+- **Inventário** para equipar (até 3 armas ao mesmo tempo) e **vender** itens
+  por 50% do preço.
+- **Multiplayer** destrava no **nível 5** (chega na Etapa 3).
+
+> As armas não são mais liberadas por onda: agora você as **compra e equipa**.

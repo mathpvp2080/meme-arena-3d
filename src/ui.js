@@ -74,10 +74,11 @@
     updateWeaponList(p, G) {
       let h = '';
       MA.WEAPONS.forEach((w, i) => {
-        const locked = G.wave < w.unlock;
+        const allowed = p.allowedWeapons;
+        const locked = allowed ? allowed.indexOf(i) < 0 : G.wave < w.unlock;
         h += '<div class="wslot' + (i === p.weapon ? ' sel' : '') + (locked ? ' lock' : '') + '">' +
              '<b>' + (i + 1) + '</b><span>' + w.icon + '</span>' +
-             (locked ? '<em>onda ' + w.unlock + '</em>' : '') + '</div>';
+             (locked ? '<em>' + (p.allowedWeapons ? '🔒' : 'onda ' + w.unlock) + '</em>' : '') + '</div>';
       });
       this.el.weaponList.innerHTML = h;
     },

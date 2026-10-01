@@ -25,6 +25,14 @@
     fov: 74, shake: 1, mute: false, invertY: false
   };
 
+  /* ====================================================== PERFIL / META */
+  function currentSkin()  { return MA.Profile.data ? MA.Profile.equippedSkin()  : MA.SKINS[0]; }
+  function currentArmor() { return MA.Profile.data ? MA.Profile.equippedArmor() : MA.ARMORS[0]; }
+  function currentWeapons() {
+    const w = MA.Profile.data ? MA.Profile.equippedWeapons() : [];
+    return w.length ? w : [0];
+  }
+
   /* ================================================================ BOOT */
   function boot() {
     Object.assign(S, MA.store.get('settings', {}));
@@ -44,7 +52,7 @@
     MA.World.build(scene, S.quality);
     MA.FX.init(scene);
     MA.UI.init();
-    player = MA.createPlayer(scene);
+    player = MA.createPlayer(scene, currentSkin(), currentArmor());
     player.obj.position.set(0, 0, 26);
 
     camera.position.set(0, 12, 46);
@@ -60,7 +68,43 @@
     G.booted = true;
     $('loading').classList.add('hid');
     animate();
+    initMeta();
   }
+
+  async function initMeta() {
+    MA.MetaUI.bind();
+    try { await MA.Net.init(); } catch (e) { console.warn('rede:', e); }
+    MA.MetaUI.initAuth();
+    let prof = null;
+    try { prof = await MA.Net.restore(); } catch (e) { /* segue local */ }
+    if (prof) {
+      MA.Profile.set(prof);
+      rebuildPlayerLook();
+      MA.MetaUI.openHub();
+    } else {
+      MA.MetaUI.screen('auth');
+    }
+  }
+
+  /* recria o boneco do menu com a skin/armadura equipadas */
+  function rebuildPlayerLook() {
+    if (!player || G.running) return;
+    scene.remove(player.obj); MA.disposeObject(player.obj);
+    player = MA.createPlayer(scene, currentSkin(), currentArmor());
+    player.obj.position.set(0, 0, 26);
+  }
+  MA._rebuildLook = rebuildPlayerLook;
+
+  /* chamado sempre que o hub abre: encerra a partida e recria o boneco */
+  MA._prepHub = function () {
+    G.running = false; G.paused = false; G.over = false; G.choosing = false;
+    if (typeof clearAll === 'function') clearAll();
+    ['hud', 'touch'].forEach(id => $(id).classList.add('hid'));
+    MA.Audio.setIntensity(.15);
+    if (document.exitPointerLock) document.exitPointerLock.call(document);
+    rebuildPlayerLook();
+    if (typeof refreshMenuStats === 'function') refreshMenuStats();
+  };
 
   function applyQuality() {
     const q = S.quality;
@@ -111,13 +155,6 @@
       MA.Audio.waveUp();
     }
 
-    /* desbloqueio de arma */
-    MA.WEAPONS.forEach((w, i) => {
-      if (w.unlock === n) {
-        MA.UI.float('ARMA LIBERADA: ' + w.icon + ' ' + w.name, '#00ffd5', 26);
-        MA.UI.notice('🔓 nova arma: <b style="color:#00ffd5">' + w.icon + ' ' + w.name + '</b> — tecla [' + (i + 1) + ']');
-      }
-    });
     MA.UI.updateWeaponList(player, G);
     MA.Audio.setIntensity(clamp(n / 14, .15, 1));
   }
@@ -453,6 +490,15 @@
     player.gun.position.z = .3 - player.recoil * .36;
     player.muzzle.material.opacity = Math.max(0, player.muzzle.material.opacity - dt * 9);
     player.aura.rotation.z += dt * 1.6;
+
+    /* acessórios de skin */
+    const ud = player.obj.userData;
+    if (ud.cape) { ud.cape.rotation.x = -.14 + Math.sin(G.time * 4) * .12 + (moving ? .18 : 0); }
+    if (ud.wings) ud.wings.forEach((w, i) => {
+      const s2 = i === 0 ? -1 : 1;
+      w.rotation.z = s2 * (.22 + Math.sin(G.time * 6) * .26);
+    });
+    if (ud.halo) { ud.halo.rotation.z += dt * 2.2; ud.halo.position.y = 2.95 + Math.sin(G.time * 2.4) * .07; }
     player.aura.material.opacity = .22 + Math.sin(G.time * 4) * .12;
     player.aura.material.color.setHex(
       player.bShield > 0 ? 0xb9c4cc : player.bDmg > 0 ? 0x39ff88 : player.bRate > 0 ? 0xffc42e : 0x00ffd5);
@@ -878,7 +924,9 @@
   function resetGame() {
     clearAll();
     if (player) { scene.remove(player.obj); MA.disposeObject(player.obj); }
-    player = MA.createPlayer(scene);
+    player = MA.createPlayer(scene, currentSkin(), currentArmor());
+    player.allowedWeapons = currentWeapons();
+    player.weapon = player.allowedWeapons.length ? player.allowedWeapons[0] : 0;
     Object.assign(G, {
       score: 0, wave: 0, combo: 1, comboT: 0, kills: 0, waveKills: 0, waveTarget: 0,
       spawnQueue: 0, spawnT: 0, interWave: 0, brainrot: 0, ult: 0, bossAlive: null,
@@ -894,7 +942,8 @@
 
   function startGame() {
     MA.Audio.init(); MA.Audio.resume();
-    ['start', 'over', 'pausebox', 'settings', 'board', 'perkScreen', 'help'].forEach(id => $(id).classList.add('hid'));
+    ['start', 'over', 'pausebox', 'settings', 'board', 'perkScreen', 'help', 'auth', 'hub', 'shop', 'inventory']
+      .forEach(id => $(id).classList.add('hid'));
     $('hud').classList.remove('hid');
     if (isTouch) $('touch').classList.remove('hid');
     resetGame();
@@ -933,6 +982,12 @@
     });
     $('goperks').innerHTML = ph ? '<div class="dim" style="margin-bottom:6px">PERKS OBTIDOS</div>' + ph : '';
 
+    if (MA.Profile.data) {
+      const res = MA.Profile.applyRun(G, secs);
+      MA.MetaUI.showRewards(res);
+      if (res.levels > 0) MA.Audio.pickup();
+    } else { $('rewardBox').innerHTML = ''; }
+
     $('over').classList.remove('hid');
     $('hud').classList.add('hid');
     $('touch').classList.add('hid');
@@ -959,6 +1014,7 @@
     G.running = false; G.paused = false; G.over = false; G.choosing = false;
     clearAll();
     ['pausebox', 'over', 'hud', 'touch', 'settings', 'board', 'perkScreen', 'help'].forEach(id => $(id).classList.add('hid'));
+    if (MA.Profile && MA.Profile.data) { MA.MetaUI.openHub(); return; }
     $('start').classList.remove('hid');
     MA.Audio.setIntensity(.15);
     if (document.exitPointerLock) document.exitPointerLock.call(document);
@@ -1026,7 +1082,7 @@
   }
 
   function cycleWeapon(dir) {
-    const avail = MA.WEAPONS.map((w, i) => (G.wave >= w.unlock ? i : -1)).filter(i => i >= 0);
+    const avail = player.allowedWeapons || MA.WEAPONS.map((w, i) => (G.wave >= w.unlock ? i : -1)).filter(i => i >= 0);
     if (!avail.length) return;
     const cur = avail.indexOf(player.weapon);
     player.weapon = avail[(cur + dir + avail.length) % avail.length];
@@ -1035,7 +1091,7 @@
   }
   function selectWeapon(i) {
     if (i < 0 || i >= MA.WEAPONS.length) return;
-    if (G.wave < MA.WEAPONS[i].unlock) { MA.Audio.deny(); return; }
+    if (player.allowedWeapons ? player.allowedWeapons.indexOf(i) < 0 : G.wave < MA.WEAPONS[i].unlock) { MA.Audio.deny(); return; }
     player.weapon = i; MA.Audio.switchW(); MA.UI.updateWeaponList(player, G);
   }
 
@@ -1118,7 +1174,8 @@
       const d = document.createElement('div');
       d.className = 'rc';
       d.innerHTML = '<i>' + w.icon + '</i><b>' + w.name + '</b><span>' + w.desc +
-                    '<br><em>libera na onda ' + w.unlock + '</em></span>';
+                    '<br><em>' + ((MA.WEAPON_SHOP[w.id] && MA.WEAPON_SHOP[w.id].price) ?
+                      'loja · 🪙 ' + MA.fmt(MA.WEAPON_SHOP[w.id].price) : 'loja') + '</em></span>';
       wl.appendChild(d);
     });
 
@@ -1140,6 +1197,7 @@
     /* botões */
     const on = (id, fn) => { const e = $(id); if (e) e.onclick = () => { MA.Audio.init(); MA.Audio.ui(); fn(); }; };
     on('playBtn', startGame);
+    on('startBack', () => { $('start').classList.add('hid'); MA.MetaUI.openHub(); });
     on('againBtn', startGame);
     on('menuBtn', toMenu);
     on('quitBtn', toMenu);
