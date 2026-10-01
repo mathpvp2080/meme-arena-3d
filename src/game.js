@@ -9,6 +9,7 @@
   const enemies = [], bullets = [], eBullets = [], pickups = [];
   let keys = {}, mouseDown = false, yaw = 0, pitch = -.16, locked = false;
   let shake = 0, shakeT = 0, camPos = V3();
+  let firstPerson = MA.store.get('fpv', false);
   let touchMove = { x: 0, y: 0 }, touchFire = false;
   const isTouch = ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
@@ -84,6 +85,7 @@
   async function initMeta() {
     MA.MetaUI.bind();
     if (MA.MPUI) MA.MPUI.init();
+    if (MA.Market) MA.Market.init();
     try { await MA.Net.init(); } catch (e) { console.warn('rede:', e); }
     MA.MetaUI.initAuth();
     let prof = null;
@@ -731,7 +733,7 @@
     player.gun.rotation.x = -pitch;
     player.armR.rotation.x = pitch - .2;
     player.recoil = MA.damp(player.recoil, 0, 16, dt);
-    player.gun.position.z = -.22 + player.recoil * .36;
+    player.gun.position.z = (firstPerson ? -2.05 : -.22) + player.recoil * (firstPerson ? .2 : .36);
     player.muzzle.material.opacity = Math.max(0, player.muzzle.material.opacity - dt * 9);
     player.aura.rotation.z += dt * 1.6;
 
@@ -782,19 +784,31 @@
     if ((mouseDown || touchFire) && !G.over) fire();
 
     /* ---------------- câmera */
-    const target = V3().set(player.pos.x, player.y + 2.2, player.pos.z);
-    let dist = 9.0;
-    const off = V3().set(
-      Math.sin(yaw) * Math.cos(pitch),
-      -Math.sin(pitch) + .26,
-      Math.cos(yaw) * Math.cos(pitch)
-    ).multiplyScalar(dist);
-    const desired = target.clone().add(off);
-    desired.y = Math.max(1.3, desired.y);
-    camera.position.lerp(desired, 1 - Math.exp(-15 * dt));
-    camPos.copy(camera.position);
-    const look = target.clone().add(V3().set(-Math.sin(yaw), Math.tan(pitch) * 1.2, -Math.cos(yaw)).multiplyScalar(9));
-    camera.lookAt(look);
+    if (firstPerson) {
+      /* visão em 1ª pessoa: câmera dentro da cabeça */
+      const eye = V3().set(player.pos.x, player.y + 2.26, player.pos.z);
+      eye.add(V3().set(-Math.sin(yaw), 0, -Math.cos(yaw)).multiplyScalar(.22));
+      eye.y += Math.sin(player.bob) * .035;
+      camera.position.lerp(eye, 1 - Math.exp(-30 * dt));
+      camPos.copy(camera.position);
+      const look = camera.position.clone().add(
+        V3().set(-Math.sin(yaw), Math.tan(pitch) * 1.2, -Math.cos(yaw)).multiplyScalar(9));
+      camera.lookAt(look);
+    } else {
+      const target = V3().set(player.pos.x, player.y + 2.2, player.pos.z);
+      let dist = 9.0;
+      const off = V3().set(
+        Math.sin(yaw) * Math.cos(pitch),
+        -Math.sin(pitch) + .26,
+        Math.cos(yaw) * Math.cos(pitch)
+      ).multiplyScalar(dist);
+      const desired = target.clone().add(off);
+      desired.y = Math.max(1.3, desired.y);
+      camera.position.lerp(desired, 1 - Math.exp(-15 * dt));
+      camPos.copy(camera.position);
+      const look = target.clone().add(V3().set(-Math.sin(yaw), Math.tan(pitch) * 1.2, -Math.cos(yaw)).multiplyScalar(9));
+      camera.lookAt(look);
+    }
 
     if (shake > .001) {
       shakeT += dt * 42;
@@ -1207,6 +1221,7 @@
     MA.UI.el.vig.style.opacity = '0';
     MA.UI.updatePerkBar(G.perks);
     MA.UI.el.killfeed.innerHTML = '';
+    applyView();
     startWave(1);
   }
 
@@ -1318,6 +1333,58 @@
   MA._renderMapList = renderMapList;
 
   /* =============================================================== INPUT */
+  /* ----------------------------------------- 1ª pessoa x 3ª pessoa */
+  function applyView() {
+    if (!player) return;
+    const ud = player.obj.userData;
+    const esconder = [player.head, player.body, ud.hood, ud.neck].filter(Boolean);
+    player.obj.traverse(o => {
+      if (o === player.obj) return;
+      o.userData.__hid3 = o.userData.__hid3 === undefined ? o.visible : o.userData.__hid3;
+    });
+    if (firstPerson) {
+      /* some com tudo menos a arma — é o que a gente veria de dentro */
+      player.obj.children.forEach(o => {
+        if (o === player.gun) return;
+        o.visible = false;
+      });
+      /* arma na pose de FPS: à frente e um pouco abaixo da linha dos olhos */
+      player.gun.position.set(.52, 1.74, -2.05);
+      player.gun.scale.setScalar(.5);
+      if (player.armR) {
+        player.armR.visible = true;
+        player.armR.visible = false;
+      }
+    } else {
+      player.obj.children.forEach(o => {
+        o.visible = o.userData.__hid3 === undefined ? true : o.userData.__hid3;
+      });
+      player.gun.position.set(.92, 1.26, -.22);
+      player.gun.scale.setScalar(1);
+      if (player.armR) {
+        player.armR.position.set(.74, 1.32, 0);
+        player.armR.scale.set(1, 1, 1);
+      }
+    }
+    MA.UI.notice(firstPerson ? '👁️ Visão em 1ª pessoa (V para trocar)'
+                             : '🎥 Visão em 3ª pessoa (V para trocar)');
+  }
+
+  function refreshViewBtn() {
+    const b = $('sView');
+    if (b) b.textContent = firstPerson ? '1ª PESSOA' : '3ª PESSOA';
+  }
+
+  function toggleView() {
+    firstPerson = !firstPerson;
+    MA.store.set('fpv', firstPerson);
+    MA.Audio.ui();
+    refreshViewBtn();
+    applyView();
+  }
+  MA._toggleView = toggleView;
+  MA._applyView = applyView;
+
   function requestLock() {
     const el = renderer.domElement;
     if (el.requestPointerLock) el.requestPointerLock();
@@ -1369,6 +1436,7 @@
       if (e.code === 'KeyE') activateUlt();
       if (e.code === 'KeyP' || e.code === 'Escape') togglePause();
       if (e.code === 'KeyM') doMute();
+      if (e.code === 'KeyV') toggleView();
       if (e.code === 'KeyR' && e.shiftKey) startGame();
     });
     addEventListener('keyup', e => { keys[e.code] = false; });
@@ -1423,6 +1491,7 @@
     btn('tDash', () => { keys._dash = true; });
     btn('tUlt', () => activateUlt());
     btn('tSwap', () => cycleWeapon(1));
+    btn('tView', () => toggleView());
 
     let lid = null, lx = 0, ly = 0;
     const cv = renderer.domElement;
@@ -1449,6 +1518,7 @@
 
   /* =============================================================== MENUS */
   function buildMenus() {
+    bindViewButton();
     /* roster */
     const ros = $('roster');
     MA.MEMES.forEach(m => {
@@ -1530,6 +1600,12 @@
 
     refreshMenuStats();
     if (isTouch) document.body.classList.add('touch');
+  }
+
+  function bindViewButton() {
+    const b = $('sView');
+    if (b) b.onclick = () => toggleView();
+    refreshViewBtn();
   }
 
   function bindRange(id, outId, val, fn, fmt) {

@@ -281,6 +281,18 @@
       });
     },
 
+    /* relê o perfil do servidor (depois de comprar/vender/ganhar presente) */
+    async refreshProfile() {
+      if (!this.online || !this.impl._fetchProfile) return MA.Profile.data;
+      try {
+        const { data } = await this.impl.sb.auth.getUser();
+        if (!data || !data.user) return MA.Profile.data;
+        const p = await this.impl._fetchProfile(data.user.id);
+        if (p) MA.Profile.set(p);
+      } catch (e) { console.warn('[MemeArena] não deu pra atualizar o perfil', e); }
+      return MA.Profile.data;
+    },
+
     leaderboard() { return this.impl.leaderboard(); },
     deleteAccount() { return this.impl.deleteAccount(); },
     freshProfile

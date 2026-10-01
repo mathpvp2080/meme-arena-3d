@@ -79,6 +79,7 @@
   <div class="tbtns">
     <button id="tUlt"  class="tb small">🧠</button>
     <button id="tSwap" class="tb small">🔄</button>
+    <button id="tView" class="tb small">👁️</button>
     <button id="tDash" class="tb small">💨</button>
     <button id="tJump" class="tb small">⤴</button>
     <button id="tFire" class="tb big">🔫</button>
@@ -150,6 +151,7 @@
       <button id="shopBtn" class="btn sec">🛒 LOJA</button>
       <button id="invBtn" class="btn sec">🎒 INVENTÁRIO</button>
       <button id="mpBtn" class="btn sec locked">🔒 MULTIPLAYER</button>
+      <button id="mkBtn" class="btn sec">💱 MERCADO</button>
       <button id="hubSettings" class="btn sec">⚙</button>
       <button id="logoutBtn" class="btn sec">SAIR</button>
     </div>
@@ -191,6 +193,52 @@
   </div>
 </div>
 
+
+
+<!-- ====================================================== MERCADO === -->
+<div id="market" class="screen hid">
+  <div class="sheet wide tall">
+    <div class="hubtop">
+      <h2 class="h2">💱 MERCADO</h2>
+      <div class="hubwallet">🪙 <b id="mkCoins">0</b></div>
+    </div>
+    <div class="tabs">
+      <button class="tab sel" data-tab="comprar">🛍️ COMPRAR</button>
+      <button class="tab" data-tab="vender">📢 VENDER</button>
+      <button class="tab" data-tab="gift">🎁 PRESENTEAR</button>
+    </div>
+
+    <div id="mkBuy" class="dim hid" style="margin:2px 0 6px">
+      Itens anunciados por outros jogadores. O pagamento vai direto pra quem vendeu.
+    </div>
+    <div id="mkSell" class="dim hid" style="margin:2px 0 6px">
+      Ao anunciar, o item sai do seu inventário e volta se você cancelar.
+    </div>
+
+    <div id="mkGift" class="hid">
+      <div class="seclbl">MANDAR PRESENTE PARA OUTRO JOGADOR</div>
+      <div class="giftform">
+        <label>Para quem (nome do jogador)</label>
+        <input id="giftTo" class="inp" maxlength="16" placeholder="ex.: MemeLord99" autocomplete="off">
+        <label>Item do seu inventário</label>
+        <select id="giftItem" class="inp"></select>
+        <label>Moedas junto (opcional)</label>
+        <input id="giftCoins" class="inp" type="number" min="0" value="0">
+        <label>Recado (opcional)</label>
+        <input id="giftNote" class="inp" maxlength="120" placeholder="toma aí, parceiro 😎">
+        <button id="giftSend" class="btn">🎁 ENVIAR PRESENTE</button>
+      </div>
+    </div>
+
+    <div id="mkMsg" class="formerr"></div>
+    <div id="mkBody" class="mklist"></div>
+
+    <div class="btnrow">
+      <button id="mkRefresh" class="btn sec">↻ ATUALIZAR</button>
+      <button id="mkClose" class="btn sec">← VOLTAR</button>
+    </div>
+  </div>
+</div>
 
 <!-- ================================================== MULTIPLAYER === -->
 <div id="multi" class="screen hid">
@@ -238,6 +286,12 @@
       <div class="seclbl">JOGADORES NA SALA</div>
       <div id="mpPlayers" class="mpplayers"></div>
       <div id="mpHint" class="dim" style="margin-top:10px"></div>
+      <div class="seclbl">CONVERSA DA SALA</div>
+      <div id="mpChat" class="mpchat"></div>
+      <div class="mprow">
+        <input id="mpChatIn" class="inp" maxlength="90" placeholder="escreva e aperte Enter" autocomplete="off">
+        <button id="mpChatSend" class="btn sec">ENVIAR</button>
+      </div>
     </div>
 
     <div class="btnrow">
@@ -335,6 +389,8 @@
       <input id="sVol" type="range" min="0" max="1" step=".02"><span id="sVolV"></span></div>
     <div class="opt"><label>Volume da música</label>
       <input id="sMus" type="range" min="0" max="1" step=".02"><span id="sMusV"></span></div>
+    <div class="opt"><label>Visão</label>
+      <button id="sView" class="btn sec" style="padding:6px 14px;font-size:12px">3ª PESSOA</button></div>
     <div class="opt"><label>Campo de visão</label>
       <input id="sFov" type="range" min="60" max="100" step="1"><span id="sFovV"></span></div>
     <div class="opt"><label>Tremor de câmera</label>
@@ -410,6 +466,7 @@
 <script src="src/profile.js"></script>
 <script src="src/ui.js"></script>
 <script src="src/pbuilds.js"></script>
+<script src="src/market.js"></script>
 <script src="src/multi.js"></script>
 <script src="src/mpui.js"></script>
 <script src="src/metaui.js"></script>

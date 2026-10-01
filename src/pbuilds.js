@@ -194,13 +194,13 @@
       const sheet = M(0xdfe6f2, { rough: .9, opacity: .72 });
       const cloak = C(.52, 1.05, 1.5, sheet, 22);
       cloak.position.y = .95; c.add(cloak);
-      /* barra ondulada do lençol */
+      /* barra do lençol: bolhas arredondadas que ondulam (nada de espinhos) */
       const pontas = [];
-      for (let i = 0; i < 9; i++) {
-        const a = i / 9 * TAU;
-        const tip = Cone(.17, .42, sheet, 8);
-        tip.position.set(Math.cos(a) * .95, .18, Math.sin(a) * .95);
-        tip.rotation.x = Math.PI;
+      for (let i = 0; i < 11; i++) {
+        const a = i / 11 * TAU;
+        const tip = S(.22, sheet, 12);
+        tip.scale.set(1, .85, 1);
+        tip.position.set(Math.cos(a) * .98, .22, Math.sin(a) * .98);
         c.add(tip); pontas.push({ m: tip, a });
       }
       c.anim(t => {
@@ -250,9 +250,9 @@
       torso.position.y = 1.3; torso.castShadow = true; c.add(torso);
       /* peitoral */
       [-1, 1].forEach(s => {
-        const pec = S(.36, skinM, 14);
-        pec.scale.set(1, .8, .6);
-        pec.position.set(s * .36, 1.6, -.56); c.add(pec);
+        const pec = S(.3, skinM, 14);
+        pec.scale.set(1.05, .62, .45);
+        pec.position.set(s * .32, 1.66, -.52); c.add(pec);
         const delt = S(.34, skinM, 14);
         delt.position.set(s * .92, 1.68, 0); c.add(delt);
         /* braços grossos */

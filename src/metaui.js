@@ -20,7 +20,7 @@
     },
 
     screen(id) {
-      ['auth', 'hub', 'shop', 'inventory', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
+      ['auth', 'hub', 'shop', 'inventory', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
         .forEach(s => { const e = $(s); if (e) e.classList.add('hid'); });
       if (id) $(id).classList.remove('hid');
     },
@@ -101,6 +101,7 @@
         mp.textContent = liberado ? '🌐 MULTIPLAYER'
           : '🔒 MULTIPLAYER (nv ' + MA.CONFIG.MULTIPLAYER_LEVEL + ')';
       }
+      if (MA.Market) MA.Market.checarPresentes();
       this.screen('hub');
     },
 
@@ -296,6 +297,7 @@
       on('shopBtn', () => this.openShop());
       on('invBtn', () => this.openInventory());
       on('mpBtn', () => MA.MPUI.open());
+      on('mkBtn', () => { MA.Market.preencherGift(); MA.Market.abrir('comprar'); });
       on('hubSettings', () => $('settings').classList.remove('hid'));
       on('logoutBtn', async () => {
         await MA.Net.signOut();

@@ -44,7 +44,23 @@
       };
 
       M.on('peers', () => this.renderPlayers());
-      M.on('chat', m => MA.UI.notice('💬 <b>' + m.name + ':</b> ' + m.text));
+      M.on('chat', m => {
+        this.addChat(m.name, m.text);
+        if (!MA.MetaUI || document.getElementById('multi').classList.contains('hid')) {
+          MA.UI.notice('💬 <b>' + m.name + ':</b> ' + m.text);
+        }
+      });
+
+      const enviar = () => {
+        const inp = $('mpChatIn');
+        const txt = (inp.value || '').trim().slice(0, 90);
+        if (!txt || !MA.Multi.active) return;
+        MA.Multi.send({ t: 'chat', name: MA.Multi.me.name, text: txt });
+        this.addChat(MA.Multi.me.name, txt, true);
+        inp.value = '';
+      };
+      $('mpChatSend').onclick = enviar;
+      $('mpChatIn').onkeydown = e => { if (e.key === 'Enter') enviar(); };
     },
 
     /* chamada pelo botão MULTIPLAYER do hub */
@@ -61,6 +77,18 @@
       this.loadRooms();
       clearInterval(this._roomTimer);
       this._roomTimer = setInterval(() => { if (!MA.Multi.active) this.loadRooms(); }, 12000);
+    },
+
+    addChat(nome, texto, eu) {
+      const box = $('mpChat');
+      if (!box) return;
+      const esc = String(texto).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+      const d = document.createElement('div');
+      d.className = 'mpmsg' + (eu ? ' eu' : '');
+      d.innerHTML = '<b>' + nome + ':</b> ' + esc;
+      box.appendChild(d);
+      while (box.children.length > 40) box.removeChild(box.firstChild);
+      box.scrollTop = box.scrollHeight;
     },
 
     msg(t, ok) {

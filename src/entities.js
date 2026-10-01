@@ -317,11 +317,36 @@
     const armR = new THREE.Mesh(new THREE.CapsuleGeometry(.18 * bulk, .58, 4, 12), armMat);
     armR.position.set(.74 * bulk, 1.32, 0); armR.castShadow = true; g.add(armR);
 
+    /* mãos (seguem o balanço do braço) */
+    const handMat = mkMat(MA.shade(skin.skinTone, -6), .55);
+    [armL, armR].forEach(arm => {
+      const hand = new THREE.Mesh(new THREE.SphereGeometry(.21 * bulk, 12, 10), handMat);
+      hand.position.y = -.42; hand.castShadow = true; arm.add(hand);
+    });
+    /* ombros arredondados: tiram o ar de "cápsula" */
+    [-1, 1].forEach(sg => {
+      const sh = new THREE.Mesh(new THREE.SphereGeometry(.26 * bulk, 14, 10), mkMat(skin.arms));
+      sh.position.set(sg * .62 * bulk, 1.62, 0); sh.castShadow = true; g.add(sh);
+    });
+    /* cintura */
+    const hips = new THREE.Mesh(new THREE.CylinderGeometry(.5 * bulk, .44 * bulk, .3, 16), mkMat(skin.legs, .8));
+    hips.position.y = .82; g.add(hips);
+
     const legMat = mkMat(skin.legs, .82);
     const legL = new THREE.Mesh(new THREE.CapsuleGeometry(.21 * bulk, .56, 4, 12), legMat);
     legL.position.set(-.27 * bulk, .46, 0); legL.castShadow = true; g.add(legL);
     const legR = new THREE.Mesh(new THREE.CapsuleGeometry(.21 * bulk, .56, 4, 12), legMat);
     legR.position.set(.27 * bulk, .46, 0); legR.castShadow = true; g.add(legR);
+
+    /* tênis (filhos das pernas, então acompanham a passada) */
+    const shoeMat = mkMat(MA.shade(skin.legs, -45), .7);
+    const soleMat = mkMat(0xf2f2f2, .6);
+    [legL, legR].forEach(leg => {
+      const shoe = new THREE.Mesh(new THREE.BoxGeometry(.3 * bulk, .17, .52), shoeMat);
+      shoe.position.set(0, -.42, -.1); shoe.castShadow = true; leg.add(shoe);
+      const sole = new THREE.Mesh(new THREE.BoxGeometry(.32 * bulk, .07, .54), soleMat);
+      sole.position.set(0, -.5, -.1); leg.add(sole);
+    });
 
     /* arma */
     const gun = new THREE.Group();
@@ -341,7 +366,8 @@
     const mag = new THREE.Mesh(new THREE.BoxGeometry(.2, .36, .32),
       new THREE.MeshStandardMaterial({ color: skin.aura, emissive: skin.aura, emissiveIntensity: .6 }));
     mag.position.set(0, -.26, -.18); gun.add(mag);
-    gun.position.set(.92 * bulk, 1.26, -.22);
+    gun.position.set(1.02 * bulk, 1.22, -.2);
+    gun.scale.setScalar(.86);
     g.add(gun);
 
     const aura = new THREE.Mesh(

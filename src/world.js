@@ -37,6 +37,22 @@
       ground.position.y = -1; ground.receiveShadow = quality !== 'low';
       scene.add(ground);
 
+      /* terreno externo: evita que o mundo "acabe no vazio" e dá chão
+         para a decoração que fica do lado de fora da arena */
+      const outer = new THREE.Mesh(
+        new THREE.BoxGeometry(this.ARENA * 6, 2, this.ARENA * 6),
+        new THREE.MeshStandardMaterial({
+          map: MA.Tex.ground(Object.assign({}, map.ground, {
+            grid: map.ground.base, fine: map.ground.base,
+            repeat: (map.ground.repeat || 10) * 2
+          })),
+          roughness: .92, metalness: .05,
+          emissive: map.fog, emissiveIntensity: .25
+        })
+      );
+      outer.position.y = -1.35;
+      scene.add(outer);
+
       /* anel neon do perímetro */
       this.ringMesh = new THREE.Mesh(
         new THREE.TorusGeometry(this.ARENA - 1.5, .55, 10, 110),
@@ -388,7 +404,7 @@
       const d = new THREE.Object3D();
       let fi = 0;
       for (let i = 0; i < N; i++) {
-        const a = MA.rand(0, TAU), r = MA.rand(this.ARENA * .78, this.ARENA * 1.55);
+        const a = MA.rand(0, TAU), r = MA.rand(this.ARENA * 1.12, this.ARENA * 2.3);
         const x = Math.cos(a) * r, z = Math.sin(a) * r;
         const h = MA.rand(3.4, 5.2);
         const tilt = MA.rand(-.07, .07);
@@ -432,7 +448,7 @@
 
     _props_palms(scene) {
       for (let i = 0; i < 16; i++) {
-        const a = MA.rand(0, TAU), r = MA.rand(this.ARENA * .8, this.ARENA * 1.25);
+        const a = MA.rand(0, TAU), r = MA.rand(this.ARENA * 1.15, this.ARENA * 2.1);
         const g = new THREE.Group();
         const h = MA.rand(7, 13);
         const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.35, .6, h, 8),
