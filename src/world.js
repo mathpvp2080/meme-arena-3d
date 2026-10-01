@@ -10,17 +10,19 @@
     billboards: [],
     skyMesh: null, ringMesh: null, sun: null, monument: null,
 
-    build(scene, quality) {
+    build(scene, quality, map) {
       this.scene = scene;
+      this.map = map = map || (MA.MAPS ? MA.MAPS[0] : null);
       this.obstacles.length = 0; this.lights.length = 0; this.billboards.length = 0;
+      this.drips = null; this.monument = null;
 
-      scene.background = new THREE.Color(0x06010f);
-      scene.fog = new THREE.FogExp2(0x0d0126, 0.0125);
+      scene.background = new THREE.Color(map.bg);
+      scene.fog = new THREE.FogExp2(map.fog, map.fogD);
 
       /* céu */
       const skyGeo = new THREE.SphereGeometry(320, 48, 28);
       this.skyMesh = new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({
-        map: MA.Tex.sky(), side: THREE.BackSide, fog: false, depthWrite: false
+        map: MA.Tex.sky(map.sky), side: THREE.BackSide, fog: false, depthWrite: false
       }));
       scene.add(this.skyMesh);
 
@@ -28,8 +30,8 @@
       const ground = new THREE.Mesh(
         new THREE.BoxGeometry(this.ARENA * 2, 2, this.ARENA * 2),
         new THREE.MeshStandardMaterial({
-          map: MA.Tex.ground(), roughness: .74, metalness: .22,
-          emissive: 0x1a0540, emissiveIntensity: .55
+          map: MA.Tex.ground(map.ground), roughness: .74, metalness: .22,
+          emissive: map.fog, emissiveIntensity: .35
         })
       );
       ground.position.y = -1; ground.receiveShadow = quality !== 'low';
@@ -38,15 +40,15 @@
       /* anel neon do perímetro */
       this.ringMesh = new THREE.Mesh(
         new THREE.TorusGeometry(this.ARENA - 1.5, .55, 10, 110),
-        new THREE.MeshBasicMaterial({ color: 0xff00c8 })
+        new THREE.MeshBasicMaterial({ color: map.ring })
       );
       this.ringMesh.rotation.x = Math.PI / 2; this.ringMesh.position.y = .42;
       scene.add(this.ringMesh);
 
       /* paredes de energia */
       const wallMat = new THREE.MeshStandardMaterial({
-        color: 0x6a00ff, transparent: true, opacity: .26, side: THREE.DoubleSide,
-        emissive: 0x4400aa, emissiveIntensity: 1.1, roughness: .3, depthWrite: false
+        color: map.wall, transparent: true, opacity: .26, side: THREE.DoubleSide,
+        emissive: map.wallEmissive, emissiveIntensity: 1.1, roughness: .3, depthWrite: false
       });
       const H = 18;
       [[0, -this.ARENA, 0], [0, this.ARENA, 0], [-this.ARENA, 0, Math.PI / 2], [this.ARENA, 0, Math.PI / 2]]
@@ -57,10 +59,10 @@
         });
 
       /* luzes */
-      scene.add(new THREE.AmbientLight(0x2a1d52, .30));
-      scene.add(new THREE.HemisphereLight(0x6a38a8, 0x0d001c, .28));
+      scene.add(new THREE.AmbientLight(map.ambient[0], map.ambient[1]));
+      scene.add(new THREE.HemisphereLight(map.hemi[0], map.hemi[1], map.hemi[2]));
 
-      this.sun = new THREE.DirectionalLight(0xffcfa0, 1.15);
+      this.sun = new THREE.DirectionalLight(map.sun3d[0], map.sun3d[1]);
       this.sun.position.set(44, 78, 32);
       if (quality !== 'low') {
         this.sun.castShadow = true;
@@ -74,7 +76,7 @@
       }
       scene.add(this.sun);
 
-      const neon = [0xff00c8, 0x00ffd5, 0xffe600, 0x6a5bff, 0xff2d6f];
+      const neon = map.neon;
       const nLights = quality === 'low' ? 2 : quality === 'high' ? 5 : 3;
       for (let i = 0; i < nLights; i++) {
         const pl = new THREE.PointLight(neon[i % neon.length], 1.0, 52, 2);
@@ -83,13 +85,15 @@
         this.lights.push({ light: pl, a: i / nLights * TAU, r: 36 });
       }
 
-      this._monument(scene);
-      this._obstacles(scene);
-      this._billboards(scene);
+      this._monument(scene, map);
+      this._obstacles(scene, map);
+      this._billboards(scene, map);
       this._stars(scene, quality);
+      if (map.props && this['_props_' + map.props]) this['_props_' + map.props](scene, map);
     },
 
-    _monument(scene) {
+    _monument(scene, map) {
+      if (map && map.monument && map.monument !== 'likes' && this['_mon_' + map.monument]) return this['_mon_' + map.monument](scene, map);
       const palette = [0xff00c8, 0x00ffd5, 0xffe600, 0x6a5bff];
       const mon = new THREE.Group();
       for (let i = 0; i < 4; i++) {
@@ -119,10 +123,13 @@
       this.obstacles.push({ x: 0, z: 0, r: 5.4, h: 10.5 });
     },
 
-    _obstacles(scene) {
-      const palette = [0xff00c8, 0x00ffd5, 0xffe600, 0x6a5bff, 0xff2d6f, 0x39ff88];
+    _obstacles(scene, map) {
+      const ocfg = (map && map.obstacle) || {};
+      const palette = ocfg.palette || [0xff00c8, 0x00ffd5, 0xffe600, 0x6a5bff, 0xff2d6f, 0x39ff88];
+      const style = ocfg.style || 'neonbox';
+      const count = ocfg.count || 20;
       const spots = [];
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < count; i++) {
         let x = 0, z = 0, ok = false, tries = 0;
         while (!ok && tries++ < 80) {
           x = MA.rand(-this.ARENA + 11, this.ARENA - 11);
@@ -132,28 +139,260 @@
         }
         if (!ok) continue;
         spots.push({ x, z });
-        const w = MA.rand(3, 7.5), h = MA.rand(2.5, 10), d = MA.rand(3, 7.5);
         const col = MA.pick(palette);
-        const m = new THREE.Mesh(
-          new THREE.BoxGeometry(w, h, d),
-          new THREE.MeshStandardMaterial({
-            color: 0x0d0320, emissive: col, emissiveIntensity: .35,
-            metalness: .55, roughness: .34
-          })
-        );
-        m.position.set(x, h / 2, z); m.rotation.y = MA.rand(0, TAU);
-        m.castShadow = true; m.receiveShadow = true;
-        m.add(new THREE.LineSegments(
-          new THREE.EdgesGeometry(m.geometry),
-          new THREE.LineBasicMaterial({ color: col })
-        ));
-        scene.add(m);
-        this.obstacles.push({ x, z, r: Math.max(w, d) * .6, h });
+        const res = this['_obs_' + style](scene, x, z, col, map);
+        this.obstacles.push({ x, z, r: res.r, h: res.h });
       }
     },
 
-    _billboards(scene) {
-      const texts = [
+    /* ================================================ OBSTÁCULOS ===== */
+    _obs_neonbox(scene, x, z, col) {
+      const w = MA.rand(3, 7.5), h = MA.rand(2.5, 10), d = MA.rand(3, 7.5);
+      const m = new THREE.Mesh(
+        new THREE.BoxGeometry(w, h, d),
+        new THREE.MeshStandardMaterial({
+          color: 0x0d0320, emissive: col, emissiveIntensity: .35,
+          metalness: .55, roughness: .34
+        })
+      );
+      m.position.set(x, h / 2, z); m.rotation.y = MA.rand(0, TAU);
+      m.castShadow = true; m.receiveShadow = true;
+      m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry),
+        new THREE.LineBasicMaterial({ color: col })));
+      scene.add(m);
+      return { r: Math.max(w, d) * .6, h };
+    },
+
+    /* celeiro/silo de Ohio */
+    _obs_silo(scene, x, z, col) {
+      const g = new THREE.Group();
+      const r = MA.rand(2.2, 3.6), h = MA.rand(6, 12);
+      const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(r, r, h, 16),
+        new THREE.MeshStandardMaterial({ color: col, roughness: .82, metalness: .25 })
+      );
+      body.position.y = h / 2; body.castShadow = body.receiveShadow = true; g.add(body);
+      const roof = new THREE.Mesh(
+        new THREE.ConeGeometry(r * 1.14, r * 1.1, 16),
+        new THREE.MeshStandardMaterial({ color: MA.shade('#' + col.toString(16).padStart(6, '0'), -45), roughness: .7, metalness: .4 })
+      );
+      roof.position.y = h + r * .55; roof.castShadow = true; g.add(roof);
+      for (let i = 1; i < 4; i++) {
+        const band = new THREE.Mesh(new THREE.TorusGeometry(r * 1.02, .09, 6, 18),
+          new THREE.MeshStandardMaterial({ color: 0x4a3a22, roughness: .8 }));
+        band.rotation.x = Math.PI / 2; band.position.y = h * i / 4; g.add(band);
+      }
+      g.position.set(x, 0, z); g.rotation.y = MA.rand(0, TAU);
+      scene.add(g);
+      return { r: r * 1.1, h: h + r };
+    },
+
+    /* canos do esgoto */
+    _obs_pipe(scene, x, z, col) {
+      const g = new THREE.Group();
+      const r = MA.rand(1.1, 2.1), h = MA.rand(3.5, 9);
+      const mat = new THREE.MeshStandardMaterial({ color: col, roughness: .45, metalness: .75 });
+      const tube = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 14), mat);
+      tube.position.y = h / 2; tube.castShadow = tube.receiveShadow = true; g.add(tube);
+      const flange = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.3, r * 1.3, .35, 14), mat);
+      flange.position.y = h * .72; g.add(flange);
+      const elbow = new THREE.Mesh(new THREE.TorusGeometry(r * 1.6, r * .62, 8, 16, Math.PI / 2), mat);
+      elbow.position.set(0, h, 0); elbow.rotation.y = MA.rand(0, TAU); g.add(elbow);
+      const valve = new THREE.Mesh(new THREE.TorusGeometry(r * .8, r * .14, 6, 14),
+        new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: .5, metalness: .6 }));
+      valve.position.set(0, h * .45, r * 1.05); valve.rotation.x = Math.PI / 2; g.add(valve);
+      g.position.set(x, 0, z); g.rotation.y = MA.rand(0, TAU);
+      scene.add(g);
+      return { r: r * 1.4, h: h + r };
+    },
+
+    /* guarda-sol da praia */
+    _obs_umbrella(scene, x, z, col) {
+      const g = new THREE.Group();
+      const h = MA.rand(4.5, 6.5), r = MA.rand(3, 4.6);
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(.16, .16, h, 8),
+        new THREE.MeshStandardMaterial({ color: 0xd8d8d8, metalness: .8, roughness: .3 }));
+      pole.position.y = h / 2; pole.castShadow = true; g.add(pole);
+      const top = new THREE.Mesh(new THREE.ConeGeometry(r, r * .55, 14, 1, true),
+        new THREE.MeshStandardMaterial({ color: col, roughness: .75, side: THREE.DoubleSide }));
+      top.position.y = h; top.castShadow = true; g.add(top);
+      const stripes = new THREE.Mesh(new THREE.ConeGeometry(r * .99, r * .54, 14, 1, true),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .75, side: THREE.DoubleSide, transparent: true, opacity: .4 }));
+      stripes.position.y = h - .02; stripes.rotation.y = .22; g.add(stripes);
+      /* cadeira */
+      const chair = new THREE.Mesh(new THREE.BoxGeometry(1.6, .25, 2.6),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .8 }));
+      chair.position.set(r * .5, .5, 0); chair.rotation.z = -.14; chair.castShadow = true; g.add(chair);
+      g.position.set(x, 0, z); g.rotation.y = MA.rand(0, TAU);
+      scene.add(g);
+      return { r: 1.2, h: h };
+    },
+
+    /* rack de servidor */
+    _obs_rack(scene, x, z, col) {
+      const g = new THREE.Group();
+      const w = MA.rand(3, 5), h = MA.rand(5, 11), d = MA.rand(2, 3.4);
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(w, h, d),
+        new THREE.MeshStandardMaterial({ color: 0x242838, metalness: .7, roughness: .4,
+          emissive: col, emissiveIntensity: .12 }));
+      frame.position.y = h / 2; frame.castShadow = frame.receiveShadow = true; g.add(frame);
+      const n = Math.floor(h / 1.1);
+      for (let i = 0; i < n; i++) {
+        const led = new THREE.Mesh(new THREE.PlaneGeometry(w * .82, .3),
+          new THREE.MeshBasicMaterial({ color: Math.random() < .25 ? 0xff2d6f : col, transparent: true, opacity: .55 + Math.random() * .45 }));
+        led.position.set(0, .7 + i * 1.1, d / 2 + .02); g.add(led);
+      }
+      g.position.set(x, 0, z); g.rotation.y = Math.round(MA.rand(0, 4)) * Math.PI / 2 + MA.rand(-.2, .2);
+      scene.add(g);
+      return { r: Math.max(w, d) * .6, h };
+    },
+
+    /* ================================================= MONUMENTOS ==== */
+    _mon_corn(scene) {
+      const g = new THREE.Group();
+      const cob = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.8, 11, 18),
+        new THREE.MeshStandardMaterial({ color: 0xffc42e, emissive: 0x7a4a00, emissiveIntensity: .45, roughness: .55 }));
+      cob.position.y = 5.5; cob.castShadow = true; g.add(cob);
+      const tip = new THREE.Mesh(new THREE.ConeGeometry(2.4, 3, 18),
+        new THREE.MeshStandardMaterial({ color: 0xffd966, emissive: 0x7a5a00, emissiveIntensity: .4 }));
+      tip.position.y = 12.3; g.add(tip);
+      for (let i = 0; i < 5; i++) {
+        const leaf = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 9),
+          new THREE.MeshStandardMaterial({ color: 0x5a8f3a, side: THREE.DoubleSide, roughness: .85 }));
+        const a = i / 5 * TAU;
+        leaf.position.set(Math.cos(a) * 2.6, 4.6, Math.sin(a) * 2.6);
+        leaf.rotation.set(.22, -a, .3); g.add(leaf);
+      }
+      scene.add(g);
+      this.monument = { group: g, orb: tip, halo: null };
+      this.obstacles.push({ x: 0, z: 0, r: 3.6, h: 13 });
+    },
+
+    _mon_toilet(scene) {
+      const g = new THREE.Group();
+      const porcelain = new THREE.MeshStandardMaterial({ color: 0xf2f4f6, roughness: .25, metalness: .12 });
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 4.4, 4.5, 22), porcelain);
+      base.position.y = 2.25; base.castShadow = base.receiveShadow = true; g.add(base);
+      const bowl = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 3.2, 3.2, 24), porcelain);
+      bowl.position.y = 6.1; bowl.castShadow = true; g.add(bowl);
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(4.15, .5, 10, 28), porcelain);
+      rim.rotation.x = Math.PI / 2; rim.position.y = 7.7; g.add(rim);
+      const water = new THREE.Mesh(new THREE.CircleGeometry(3.7, 24),
+        new THREE.MeshStandardMaterial({ color: 0x2f8f9f, emissive: 0x11506a, emissiveIntensity: .8, roughness: .1, metalness: .4 }));
+      water.rotation.x = -Math.PI / 2; water.position.y = 7.5; g.add(water);
+      const tank = new THREE.Mesh(new THREE.BoxGeometry(6, 4.6, 2.2), porcelain);
+      tank.position.set(0, 8.2, -4.4); tank.castShadow = true; g.add(tank);
+      scene.add(g);
+      this.monument = { group: g, orb: water, halo: rim };
+      this.obstacles.push({ x: 0, z: 0, r: 5, h: 10 });
+    },
+
+    _mon_shark(scene) {
+      const g = new THREE.Group();
+      const blue = new THREE.MeshStandardMaterial({ color: 0x3fb9ff, roughness: .4, metalness: .2 });
+      const body = new THREE.Mesh(new THREE.CapsuleGeometry(2.6, 7, 10, 20), blue);
+      body.rotation.z = Math.PI / 2; body.position.y = 4.2; body.castShadow = true; g.add(body);
+      const belly = new THREE.Mesh(new THREE.CapsuleGeometry(2.1, 6.4, 8, 16),
+        new THREE.MeshStandardMaterial({ color: 0xe9f4ff, roughness: .5 }));
+      belly.rotation.z = Math.PI / 2; belly.position.set(0, 3.3, .7); g.add(belly);
+      const fin = new THREE.Mesh(new THREE.ConeGeometry(2, 4.4, 4), blue);
+      fin.position.y = 8; fin.rotation.y = Math.PI / 4; fin.castShadow = true; g.add(fin);
+      const tail = new THREE.Mesh(new THREE.ConeGeometry(2.6, 4, 4), blue);
+      tail.position.set(-6.4, 4.6, 0); tail.rotation.z = Math.PI / 2 + .5; g.add(tail);
+      [-1, 1].forEach(s => {
+        const shoe = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.3, 1.6),
+          new THREE.MeshStandardMaterial({ color: 0x1b63d8, roughness: .6 }));
+        shoe.position.set(2.2, .7, s * 1.6); shoe.castShadow = true; g.add(shoe);
+      });
+      scene.add(g);
+      this.monument = { group: g, orb: fin, halo: null };
+      this.obstacles.push({ x: 0, z: 0, r: 5.2, h: 9 });
+    },
+
+    _mon_core(scene) {
+      const g = new THREE.Group();
+      const core = new THREE.Mesh(new THREE.IcosahedronGeometry(3.4, 1),
+        new THREE.MeshStandardMaterial({
+          color: 0xff3ca6, emissive: 0xff3ca6, emissiveIntensity: .9,
+          flatShading: true, metalness: .4, roughness: .3
+        }));
+      core.position.y = 7; g.add(core);
+      const cage = new THREE.Mesh(new THREE.IcosahedronGeometry(5.2, 1),
+        new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true, transparent: true, opacity: .4 }));
+      cage.position.y = 7; g.add(cage);
+      for (let i = 0; i < 6; i++) {
+        const pillar = new THREE.Mesh(new THREE.BoxGeometry(.7, 7, .7),
+          new THREE.MeshStandardMaterial({ color: 0x14141c, emissive: 0x6a00ff, emissiveIntensity: .35, metalness: .8 }));
+        const a = i / 6 * TAU;
+        pillar.position.set(Math.cos(a) * 5.4, 3.5, Math.sin(a) * 5.4);
+        pillar.castShadow = true; g.add(pillar);
+      }
+      scene.add(g);
+      this.monument = { group: g, orb: core, halo: cage };
+      this.obstacles.push({ x: 0, z: 0, r: 6, h: 10 });
+    },
+
+    /* ======================================================= PROPS === */
+    _props_cornfield(scene) {
+      const mat = new THREE.MeshStandardMaterial({ color: 0x6aa845, roughness: .9, side: THREE.DoubleSide });
+      const geo = new THREE.PlaneGeometry(1.1, 4.5);
+      for (let i = 0; i < 230; i++) {
+        const a = MA.rand(0, TAU), r = MA.rand(this.ARENA * .72, this.ARENA * 1.5);
+        const m = new THREE.Mesh(geo, mat);
+        m.position.set(Math.cos(a) * r, 2.2, Math.sin(a) * r);
+        m.rotation.y = MA.rand(0, TAU);
+        scene.add(m);
+      }
+    },
+
+    _props_drips(scene) {
+      const mat = new THREE.MeshBasicMaterial({ color: 0x39ff88, transparent: true, opacity: .55 });
+      this.drips = [];
+      for (let i = 0; i < 26; i++) {
+        const m = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, 1.6, 5), mat);
+        const a = MA.rand(0, TAU), r = MA.rand(10, this.ARENA - 6);
+        m.position.set(Math.cos(a) * r, MA.rand(2, 12), Math.sin(a) * r);
+        scene.add(m); this.drips.push(m);
+      }
+    },
+
+    _props_palms(scene) {
+      for (let i = 0; i < 16; i++) {
+        const a = MA.rand(0, TAU), r = MA.rand(this.ARENA * .8, this.ARENA * 1.25);
+        const g = new THREE.Group();
+        const h = MA.rand(7, 13);
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.35, .6, h, 8),
+          new THREE.MeshStandardMaterial({ color: 0x8a6a3a, roughness: .9 }));
+        trunk.position.y = h / 2; trunk.rotation.z = MA.rand(-.14, .14); g.add(trunk);
+        for (let j = 0; j < 7; j++) {
+          const leaf = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 6),
+            new THREE.MeshStandardMaterial({ color: 0x2e8b57, side: THREE.DoubleSide, roughness: .85 }));
+          const la = j / 7 * TAU;
+          leaf.position.set(Math.cos(la) * 2.2, h, Math.sin(la) * 2.2);
+          leaf.rotation.set(.9, -la, 0); g.add(leaf);
+        }
+        g.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
+        scene.add(g);
+      }
+    },
+
+    _props_cables(scene) {
+      const mat = new THREE.MeshStandardMaterial({ color: 0x1a1a26, roughness: .7 });
+      for (let i = 0; i < 24; i++) {
+        const a = MA.rand(0, TAU);
+        const r1 = this.ARENA - 2, h1 = MA.rand(15, 22);
+        const curve = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(Math.cos(a) * r1, h1, Math.sin(a) * r1),
+          new THREE.Vector3(Math.cos(a + .5) * r1 * .82, h1 * .8, Math.sin(a + .5) * r1 * .82),
+          new THREE.Vector3(Math.cos(a + 1.1) * r1, h1 * .9, Math.sin(a + 1.1) * r1)
+        ]);
+        const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 16, .1, 5, false), mat);
+        scene.add(tube);
+      }
+    },
+
+    _billboards(scene, map) {
+      const texts = (map && map.signs) || [
         ['SKIBIDI\nZONE', '#00ffd5'], ['ERRO 404\nCÉREBRO NÃO ENCONTRADO', '#ff2d6f'],
         ['+1000\nSOCIAL CREDIT', '#ffe600'], ['SIGMA\nGRINDSET', '#ff00c8'],
         ['NO CAP\nFR FR ON GOD', '#7a5bff'], ['TOUCH\nGRASS', '#39ff88'],
@@ -201,11 +440,24 @@
       if (this.ringMesh) {
         this.ringMesh.material.color.setHSL((time * .07) % 1, 1, .55);
       }
+      if (this.drips) {
+        for (let i = 0; i < this.drips.length; i++) {
+          const d = this.drips[i];
+          d.position.y -= dt * 6;
+          if (d.position.y < .4) d.position.y = MA.rand(8, 14);
+        }
+      }
       if (this.monument) {
-        this.monument.orb.rotation.y += dt * 1.5;
-        this.monument.orb.position.y = 9.1 + Math.sin(time * 1.7) * .3;
-        this.monument.halo.rotation.z += dt * 1.1;
-        this.monument.halo.position.y = this.monument.orb.position.y;
+        const mo = this.monument.orb, mh = this.monument.halo;
+        if (mo) {
+          if (mo.userData.baseY === undefined) mo.userData.baseY = mo.position.y;
+          mo.rotation.y += dt * 1.5;
+          mo.position.y = mo.userData.baseY + Math.sin(time * 1.7) * .3;
+        }
+        if (mh) {
+          mh.rotation.z += dt * 1.1;
+          if (mo) mh.position.y = mo.position.y;
+        }
       }
       this.billboards.forEach((b, i) => { b.position.y = 10 + Math.sin(time * .75 + i) * .8; });
     },

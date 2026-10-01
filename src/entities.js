@@ -359,10 +359,21 @@
     body.position.y = R * 1.15; body.castShadow = true; g.add(body);
 
     const HR = (isBoss ? 2.3 : .64) * sc;
+    /* crânio em cor sólida + "adesivo" do rosto virado pra frente, assim o
+       desenho nunca aparece esticado em volta da esfera                    */
     const head = new THREE.Mesh(
       cachedGeo('hs' + HR.toFixed(2), () => new THREE.SphereGeometry(HR, 24, 18)),
-      new THREE.MeshStandardMaterial({ map: MA.Tex.face(def.emoji, def.color, def.ring, elite), roughness: .5 })
+      new THREE.MeshStandardMaterial({
+        color: MA.shade(def.color, -18), roughness: .62, metalness: .1
+      })
     );
+    const faceTex = MA.Tex.face(def, null, null, elite);
+    const faceDisc = new THREE.Mesh(
+      cachedGeo('fd' + HR.toFixed(2), () => new THREE.SphereGeometry(HR * 1.012, 26, 20, -0.95, 1.9, 0.42, 2.3)),
+      new THREE.MeshStandardMaterial({ map: faceTex, roughness: .5, transparent: true })
+    );
+    faceDisc.rotation.y = Math.PI / 2;
+    head.add(faceDisc);
     head.position.y = R * 1.15 + R * (isBoss ? 1.08 : 1.22) + HR * .18;
     head.castShadow = true; g.add(head);
 
@@ -411,14 +422,28 @@
     );
     glow.rotation.x = -Math.PI / 2; glow.position.y = .05; g.add(glow);
 
+    /* ---- peças exclusivas do meme (src/builds.js) ---- */
+    const anim = [];
+    const builder = MA.BUILDS && MA.BUILDS[def.id];
+    if (builder) {
+      try {
+        builder({
+          g, body, head, a1, a2, l1, l2,
+          R, HR, sc, def, isBoss, elite, anim,
+          headY: head.position.y,
+          add(mesh) { mesh.castShadow = true; g.add(mesh); return mesh; }
+        });
+      } catch (err) { console.warn('[MemeArena] build falhou:', def.id, err); }
+    }
+
     scene.add(g);
 
     const hpMul = (opts.hpScale || 1) * (elite ? 2.6 : 1);
     const dmgMul = (opts.dmgScale || 1) * (elite ? 1.45 : 1);
 
     const e = {
-      def, obj: g, body, head, a1, a2, l1, l2, hb, hbCan, hbTex, glow,
-      isBoss, elite,
+      def, obj: g, body, head, faceDisc, a1, a2, l1, l2, hb, hbCan, hbTex, glow,
+      isBoss, elite, anim, animT: Math.random() * 10,
       hp: def.hp * hpMul, maxhp: def.hp * hpMul,
       dmg: def.dmg * dmgMul,
       speed: def.spd * (opts.spdScale || 1) * (elite ? .88 : 1),

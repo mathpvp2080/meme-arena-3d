@@ -49,7 +49,8 @@
     clock = new THREE.Clock();
 
     G.quality = S.quality;
-    MA.World.build(scene, S.quality);
+    G.map = MA.mapById(MA.store.get('map', 'arena'));
+    MA.World.build(scene, S.quality, G.map);
     MA.FX.init(scene);
     MA.UI.init();
     player = MA.createPlayer(scene, currentSkin(), currentArmor());
@@ -94,6 +95,28 @@
     player.obj.position.set(0, 0, 26);
   }
   MA._rebuildLook = rebuildPlayerLook;
+
+  /* troca de mapa: limpa o cenário antigo e constrói o novo */
+  function setMap(id) {
+    const m = MA.mapById(id);
+    if (G.map && G.map.id === m.id) return;
+    G.map = m;
+    MA.store.set('map', m.id);
+
+    /* remove tudo que não seja o jogador nem as entidades vivas */
+    const keep = new Set();
+    if (player) keep.add(player.obj);
+    [enemies, bullets, eBullets, pickups].forEach(arr => arr.forEach(o => keep.add(o.obj)));
+    for (let i = scene.children.length - 1; i >= 0; i--) {
+      const c = scene.children[i];
+      if (keep.has(c)) continue;
+      scene.remove(c);
+      MA.disposeObject(c);
+    }
+    MA.World.build(scene, S.quality, m);
+    MA.FX.init(scene);
+  }
+  MA._setMap = setMap;
 
   /* chamado sempre que o hub abre: encerra a partida e recria o boneco */
   MA._prepHub = function () {
@@ -722,6 +745,12 @@
       ep.y = Math.abs(b) * .18 * (e.isBoss ? 2.2 : 1);
       e.l1.rotation.x = b * .7; e.l2.rotation.x = -b * .7;
       e.a1.rotation.x = -b * .5; e.a2.rotation.x = b * .5;
+
+      /* animações próprias do meme (hélices, rabo, anéis...) */
+      if (e.anim && e.anim.length) {
+        e.animT += dt;
+        for (let ai = 0; ai < e.anim.length; ai++) e.anim[ai](e, e.animT, dt);
+      }
       e.head.rotation.y = Math.sin(e.t * 2) * .14;
       if (e.elite) e.glow.material.opacity = .4 + Math.sin(e.t * 6) * .25;
 
@@ -1021,6 +1050,32 @@
     refreshMenuStats();
   }
 
+  function renderMapList() {
+    const ml = $('mapList');
+    if (!ml) return;
+    const lv = (MA.Profile && MA.Profile.data) ? MA.Profile.data.level : 99;
+    ml.innerHTML = '';
+    MA.MAPS.forEach(m => {
+      const ok = MA.mapUnlocked(m, lv);
+      const b = document.createElement('button');
+      b.className = 'mapc' + (G.map && G.map.id === m.id ? ' sel' : '') + (ok ? '' : ' lock');
+      b.innerHTML = '<i>' + m.icon + '</i><b>' + m.name + '</b><span>' +
+        (ok ? m.desc : '🔒 libera no nível ' + m.level) + '</span>';
+      b.onclick = () => {
+        MA.Audio.init(); MA.Audio.ui();
+        if (!ok) {
+          MA.Audio.deny();
+          MA.MetaUI.toast('🔒 ' + m.name + ' libera no nível ' + m.level + '.', 'bad');
+          return;
+        }
+        setMap(m.id);
+        renderMapList();
+      };
+      ml.appendChild(b);
+    });
+  }
+  MA._renderMapList = renderMapList;
+
   /* =============================================================== INPUT */
   function requestLock() {
     const el = renderer.domElement;
@@ -1178,6 +1233,9 @@
                       'loja · 🪙 ' + MA.fmt(MA.WEAPON_SHOP[w.id].price) : 'loja') + '</em></span>';
       wl.appendChild(d);
     });
+
+    /* mapas */
+    renderMapList();
 
     /* dificuldades */
     const dl = $('diffList');

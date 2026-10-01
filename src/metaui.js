@@ -282,6 +282,7 @@
           this.openShop('weapon');
           return;
         }
+        if (MA._renderMapList) MA._renderMapList();
         this.screen('start');
       });
       on('shopBtn', () => this.openShop());

@@ -151,3 +151,22 @@ Three.js é distribuído sob a licença MIT (© three.js authors).
 - **Multiplayer** destrava no **nível 5** (chega na Etapa 3).
 
 > As armas não são mais liberadas por onda: agora você as **compra e equipa**.
+
+## 🎭 NPCs e mapas (Etapa 2)
+
+- **Rostos desenhados à mão** (canvas, sem imagem externa) para os 16 memes e
+  os 5 chefes — nada de emoji genérico. O rosto fica num "adesivo" virado pra
+  frente, então sempre dá pra reconhecer quem está vindo.
+- **Silhueta própria para cada meme**: o Skibidi sai de um vaso sanitário, o
+  Tung Tung carrega um taco, o Bombardiro tem asas e hélices girando, o Nyan
+  Cat é uma torrada com rastro de arco-íris, o Bluescreen é um monitor CRT, o
+  Grimace é um copo de milkshake, o Amogus tem viseira e mochila...
+- **5 mapas** que mudam céu, chão, névoa, luzes, obstáculos e cartazes:
+
+| Mapa | Libera no nível |
+|---|---|
+| 🌐 Arena Brainrot | 1 |
+| 🌽 Planície de Ohio | 4 |
+| 🚽 Esgoto Skibidi | 9 |
+| 🦈 Praia Italiana | 15 |
+| 🧠 Servidor do Algoritmo | 22 |

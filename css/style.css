@@ -384,3 +384,18 @@ body:not(.touch) #touch{display:none}
   .iico{font-size:30px}
   .hubname{font-size:18px}
 }
+
+/* ------------------------------------------------- ETAPA 2: mapas --- */
+.maplist{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:6px}
+.mapc{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px 9px;cursor:pointer;
+  font-family:inherit;color:#d8d3f0;text-align:center;transition:.15s;display:flex;
+  flex-direction:column;gap:3px;align-items:center}
+.mapc:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.mapc i{font-size:26px;font-style:normal;line-height:1}
+.mapc b{font-size:12.5px;letter-spacing:.03em;color:#fff}
+.mapc span{font-size:10.5px;color:#9a93c2;line-height:1.3}
+.mapc.sel{border-color:var(--pink);box-shadow:0 0 0 1px var(--pink),0 0 20px -6px var(--pink);
+  background:linear-gradient(180deg,rgba(255,0,200,.16),rgba(255,255,255,.03))}
+.mapc.lock{opacity:.5;cursor:not-allowed}
+.mapc.lock:hover{transform:none;border-color:rgba(255,255,255,.14)}
