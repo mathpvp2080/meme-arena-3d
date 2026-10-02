@@ -58,18 +58,30 @@
         }
       });
       M.on('chat', m => {
-        this.addChat(m.name, m.text);
+        /* quem você bloqueou simplesmente não existe pra você */
+        if (MA.Mod && MA.Mod.estaBloqueado(m.name)) return;
+        /* o filtro roda aqui, em QUEM RECEBE: adiantou nada o outro
+           alterar o jogo dele pra mandar palavrão */
+        const f = MA.Mod ? MA.Mod.filtrar(m.text) : { texto: m.text };
+        MA.Mod && MA.Mod.lembrar(m.name, m.text);
+        this.addChat(m.name, f.texto);
         if (!MA.MetaUI || document.getElementById('multi').classList.contains('hid')) {
-          MA.UI.notice('💬 <b>' + m.name + ':</b> ' + m.text);
+          MA.UI.notice('💬 <b>' + m.name + ':</b> ' + f.texto);
         }
       });
 
       const enviar = () => {
         const inp = $('mpChatIn');
-        const txt = (inp.value || '').trim().slice(0, 90);
-        if (!txt || !MA.Multi.active) return;
-        MA.Multi.send({ t: 'chat', name: MA.Multi.me.name, text: txt });
-        this.addChat(MA.Multi.me.name, txt, true);
+        const bruto = (inp.value || '').trim().slice(0, 90);
+        if (!bruto || !MA.Multi.active) return;
+        const f = MA.Mod ? MA.Mod.filtrar(bruto) : { texto: bruto, sujo: false };
+        if (f.sujo) {
+          MA.Audio && MA.Audio.deny && MA.Audio.deny();
+          this.msg('🧼 Olha o linguajar — a mensagem foi censurada.');
+          setTimeout(() => this.msg(''), 2600);
+        }
+        MA.Multi.send({ t: 'chat', name: MA.Multi.me.name, text: f.texto });
+        this.addChat(MA.Multi.me.name, f.texto, true);
         inp.value = '';
       };
       $('mpChatSend').onclick = enviar;
@@ -168,14 +180,34 @@
         .concat(M.peerList.map(p => ({ name: p.name, level: p.level, skin: p.skin, host: false })));
       box.innerHTML = todos.map(p => {
         const sk = MA.findItem('skin', p.skin) || MA.SKINS[0];
-        return '<div class="mpp">' +
+        const bloq = !p.eu && MA.Mod && MA.Mod.estaBloqueado(p.name);
+        const acoes = p.eu ? '' :
+          '<div class="mppacts">' +
+            (bloq
+              ? '<button class="mppbtn" data-unblock="' + p.name + '" title="desbloquear">✅</button>'
+              : '<button class="mppbtn" data-block="' + p.name + '" title="bloquear">🚫</button>') +
+            '<button class="mppbtn" data-report="' + p.name + '" title="denunciar">🚩</button>' +
+          '</div>';
+        return '<div class="mpp' + (bloq ? ' bloqueado' : '') + '">' +
           '<div class="mppface">' + sk.face + '</div>' +
           '<div class="mppinfo"><b>' + p.name + '</b>' + (p.eu ? ' <span class="dim">(você)</span>' : '') +
-          '<div class="dim">nível ' + (p.level || 1) + (p.host ? ' · 👑 anfitrião' : '') + '</div></div>' +
+          '<div class="dim">nível ' + (p.level || 1) + (p.host ? ' · 👑 anfitrião' : '') +
+            (bloq ? ' · 🚫 bloqueado' : '') + '</div></div>' +
+          acoes +
           '</div>';
       }).join('') +
         Array.from({ length: Math.max(0, 4 - todos.length) },
           () => '<div class="mpp empty"><div class="mppface">＋</div><div class="mppinfo dim">vaga aberta</div></div>').join('');
+      box.querySelectorAll('[data-block]').forEach(b => {
+        b.onclick = () => MA.Mod.bloquear(b.dataset.block);
+      });
+      box.querySelectorAll('[data-unblock]').forEach(b => {
+        b.onclick = () => MA.Mod.desbloquear(b.dataset.unblock);
+      });
+      box.querySelectorAll('[data-report]').forEach(b => {
+        b.onclick = () => MA.Mod.pedirMotivo(b.dataset.report);
+      });
+
       if (!$('mpLobby').classList.contains('hid')) {
         $('mpStart').classList.toggle('hid', !M.isHost);
       }

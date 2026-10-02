@@ -99,3 +99,34 @@ packaging model, not by any functionality of our game.
 - ☐ Windows 10/11 Xbox — exige certificação de console, bem mais rígida
 - ☐ Windows 10 Mixed Reality — exigiria testes em headset; desmarque
 - ☐ Windows 8/8.1 e Phone 8.x — sistemas antigos
+
+
+---
+
+# Classificação etária — perguntas sobre interação
+
+Seção **Classificações etárias**, bloco de comunicação entre jogadores:
+
+| Pergunta | Resposta | Por quê |
+|---|---|---|
+| Usuários interagem ou trocam conteúdo por voz/texto/imagem? | **Sim** | Existe chat de texto na sala |
+| O jogo inclui a capacidade de **bloquear** usuários? | **Sim** | Botão 🚫 na lista de jogadores |
+| O jogo inclui a capacidade de **denunciar** usuários? | **Sim** | Botão 🚩 com 6 motivos, grava em `reports` |
+| O jogo inclui **chat com moderação**? | **Sim** | Filtro de linguagem aplicado no envio **e** no recebimento |
+| As interações podem se limitar a **amigos convidados**? | **Sim** | Chat só existe dentro de sala privada de código de 4 letras |
+
+> O filtro roda também em quem recebe a mensagem. Por isso vale como
+> moderação: alterar o próprio jogo para mandar palavrão não adianta,
+> porque quem está do outro lado continua vendo censurado.
+
+## Ver as denúncias
+
+Supabase → SQL Editor:
+
+```sql
+select alvo_nome, motivo, count(*) as vezes, max(created_at) as ultima
+  from public.reports
+ where created_at > now() - interval '30 days'
+ group by alvo_nome, motivo
+ order by vezes desc;
+```

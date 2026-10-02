@@ -535,3 +535,21 @@ body:not(.touch) #touch{display:none}
 
 #goals .mklist { max-height:52vh; }
 #goals .goal + .goal { margin-top:0; }
+
+
+/* ============ moderação do chat: bloquear e denunciar ============ */
+.mpp{position:relative}
+.mpp.bloqueado{opacity:.5}
+.mppacts{display:flex;gap:4px;margin-left:auto;align-items:center}
+.mppbtn{cursor:pointer;border:none;border-radius:8px;padding:4px 7px;font-size:13px;
+  background:rgba(255,255,255,.07);color:#cfe3ff;transition:background .15s,transform .1s}
+.mppbtn:hover{background:rgba(255,0,200,.3);transform:scale(1.12)}
+.modback{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;
+  background:rgba(3,0,12,.82);backdrop-filter:blur(3px)}
+.modbox{width:min(330px,92vw);padding:20px;border-radius:18px;text-align:center;
+  background:linear-gradient(180deg,#140833,#0a0320);border:1px solid rgba(255,0,200,.4);
+  box-shadow:0 0 44px rgba(255,0,200,.3)}
+.modtit{font-size:17px;font-weight:bold;color:var(--yellow,#ffe600);margin-bottom:4px}
+.moddim{font-size:11px;color:#9fb3c8;margin-bottom:14px}
+.modbox .modopt{display:block;width:100%;margin:6px 0;padding:10px;font-size:13px;letter-spacing:1px}
+.modbox .modcancel{margin-top:10px;opacity:.7}
