@@ -217,7 +217,23 @@
       })).sort((a, b) => b.score - a.score);
     },
 
-    async deleteAccount() { return { error: 'Peça a exclusão ao administrador.' }; },
+    async deleteAccount() {
+      try {
+        const { data, error } = await this.sb.rpc('delete_my_account');
+        if (error) {
+          if (/does not exist|schema cache/i.test(error.message || '')) {
+            return { error: 'O servidor ainda não tem a função de exclusão. ' +
+                            'Rode o arquivo supabase/schema_conta.sql no SQL Editor do Supabase.' };
+          }
+          return { error: this._msg(error) };
+        }
+        if (data && data.error) return { error: data.error };
+        try { await this.sb.auth.signOut(); } catch (e) { /* ja foi */ }
+        return { ok: true };
+      } catch (e) {
+        return { error: this._msg(e) };
+      }
+    },
 
     _msg(e) {
       const m = (e && e.message) || 'Erro desconhecido.';

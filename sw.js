@@ -1,7 +1,7 @@
 /* MEME ARENA 3D — service worker (offline-first) */
-const CACHE = 'meme-arena-3d-v11';
+const CACHE = 'meme-arena-3d-v12';
 const ASSETS = [
-  './', './index.html', './css/style.css', './manifest.webmanifest',
+  './', './index.html', './css/style.css', './manifest.webmanifest', './privacidade.html',
   './assets/favicon.svg', './assets/icon-192.png', './assets/icon-512.png', './lib/three.min.js',
   './src/utils.js', './src/config.js', './src/data.js', './src/maps.js', './src/items.js',
   './src/audio.js', './src/faces.js', './src/textures.js', './src/world.js', './src/builds.js', './src/entities.js',

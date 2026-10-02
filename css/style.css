@@ -487,3 +487,11 @@ body:not(.touch) #touch{display:none}
   margin-top:8px; padding:8px 12px; text-align:left; font-size:12px; line-height:1.55;
   border:1px solid rgba(255,210,77,.3); border-radius:10px; background:rgba(255,210,77,.07);
 }
+
+/* conta e privacidade (Opções) */
+.privrow { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:6px 0 2px; }
+.btn.tiny { padding:7px 14px; font-size:11px; letter-spacing:1px; text-decoration:none; display:inline-block; }
+.btn.danger {
+  background:linear-gradient(135deg,#ff2d55,#8b0030); border-color:#ff5c7a; color:#fff;
+}
+.btn.danger:hover { filter:brightness(1.15); }

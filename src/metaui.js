@@ -299,6 +299,35 @@
       on('mpBtn', () => MA.MPUI.open());
       on('mkBtn', () => { MA.Market.preencherGift(); MA.Market.abrir('comprar'); });
       on('hubSettings', () => $('settings').classList.remove('hid'));
+      /* exclusao de conta: exigencia das lojas e da politica de privacidade */
+      let confirmando = false;
+      on('sDelete', async () => {
+        const btn = $('sDelete'), msg = $('sDelMsg');
+        if (!confirmando) {
+          confirmando = true;
+          btn.textContent = '⚠️ CLIQUE DE NOVO PARA CONFIRMAR';
+          msg.innerHTML = 'Isso apaga <b>para sempre</b> sua conta, nível, moedas e todos os itens. ' +
+                          'Não tem como desfazer. Clique de novo em até 8 segundos para confirmar.';
+          MA.Audio.deny();
+          setTimeout(() => {
+            if (!confirmando) return;
+            confirmando = false; btn.textContent = '🗑 APAGAR MINHA CONTA'; msg.innerHTML = '';
+          }, 8000);
+          return;
+        }
+        confirmando = false;
+        btn.textContent = 'apagando…'; btn.disabled = true;
+        const r = await MA.Net.deleteAccount();
+        btn.disabled = false; btn.textContent = '🗑 APAGAR MINHA CONTA';
+        if (r && r.error) { msg.innerHTML = r.error; return; }
+        msg.innerHTML = '';
+        try { localStorage.removeItem('memearena.session'); } catch (e) { /* ignora */ }
+        MA.Profile.data = null;
+        $('settings').classList.add('hid');
+        this.screen('auth');
+        this.toast('Conta apagada. Até a próxima! 👋');
+      });
+
       on('logoutBtn', async () => {
         await MA.Net.signOut();
         MA.Profile.data = null;
