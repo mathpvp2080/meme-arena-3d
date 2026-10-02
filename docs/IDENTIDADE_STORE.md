@@ -144,6 +144,17 @@ Arquivos prontos em `assets/store/`. Todos .png, dentro do limite de tamanho.
 | Ícone do bloco 1:1 300×300 | `logo-300.png` | 300 × 300 |
 | 1:1 150×150 | `logo-150.png` | 150 × 150 |
 | 1:1 71×71 | `logo-71.png` | 71 × 71 |
+| **Arte de super-herói 16:9** | `hero-16x9.png` | 1920 × 1080 |
+
+A arte de super-herói é a faixa larga no **topo** da página do jogo no
+Windows 10/11. Regra da Microsoft: **não pode ter o título escrito** — por isso
+essa é só a ilustração, sem letra nenhuma.
+
+## Imagens do Xbox — pular
+
+As três (arte de chave marcada 584×800, arte hero com título 1920×1080, quadrado
+promocional 1080×1080) só servem para produtos publicados no Xbox. Você marcou
+apenas Windows Desktop, então deixe os três vazios.
 
 Os três últimos são **opcionais**: sem eles a Store usa os ícones que já vêm
 dentro do pacote. Os dois primeiros valem a pena, porque sem a arte de pôster
