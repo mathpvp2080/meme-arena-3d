@@ -1,14 +1,40 @@
 {
+  "id": "/meme-arena-3d/",
   "name": "MEME ARENA 3D — Brainrot Survival",
   "short_name": "Meme Arena 3D",
-  "description": "Jogo 3D de arena no navegador: sobreviva a ondas infinitas de memes da internet.",
+  "description": "Arena 3D de ação: sobreviva a ondas infinitas de criaturas inspiradas nos memes da internet. Cinco mapas, dezesseis inimigos, cinco chefes, vinte melhorias, loja de skins e armas, co-op e PvP online em tempo real.",
+  "lang": "pt-BR",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
+  "display_override": ["window-controls-overlay", "fullscreen", "standalone"],
   "orientation": "landscape",
   "background_color": "#05030f",
   "theme_color": "#0a0320",
+  "categories": ["games", "entertainment"],
   "icons": [
-    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
-  ]
+    { "src": "assets/icon-48.png",  "sizes": "48x48",   "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-256.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "screenshots": [
+    { "src": "assets/screens/01-arena.png",    "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Arena Brainrot: ondas de memes atacando" },
+    { "src": "assets/screens/02-ohio.png",     "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Planície de Ohio: milharal infinito" },
+    { "src": "assets/screens/03-praia.png",    "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Praia do Tubarão: chefe final" },
+    { "src": "assets/screens/04-esgoto.png",   "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Esgoto Skibidi" },
+    { "src": "assets/screens/05-servidor.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Núcleo do Servidor" },
+    { "src": "assets/screens/06-hub.png",      "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Perfil, nível e moedas" },
+    { "src": "assets/screens/07-loja.png",     "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Loja de skins e armas" }
+  ],
+  "prefer_related_applications": false
 }
