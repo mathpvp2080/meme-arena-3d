@@ -130,3 +130,24 @@ select alvo_nome, motivo, count(*) as vezes, max(created_at) as ultima
  group by alvo_nome, motivo
  order by vezes desc;
 ```
+
+---
+
+# Logotipos da Store
+
+Arquivos prontos em `assets/store/`. Todos .png, dentro do limite de tamanho.
+
+| Campo no Partner Center | Arquivo | Tamanho |
+|---|---|---|
+| **Arte de pôster 9:16** (muito recomendada) | `poster-9x16.png` | 1440 × 2160 |
+| **Arte de caixa 1:1** (recomendada) | `box-1x1.png` | 2160 × 2160 |
+| Ícone do bloco 1:1 300×300 | `logo-300.png` | 300 × 300 |
+| 1:1 150×150 | `logo-150.png` | 150 × 150 |
+| 1:1 71×71 | `logo-71.png` | 71 × 71 |
+
+Os três últimos são **opcionais**: sem eles a Store usa os ícones que já vêm
+dentro do pacote. Os dois primeiros valem a pena, porque sem a arte de pôster
+a página do jogo fica só com o ícone pequeno.
+
+Baixar: <https://github.com/mathpvp2080/meme-arena-3d/tree/main/assets/store>
+(clique na imagem → **Download raw file**)
