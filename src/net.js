@@ -210,6 +210,16 @@
     },
 
     async leaderboard() {
+      /* o ranking "limpo" é uma visão do banco que esconde quem tem
+         suspeita de trapaça registrada nos últimos 7 dias. Se o SQL das
+         travas ainda não foi rodado, caímos no ranking simples. */
+      const lb = await this.sb.from('leaderboard')
+        .select('username,level,best_score').limit(20);
+      if (!lb.error && lb.data) {
+        return lb.data.map(p => ({
+          username: p.username, level: p.level, score: p.best_score || 0
+        })).sort((a, b) => b.score - a.score);
+      }
       const { data } = await this.sb.from('profiles')
         .select('username,level,stats').order('level', { ascending: false }).limit(20);
       return (data || []).map(p => ({

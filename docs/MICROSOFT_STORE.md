@@ -223,14 +223,17 @@ O multiplayer libera no nível 5; a conta de teste já está acima disso.
 
 ---
 
-## Antes de enviar: rode este SQL
+## Antes de enviar: rode estes SQL
 
 O botão **Opções → Apagar minha conta** precisa de uma função no banco
 (exigência da loja: o usuário tem que conseguir apagar os próprios dados).
 
-1. Supabase → **SQL Editor** → **New query**
-2. Cole todo o conteúdo de `supabase/schema_conta.sql`
-3. **Run**
+**1) `supabase/schema_conta.sql`** — botão "Apagar minha conta"
+**2) `supabase/schema_multiplayer.sql`** (de novo, foi atualizado) — mercado e presentes
+**3) `supabase/schema_antitrapaca.sql`** — travas contra moedas/níveis falsos
+
+Para cada um: Supabase → **SQL Editor** → **New query** → colar tudo → **Run**.
+Rode na ordem acima. Todos podem ser rodados mais de uma vez sem quebrar nada.
 
 ---
 

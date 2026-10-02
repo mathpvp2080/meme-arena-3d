@@ -123,6 +123,8 @@ create or replace function public.market_sell(p_item text, p_price int)
 returns json language plpgsql security definer as $$
 declare me uuid := auth.uid(); inv jsonb; nome text;
 begin
+  /* operação confiável: roda dentro do banco, a trava anti-trapaça libera */
+  perform set_config('app.trusted', 'on', true);
   if me is null then return json_build_object('error','Sem sessão.'); end if;
   if p_price is null or p_price < 1 or p_price > 1000000 then
     return json_build_object('error','Preço inválido.');
@@ -152,6 +154,8 @@ create or replace function public.market_cancel(p_id bigint)
 returns json language plpgsql security definer as $$
 declare me uuid := auth.uid(); it text;
 begin
+  /* operação confiável: roda dentro do banco, a trava anti-trapaça libera */
+  perform set_config('app.trusted', 'on', true);
   if me is null then return json_build_object('error','Sem sessão.'); end if;
   delete from public.market_listings
    where id = p_id and seller_id = me and sold = false
@@ -166,6 +170,8 @@ create or replace function public.market_buy(p_id bigint)
 returns json language plpgsql security definer as $$
 declare me uuid := auth.uid(); l record; meu_saldo int; meu_inv jsonb; meu_nome text;
 begin
+  /* operação confiável: roda dentro do banco, a trava anti-trapaça libera */
+  perform set_config('app.trusted', 'on', true);
   if me is null then return json_build_object('error','Sem sessão.'); end if;
 
   select * into l from public.market_listings
@@ -193,6 +199,8 @@ create or replace function public.send_gift(p_to text, p_item text, p_coins int 
 returns json language plpgsql security definer as $$
 declare me uuid := auth.uid(); alvo uuid; meu_nome text; inv jsonb; saldo int; inv_alvo jsonb;
 begin
+  /* operação confiável: roda dentro do banco, a trava anti-trapaça libera */
+  perform set_config('app.trusted', 'on', true);
   if me is null then return json_build_object('error','Sem sessão.'); end if;
   select id, inventory into alvo, inv_alvo from public.profiles where lower(username) = lower(p_to);
   if alvo is null then return json_build_object('error','Jogador não encontrado.'); end if;
