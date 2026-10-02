@@ -162,6 +162,7 @@
     if (mpClient() || mpPvP()) { G.wave = n; G.waveTarget = 0; G.spawnQueue = 0; return; }
     G.wave = n;
     G.waveKills = 0;
+    G.waveNoHit = true;
     G.interWave = 0;
     const d = G.diff;
 
@@ -224,6 +225,8 @@
   }
 
   function waveCleared() {
+    /* "intocável": limpou a onda sem levar nenhum dano */
+    if (MA.Goals && G.waveNoHit) { MA.Goals.track('flawless', 1); MA.Goals.track('flaw', 1); }
     const bonus = Math.round(280 * G.wave * G.diff.pts * player.mScore);
     G.score += bonus;
     player.hp = clamp(player.hp + 14, 0, player.maxhp);
@@ -363,6 +366,17 @@
     const pts = Math.round(e.pts * Math.min(G.combo, 25) * G.diff.pts * player.mScore);
     G.score += pts;
     G.kills++; G.waveKills++;
+    if (MA.Goals) {
+      MA.Goals.track('kills', 1);
+      if (e.elite) MA.Goals.track('elite', 1);
+      if (e.isBoss) {
+        MA.Goals.track('boss', 1);
+        MA.Goals.trackSet('bosses', e.def.id);
+        if (G.diff && (G.diff.id === 'hard' || G.diff.id === 'brain')) {
+          MA.Goals.track('hardboss', 1);
+        }
+      }
+    }
     G.brainrot = clamp(G.brainrot + (e.isBoss ? 70 : 4.6 * player.brainGain), 0, 100);
 
     const col = new THREE.Color(e.def.color);
@@ -481,6 +495,11 @@
       MA.UI.kill(e.def.name, e.def.emoji, e.elite ? '#ffd400' : e.def.color);
       MA.FX.popup(e.obj.position.clone().setY(2.6), '+' + MA.fmt(pts), '#ffe600', 1);
       if (e.isBoss) G.bossesKilled++;
+      if (MA.Goals) {
+        MA.Goals.track('kills', 1);
+        if (e.elite) MA.Goals.track('elite', 1);
+        if (e.isBoss) { MA.Goals.track('boss', 1); MA.Goals.trackSet('bosses', e.def.id); }
+      }
     }
     dropRemote(e, true);
   }
@@ -515,6 +534,7 @@
         MA.UI.float('ABATE! (' + G.pvpKills + '/10)', '#ff3d7f', 34);
         MA.Audio.kill();
         if (G.pvpKills >= 10) {
+          if (MA.Goals) MA.Goals.track('pvpwins', 1);
           mpSend({ t: 'over', winner: MA.Multi.me.name });
           MA.UI.banner('VITÓRIA', 'Você venceu o PvP!', 3200, 'boss');
           setTimeout(() => { if (G.running) toMenu(); }, 3400);
@@ -563,6 +583,7 @@
   /* ------------------------------------- começar/terminar uma partida online */
   function startMultiMatch() {
     const m = MA.Multi;
+    if (MA.Goals) MA.Goals.track('mpgames', 1);
     setMap(m.map);
     const d = MA.DIFFS.filter(x => x.id === m.diff)[0];
     if (d) { G.diff = d; MA.store.set('diff', d.id); }
@@ -601,6 +622,7 @@
   }
 
   function hurtPlayer(dmg, fromPos, source) {
+    G.waveNoHit = false;
     if (player.invuln > 0 || G.over || !G.running) return;
     if (player.bShield > 0) {
       MA.FX.ring(player.pos.clone(), new THREE.Color(0xb9c4cc), 4, .3);
@@ -657,6 +679,7 @@
   function activateUlt() {
     if (G.brainrot < 100 || G.ult > 0) { MA.Audio.deny(); return; }
     G.brainrot = 0; G.ult = 11;
+    if (MA.Goals) { MA.Goals.track('ults', 1); MA.Goals.track('ult', 1); }
     player.ultAura.visible = true;
     MA.UI.banner('BRAINROT MODE', 'dano x1.8 · cadência x2 · invencível', 2300);
     MA.Audio.ult();
@@ -1181,6 +1204,7 @@
 
   function applyPickup(t) {
     MA.Audio.pickup();
+    if (MA.Goals) MA.Goals.track('item', 1);
     MA.UI.float(t.label + ' — ' + t.text, '#39ff88', 26);
     switch (t.id) {
       case 'heal':   player.hp = clamp(player.hp + 35, 0, player.maxhp); break;
@@ -1268,7 +1292,13 @@
     $('goperks').innerHTML = ph ? '<div class="dim" style="margin-bottom:6px">PERKS OBTIDOS</div>' + ph : '';
 
     if (MA.Profile.data) {
+      /* primeiro soma as estatísticas da partida, só depois confere as metas:
+         senão conquistas baseadas em total (abates, chefes) atrasam uma partida */
       const res = MA.Profile.applyRun(G, secs);
+      if (MA.Goals) {
+        MA.Goals.trackSet('maps', MA.store.get('map', 'arena'));
+        MA.Goals.fimDePartida(G, secs);
+      }
       MA.MetaUI.showRewards(res);
       if (res.levels > 0) MA.Audio.pickup();
     } else { $('rewardBox').innerHTML = ''; }

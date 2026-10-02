@@ -495,3 +495,41 @@ body:not(.touch) #touch{display:none}
   background:linear-gradient(135deg,#ff2d55,#8b0030); border-color:#ff5c7a; color:#fff;
 }
 .btn.danger:hover { filter:brightness(1.15); }
+
+/* ================= ETAPA 4: metas, conquistas e diárias ============== */
+.goal {
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+  border:1px solid rgba(255,255,255,.12); border-radius:12px;
+  background:rgba(255,255,255,.04); transition:border-color .2s, background .2s;
+}
+.goal.pronto { border-color:#49ffb0; background:rgba(73,255,176,.09); box-shadow:0 0 16px rgba(73,255,176,.15); }
+.goal.pago   { opacity:.62; }
+.goal.t3 { border-color:#b46cff44; }
+.goal.t4 { border-color:#ffd24d55; background:rgba(255,210,77,.05); }
+.gico { font-size:28px; width:40px; text-align:center; flex-shrink:0; }
+.gico .lock { filter:grayscale(1) brightness(.6); }
+.ginfo { flex:1; min-width:0; font-size:13px; line-height:1.45; text-align:left; }
+.gbar {
+  height:7px; border-radius:4px; background:rgba(0,0,0,.45); overflow:hidden;
+  margin:5px 0 4px; border:1px solid rgba(255,255,255,.08);
+}
+.gbar i { display:block; height:100%; background:linear-gradient(90deg,#ff00c8,#00ffd5); transition:width .4s; }
+.gtag { font-size:11px; letter-spacing:1px; font-weight:800; white-space:nowrap; opacity:.75; }
+.gtag.ok { color:#49ffb0; font-size:20px; opacity:1; }
+
+/* selo vermelho no botão METAS */
+.dot {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:17px; height:17px; padding:0 4px; margin-left:6px;
+  border-radius:9px; background:#ff2d55; color:#fff;
+  font-size:11px; font-weight:800; vertical-align:middle;
+  box-shadow:0 0 8px rgba(255,45,85,.7);
+}
+
+/* aviso de conquista */
+.toast.achv { border-color:#ffd24d; box-shadow:0 0 22px rgba(255,210,77,.3); }
+.tachv { display:flex; align-items:center; gap:10px; text-align:left; }
+.tachvico { font-size:30px; }
+
+#goals .mklist { max-height:52vh; }
+#goals .goal + .goal { margin-top:0; }

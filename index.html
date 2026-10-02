@@ -154,6 +154,7 @@
       <button id="invBtn" class="btn sec">🎒 INVENTÁRIO</button>
       <button id="mpBtn" class="btn sec locked">🔒 MULTIPLAYER</button>
       <button id="mkBtn" class="btn sec">💱 MERCADO</button>
+      <button id="glBtn" class="btn sec">🏆 METAS<span id="glDot" class="dot hid"></span></button>
       <button id="hubSettings" class="btn sec">⚙</button>
       <button id="logoutBtn" class="btn sec">SAIR</button>
     </div>
@@ -196,6 +197,25 @@
 </div>
 
 
+
+
+<!-- ======================================================= METAS ==== -->
+<div id="goals" class="screen hid">
+  <div class="sheet wide tall">
+    <div class="hubtop">
+      <h2 class="h2">🏆 METAS</h2>
+      <div class="hubwallet">🪙 <b id="glCoins">0</b></div>
+    </div>
+    <div class="tabs">
+      <button class="tab sel" data-tab="daily">📅 DIÁRIAS</button>
+      <button class="tab" data-tab="achv">🏆 CONQUISTAS</button>
+    </div>
+    <div id="glBody" class="mklist"></div>
+    <div class="btnrow">
+      <button id="glClose" class="btn sec">← VOLTAR</button>
+    </div>
+  </div>
+</div>
 
 <!-- ====================================================== MERCADO === -->
 <div id="market" class="screen hid">
@@ -475,6 +495,7 @@
 <script src="src/profile.js"></script>
 <script src="src/ui.js"></script>
 <script src="src/pbuilds.js"></script>
+<script src="src/goals.js"></script>
 <script src="src/market.js"></script>
 <script src="src/multi.js"></script>
 <script src="src/mpui.js"></script>

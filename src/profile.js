@@ -122,6 +122,7 @@
       this.grant(item.type, item.id, true);
       if (item.type === 'weapon' && this.data.equipped.weapons.length < 3)
         this.data.equipped.weapons.push(item.id);
+      if (MA.Goals) { MA.Goals.track('buys', 1); MA.Goals.track('inv', 0); }
       this.save();
       return { ok: true };
     },

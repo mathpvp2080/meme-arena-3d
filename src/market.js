@@ -253,6 +253,7 @@
       this._busy = false;
       if (r.error) { MA.Audio.deny(); this.msg(r.error); return; }
       MA.Audio.pickup();
+      if (MA.Goals) MA.Goals.track('gifts', 1);
       $('giftTo').value = ''; $('giftCoins').value = '0'; $('giftNote').value = '';
       await MA.Net.refreshProfile();
       MA.MetaUI.renderHub();

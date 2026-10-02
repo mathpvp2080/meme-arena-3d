@@ -20,7 +20,7 @@
     },
 
     screen(id) {
-      ['auth', 'hub', 'shop', 'inventory', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
+      ['auth', 'hub', 'shop', 'inventory', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
         .forEach(s => { const e = $(s); if (e) e.classList.add('hid'); });
       if (id) $(id).classList.remove('hid');
     },
@@ -102,6 +102,7 @@
           : '🔒 MULTIPLAYER (nv ' + MA.CONFIG.MULTIPLAYER_LEVEL + ')';
       }
       if (MA.Market) MA.Market.checarPresentes();
+      this.refreshGoalDot();
       this.screen('hub');
     },
 
@@ -270,6 +271,118 @@
     },
 
     /* ------------------------------------------------- recompensas da run */
+    /* ----------------------------------------------------- METAS (etapa 4) */
+    openGoals(tab) {
+      this._gtab = tab || this._gtab || 'daily';
+      document.querySelectorAll('#goals .tab').forEach(t =>
+        t.classList.toggle('sel', t.dataset.tab === this._gtab));
+      $('glCoins').textContent = MA.fmt(MA.Profile.data.coins);
+      this.renderGoals();
+      this.screen('goals');
+    },
+
+    renderGoals() {
+      const box = $('glBody');
+      if (this._gtab === 'achv') return this.renderAchv(box);
+
+      const g = MA.Goals._d();
+      const d = g.daily;
+      const faltam = this._tempoAteMeiaNoite();
+      let html = '<div class="dim" style="margin-bottom:8px">Três missões novas todo dia. ' +
+        'Reiniciam em <b>' + faltam + '</b>. Completando as três você ganha um bônus de 🪙 1.000 + 800 XP.</div>';
+
+      html += d.missoes.map(m => {
+        const pct = Math.min(1, m.prog / m.alvo);
+        const pronto = m.feito === 'pronto', pago = m.feito === 'pago';
+        return '<div class="goal' + (pago ? ' pago' : pronto ? ' pronto' : '') + '">' +
+          '<div class="gico">' + (pago ? '✅' : m.icon) + '</div>' +
+          '<div class="ginfo">' +
+            '<b>' + m.nome + '</b>' +
+            '<div class="gbar"><i style="width:' + (pct * 100) + '%"></i></div>' +
+            '<div class="dim">' + MA.fmt(m.prog) + ' / ' + MA.fmt(m.alvo) +
+              ' · prêmio: 🪙 ' + MA.fmt(m.coins) + ' + ' + MA.fmt(m.xp) + ' XP</div>' +
+          '</div>' +
+          (pago ? '<div class="gtag">RESGATADO</div>'
+                : pronto ? '<button class="btn mini" data-claim="' + m.id + '">RESGATAR</button>'
+                         : '<div class="gtag dim">' + Math.round(pct * 100) + '%</div>') +
+        '</div>';
+      }).join('');
+
+      if (d.bonusPago) {
+        html += '<div class="goal pago"><div class="gico">🎉</div><div class="ginfo">' +
+          '<b>Bônus do dia completo</b><div class="dim">Você limpou as três missões de hoje!</div>' +
+          '</div><div class="gtag">RESGATADO</div></div>';
+      }
+
+      const dias = g.dailyDays.length;
+      html += '<div class="dim" style="margin-top:10px;text-align:center">' +
+        'Dias com as missões completas: <b>' + dias + '</b></div>';
+
+      box.innerHTML = html;
+      box.querySelectorAll('[data-claim]').forEach(b => {
+        b.onclick = () => {
+          const r = MA.Goals.resgatar(b.dataset.claim);
+          if (r.error) { MA.Audio.deny(); return; }
+          MA.Audio.pickup();
+          let msg = '🪙 ' + MA.fmt(r.coins) + ' + ' + MA.fmt(r.xp) + ' XP resgatados!';
+          if (r.bonus) msg += '<br>🎉 <b>Bônus do dia:</b> 🪙 ' + MA.fmt(r.bonus.coins) +
+                              ' + ' + MA.fmt(r.bonus.xp) + ' XP';
+          this.toast(msg);
+          this.renderHub();
+          this.openGoals('daily');
+        };
+      });
+    },
+
+    renderAchv(box) {
+      const r = MA.Goals.resumo();
+      let html = '<div class="dim" style="margin-bottom:8px">' +
+        '<b>' + r.feitas + ' de ' + r.total + '</b> conquistas desbloqueadas. ' +
+        'O prêmio cai na conta sozinho assim que você cumpre a meta.</div>';
+
+      const lista = MA.Goals.ACHIEVEMENTS.slice().sort((a, b) => {
+        const fa = MA.Goals.feito(a.id) ? 1 : 0, fb = MA.Goals.feito(b.id) ? 1 : 0;
+        if (fa !== fb) return fa - fb;
+        return MA.Goals.progresso(b).pct - MA.Goals.progresso(a).pct;
+      });
+
+      html += lista.map(a => {
+        const p = MA.Goals.progresso(a);
+        const ok = MA.Goals.feito(a.id);
+        const item = a.item ? (MA.findItem(a.item.type, a.item.id) || {}).name : null;
+        return '<div class="goal t' + a.tier + (ok ? ' pago' : '') + '">' +
+          '<div class="gico">' + (ok ? a.icon : '<span class="lock">' + a.icon + '</span>') + '</div>' +
+          '<div class="ginfo"><b>' + a.name + '</b>' +
+            '<div class="dim">' + a.desc + '</div>' +
+            (ok ? '' : '<div class="gbar"><i style="width:' + (p.pct * 100) + '%"></i></div>' +
+                       '<div class="dim">' + MA.fmt(p.v) + ' / ' + MA.fmt(p.alvo) + '</div>') +
+            '<div class="dim">🪙 ' + MA.fmt(a.coins) + ' · ' + MA.fmt(a.xp) + ' XP' +
+              (item ? ' · 🎁 <b>' + item + '</b>' : '') + '</div>' +
+          '</div>' +
+          (ok ? '<div class="gtag ok">✓</div>' : '') +
+        '</div>';
+      }).join('');
+      box.innerHTML = html;
+    },
+
+    _tempoAteMeiaNoite() {
+      const agora = new Date();
+      const fim = new Date(agora); fim.setHours(24, 0, 0, 0);
+      const s = Math.max(0, Math.floor((fim - agora) / 1000));
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+      return h + 'h ' + m + 'min';
+    },
+
+    /* selo vermelho no botão METAS quando há prêmio esperando */
+    refreshGoalDot() {
+      const dot = $('glDot');
+      if (!dot || !MA.Profile.data || !MA.Goals) return;
+      const g = MA.Goals._d();
+      const pend = g && g.daily ? g.daily.missoes.filter(m => m.feito === 'pronto').length : 0;
+      dot.classList.toggle('hid', pend === 0);
+      dot.textContent = pend || '';
+    },
+
     showRewards(res) {
       const box = $('rewardBox');
       let h = '<div class="rwline">🪙 <b>+' + MA.fmt(res.coins) + '</b> moedas</div>' +
@@ -298,6 +411,10 @@
       on('invBtn', () => this.openInventory());
       on('mpBtn', () => MA.MPUI.open());
       on('mkBtn', () => { MA.Market.preencherGift(); MA.Market.abrir('comprar'); });
+      on('glBtn', () => this.openGoals('daily'));
+      on('glClose', () => this.openHub());
+      document.querySelectorAll('#goals .tab').forEach(t =>
+        t.onclick = () => { MA.Audio.ui(); this.openGoals(t.dataset.tab); });
       on('hubSettings', () => $('settings').classList.remove('hid'));
       /* exclusao de conta: exigencia das lojas e da politica de privacidade */
       let confirmando = false;
