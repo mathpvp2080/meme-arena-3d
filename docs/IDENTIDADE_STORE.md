@@ -7,21 +7,14 @@ São dados **públicos** — ficam dentro de todo app publicado na loja.
 
 | Campo no PWABuilder | Valor |
 |---|---|
+| **Package ID** | `fewkss.MEMEARENAAPOCALYPSE` |
 | **Publisher ID** | `CN=2963B636-05D1-40E1-BD68-FC070070CBDD` |
 
-> Origem: Partner Center → ⚙ → Configurações da conta → Identificadores → aba
-> Windows → "ID do editor do Windows".
-
-## Ainda falta pegar
-
-Esses dois só aparecem **depois de reservar o nome do produto**.
-Caminho: Partner Center → Aplicativos e jogos → clicar no produto →
-menu esquerdo **Gerenciamento de produtos** → **Identidade do produto**.
+## Ainda falta
 
 | Campo no PWABuilder | Onde está na tela | Valor |
 |---|---|---|
-| **Package ID** | "Nome do pacote" / `Package/Identity/Name` | _(preencher)_ |
-| **Publisher display name** | `Package/Properties/PublisherDisplayName` | _(preencher)_ |
+| **Publisher display name** | `Package/Properties/PublisherDisplayName` | _(provavelmente `fewkss`)_ |
 
 ## Demais campos do PWABuilder
 
