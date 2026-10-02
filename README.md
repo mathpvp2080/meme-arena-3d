@@ -1,8 +1,8 @@
 <div align="center">
 
-![MEMEPOCALYPSE](assets/og.jpg)
+![MEME ARENA: APOCALYPSE](assets/og.jpg)
 
-# 💀 MEMEPOCALYPSE — Brainrot Arena 3D
+# 💀 MEME ARENA: APOCALYPSE
 
 **Um shooter de arena 3D que roda direto no navegador.**
 Sobreviva a ondas infinitas de memes, escolha perks, derrube chefes gigantes.

@@ -1,4 +1,4 @@
-# Publicar o MEMEPOCALYPSE na Microsoft Store
+# Publicar o MEME ARENA: APOCALYPSE na Microsoft Store
 
 Guia passo a passo, do zero. Você **não** precisa instalar nada no PC nem usar
 o terminal: tudo é feito por sites.
@@ -35,7 +35,7 @@ individuais.
 7. Quando aprovar, anote o seu **Publisher ID**. Para encontrá-lo:
    Partner Center → engrenagem ⚙ no topo → **Account settings** → **Identity** / **Organization profile**.
    Você vai copiar 3 valores de lá na Parte 3:
-   - `Package/Identity/Name` (algo como `12345MathPvPGames.MEMEPOCALYPSE`)
+   - `Package/Identity/Name` (algo como `12345MathPvPGames.MEMEARENAAPOCALYPSE`)
    - `Package/Identity/Publisher` (algo como `CN=ABCD1234-...`)
    - `Package/Properties/PublisherDisplayName`
 
@@ -47,12 +47,13 @@ individuais.
 2. Em **"Reserve your app's name"**, digite:
 
    ```
-   MEMEPOCALYPSE
+   MEME ARENA: APOCALYPSE
    ```
 
    Se estiver ocupado, tente nesta ordem:
-   - `MEMEPOCALYPSE - Brainrot Arena 3D`
-   - `MEMEPOCALYPSE 3D`
+   - `MEME ARENA APOCALYPSE`
+   - `MEME ARENA: APOCALYPSE 3D`
+   - `Meme Arena Apocalypse - Brainrot`
 
    > 💡 Reservar nome é **grátis e sem limite**. Reserve os três de uma vez:
    > você escolhe qual usar só na hora de publicar.
@@ -82,7 +83,7 @@ O jogo já está preparado (manifesto, ícones, capturas de tela e service worke
    | Package ID | o `Package/Identity/Name` da Parte 1 |
    | Publisher display name | o `PublisherDisplayName` da Parte 1 |
    | Publisher ID | o `Package/Identity/Publisher` (começa com `CN=`) |
-   | App name | `MEMEPOCALYPSE` |
+   | App name | `MEME ARENA: APOCALYPSE` |
    | App version | `1.0.1` |
    | Classic package version | `1.0.0` |
 
@@ -158,9 +159,9 @@ Sobreviva a ondas infinitas de memes da internet nesta arena 3D de ação.
 **Descrição completa**
 
 ```
-A internet colapsou e os memes ganharam corpo. Bem-vindo ao MEMEPOCALYPSE.
+A internet colapsou e os memes ganharam corpo. Bem-vindo ao apocalipse.
 
-MEMEPOCALYPSE é um jogo de ação em terceira pessoa (ou primeira, se preferir)
+MEME ARENA: APOCALYPSE é um jogo de ação em terceira pessoa (ou primeira, se preferir)
 onde você enfrenta ondas infinitas de criaturas inspiradas na cultura da
 internet. Cada onda vem mais rápida, mais forte e mais absurda que a anterior.
 

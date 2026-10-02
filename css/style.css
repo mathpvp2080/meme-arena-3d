@@ -151,7 +151,7 @@ body:not(.touch) #touch{display:none}
 .sheet.wide{max-width:900px}
 .sheet.narrow{max-width:380px}
 
-.title{font-size:clamp(25px,6.2vw,68px);font-weight:900;letter-spacing:1px;line-height:.98;
+.title{font-size:clamp(30px,7vw,74px);font-weight:900;letter-spacing:1px;line-height:.98;
   white-space:nowrap;
   background:linear-gradient(90deg,#ff00c8,#ffe600,#00ffd5,#ff00c8);background-size:300% 100%;
   -webkit-background-clip:text;background-clip:text;color:transparent;
@@ -159,7 +159,8 @@ body:not(.touch) #touch{display:none}
 .title.small{font-size:clamp(22px,4.8vw,48px)}
 .title span{-webkit-text-stroke:0}
 @keyframes slide{to{background-position:300% 0}}
-.subtitle{margin-top:4px;font-size:clamp(11px,2vw,16px);letter-spacing:5px;color:#9ddfff;opacity:.9}
+.subtitle{margin-top:6px;font-size:clamp(13px,2.6vw,22px);letter-spacing:9px;font-weight:bold;color:#ff00c8;text-shadow:0 0 14px rgba(255,0,200,.6);text-indent:9px}
+.subtitle2{margin-top:5px;font-size:clamp(11px,2vw,16px);letter-spacing:5px;color:#9ddfff;opacity:.9}
 .h2{font-size:clamp(20px,3.6vw,30px);letter-spacing:3px;color:var(--cyan);margin-bottom:14px;
   text-shadow:0 0 16px rgba(0,255,213,.5)}
 .intro{margin:14px auto 0;max-width:620px;font-size:14px;line-height:1.75;color:#c9d6ea}
