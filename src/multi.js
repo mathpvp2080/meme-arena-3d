@@ -189,11 +189,15 @@
       if (!this.active) return;
       this.send({ t: 'ping', ...this.me, host: this.isHost, started: this.started });
       const t = Date.now();
-      let changed = false;
+      let changed = false, perdiOHost = false;
       this.peerList.forEach(p => {
-        if (t - p.last > PEER_TIMEOUT) { this._removeAvatar(p); delete this.peers[p.id]; changed = true; }
+        if (t - p.last > PEER_TIMEOUT) {
+          if (p.host) perdiOHost = true;
+          this._removeAvatar(p); delete this.peers[p.id]; changed = true;
+        }
       });
       if (changed) this.emit('peers');
+      if (perdiOHost) this._migrarHost();
       if (this.isHost && MA.Net.online && MA.Net.impl.sb) {
         MA.Net.impl.sb.from('rooms')
           .update({ players: this.count, state: this.started ? 'playing' : 'lobby' })
@@ -202,6 +206,31 @@
     },
 
     send(msg) { if (this.tr) { msg.from = this.me.id; this.tr.send(msg); } },
+
+    /* ------------------------------------------------ migração de host
+       Se o anfitrião cai, a sala não pode morrer: quem tiver o menor id
+       entre os que sobraram assume. Todo mundo faz a mesma conta, então
+       o resultado é igual em todas as máquinas, sem precisar votar. */
+    _migrarHost() {
+      if (!this.active || this.isHost) return;
+      const ids = this.peerList.filter(p => !p.host).map(p => p.id).concat([this.me.id]).sort();
+      if (ids[0] !== this.me.id) return;        // outro assume; eu só espero
+      this.isHost = true;
+      this._hostId = this.me.id;
+      this.send({ t: 'host' });
+      this.emit('peers');
+      this.emit('hostchange', { me: true });
+      if (MA.UI && MA.UI.notice) {
+        MA.UI.notice('👑 O anfitrião saiu — <b>você</b> assumiu o comando da sala.');
+      }
+      if (MA.Net.online && MA.Net.impl.sb && this.me.uid && this.code) {
+        MA.Net.impl.sb.from('rooms').upsert({
+          code: this.code, host_id: this.me.uid, host_name: this.me.name,
+          mode: this.mode, map: this.map, diff: this.diff,
+          players: this.count, state: this.started ? 'playing' : 'lobby'
+        }).then(() => {}, () => {});
+      }
+    },
 
     /* ----------------------------------------------- recebimento */
     _onMsg(m) {
@@ -218,8 +247,15 @@
           p.last = Date.now();
           if (m.t === 'hello') {
             this.send({ t: 'ping', ...this.me, host: this.isHost, started: this.started });
-            if (this.isHost && this.started) this.send({ t: 'start', mode: this.mode, map: this.map, diff: this.diff });
+            /* partida em andamento: convida SÓ quem acabou de chegar.
+               Sem o 'to', todo mundo recebia 'start' de novo e a partida
+               reiniciava para a sala inteira sempre que alguém entrava. */
+            if (this.isHost && this.started) {
+              this.send({ t: 'start', to: m.from, mode: this.mode, map: this.map, diff: this.diff });
+            }
           }
+          /* o anfitrião se identifica no ping: usado na migração de host */
+          if (m.host) { p.host = true; this._hostId = m.from; } else { p.host = false; }
           if (isNew) {
             this.emit('peers');
             if (MA.UI && MA.UI.notice) MA.UI.notice('🎮 <b>' + m.name + '</b> entrou na sala');
@@ -229,9 +265,20 @@
         case 'bye': {
           const p = this.peers[m.from];
           if (p) {
+            const eraHost = !!p.host;
             if (MA.UI && MA.UI.notice) MA.UI.notice('👋 <b>' + p.name + '</b> saiu');
             this._removeAvatar(p); delete this.peers[m.from]; this.emit('peers');
+            if (eraHost) this._migrarHost();
           }
+          break;
+        }
+        case 'host': {                      // alguém assumiu o comando da sala
+          const p = this.peers[m.from];
+          if (p) p.host = true;
+          this._hostId = m.from;
+          this.peerList.forEach(x => { if (x.id !== m.from) x.host = false; });
+          this.emit('peers');
+          if (MA.UI && MA.UI.notice) MA.UI.notice('👑 <b>' + (p ? p.name : 'Alguém') + '</b> virou o anfitrião');
           break;
         }
         case 'p': {                                    // pose
@@ -244,12 +291,15 @@
           break;
         }
         case 'start':
+          if (m.to && m.to !== this.me.id) break;   // convite para outra pessoa
+          if (this.started) break;                  // já estou jogando: ignora
           this.mode = m.mode; this.map = m.map; this.diff = m.diff;
           this.started = true;
           this.emit('start', m);
           break;
         case 'snap':  this.emit('snap', m); break;      // inimigos (host → todos)
         case 'hit':   this.emit('hit', m); break;       // cliente → host
+        case 'pick':  this.emit('pick', m); break;      // alguém pegou um item
         case 'ekill': this.emit('ekill', m); break;     // host → todos
         case 'shot':  this.emit('shot', m); break;      // tiro visível dos outros
         case 'pvp':   this.emit('pvp', m); break;       // dano em jogador
@@ -336,7 +386,10 @@
         h: Math.round(x.hp), m: Math.round(x.hpMax),
         b: x.isBoss ? 1 : 0, e: x.elite ? 1 : 0
       }));
-      this.send({ t: 'snap', e, w: G.wave, q: G.spawnQueue | 0, tgt: G.waveTarget | 0 });
+      /* itens do chão também viajam: sem isso o cliente nunca via
+         cura, dano dobrado, nuke… tudo caía só na tela do anfitrião. */
+      const it = (this._pickFn ? this._pickFn() : []).slice(0, 24);
+      this.send({ t: 'snap', e, it, w: G.wave, q: G.spawnQueue | 0, tgt: G.waveTarget | 0 });
     },
 
     startMatch() {

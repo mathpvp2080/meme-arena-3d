@@ -30,6 +30,7 @@
   /* ============================== ETAPA 3: atalhos de multiplayer ====== */
   let netSeq = 0;                      // id de rede dos inimigos (host)
   const remoteEnemies = {};            // netId -> inimigo (cliente)
+  const remotePickups = {};            // netId -> item do chão (cliente)
   function mpOn()     { return !!(MA.Multi && MA.Multi.active && MA.Multi.started); }
   function mpHost()   { return mpOn() && MA.Multi.isHost; }
   function mpClient() { return mpOn() && !MA.Multi.isHost; }
@@ -108,7 +109,7 @@
   }
   MA._rebuildLook = rebuildPlayerLook;
   setTimeout(() => { if (MA._bindMulti) MA._bindMulti(); }, 0);
-  MA._dbg = { get cam() { return camera; }, get player() { return player; }, get scene() { return scene; }, get G() { return G; }, get enemies() { return enemies; } };
+  MA._dbg = { get cam() { return camera; }, get player() { return player; }, get scene() { return scene; }, get G() { return G; }, get enemies() { return enemies; }, get pickups() { return pickups; } };
 
   /* troca de mapa: limpa o cenário antigo e constrói o novo */
   function setMap(id) {
@@ -436,6 +437,7 @@
       e.target.set(d.x, 0, d.z);
       e.targetYaw = d.r; e.hp = d.h; e.hpMax = d.m;
     });
+    aplicarItensDaRede(m.it);
     /* sumiu do snapshot = já morreu lá no host */
     Object.keys(remoteEnemies).forEach(k => {
       if (!vistos[k]) dropRemote(remoteEnemies[k], false);
@@ -603,16 +605,88 @@
     m._bound = true;
     m.on('start', () => { if (!m.isHost) startMultiMatch(); });
     m.on('snap', applySnapshot);
+    m.on('pick', onRemotePick);
+    m._pickFn = pickupsParaRede;
     m.on('hit', onRemoteHit);
     m.on('ekill', onEnemyKill);
     m.on('pvp', onPvpDamage);
     m.on('wave', d => { if (mpClient()) MA.UI.banner('ONDA ' + d.n, 'O grupo avança!', 2000); });
+    /* o anfitrião caiu e eu assumi: herdo o comando dos inimigos */
+    m.on('hostchange', () => { if (G.running && mpOn()) assumirComandoDosInimigos(); });
     m.on('over', d => {
       MA.UI.banner('FIM', (d.winner || '') + ' venceu!', 3200, 'boss');
       setTimeout(() => { if (G.running) toMenu(); }, 3400);
     });
   }
   MA._bindMulti = bindMulti;
+
+  /* Vira host no meio da partida: os inimigos que eu só via pela rede
+     passam a ser meus, com IA rodando aqui. Sem isso eles congelariam
+     e a onda nunca terminaria. */
+  function assumirComandoDosInimigos() {
+    const ids = Object.keys(remoteEnemies);
+    ids.forEach(k => {
+      const e = remoteEnemies[k];
+      if (!e) return;
+      e.remote = false;
+      e.target = null;
+      e.targetYaw = undefined;
+      if (!e.netId) e.netId = 'h' + Math.random().toString(36).slice(2, 8);
+      delete remoteEnemies[k];
+    });
+    /* a onda continua de onde estava */
+    if (G.waveTarget > 0) {
+      const vivos = enemies.length;
+      G.spawnQueue = Math.max(0, G.waveTarget - G.waveKills - vivos);
+    }
+    MA.UI.banner('VOCÊ É O ANFITRIÃO', 'o comando da sala é seu agora', 2600, 'boss');
+  }
+  MA._assumirHost = assumirComandoDosInimigos;
+
+  /* o host descreve os itens do chão para o snapshot */
+  function pickupsParaRede() {
+    return pickups.map(p => ({
+      i: p.netId || (p.netId = 'k' + Math.random().toString(36).slice(2, 8)),
+      t: p.type.id,
+      x: +p.obj.position.x.toFixed(1),
+      z: +p.obj.position.z.toFixed(1)
+    }));
+  }
+
+  /* o cliente recria/remove os itens que o host anunciou */
+  function aplicarItensDaRede(lista) {
+    if (!lista) return;
+    const vistos = {};
+    lista.forEach(d => {
+      vistos[d.i] = 1;
+      if (remotePickups[d.i]) {
+        remotePickups[d.i].obj.position.x = d.x;
+        remotePickups[d.i].obj.position.z = d.z;
+        return;
+      }
+      const tipo = MA.PICKUPS.filter(x => x.id === d.t)[0] || MA.PICKUPS[0];
+      const p = MA.createPickup(scene, d.x, d.z, tipo);
+      p.netId = d.i; p.remote = true;
+      remotePickups[d.i] = p; pickups.push(p);
+    });
+    Object.keys(remotePickups).forEach(k => {
+      if (vistos[k]) return;
+      const p = remotePickups[k];
+      scene.remove(p.obj); MA.disposeObject(p.obj);
+      const i = pickups.indexOf(p); if (i >= 0) pickups.splice(i, 1);
+      delete remotePickups[k];
+    });
+  }
+
+  /* um cliente avisou que pegou um item: o host tira da lista */
+  function onRemotePick(m) {
+    if (!mpHost()) return;
+    const i = pickups.findIndex(p => p.netId === m.i);
+    if (i < 0) return;
+    const p = pickups[i];
+    MA.FX.burst(p.obj.position.clone(), p.type.color, 14, 8, .2);
+    scene.remove(p.obj); MA.disposeObject(p.obj); pickups.splice(i, 1);
+  }
 
   function weightedPickup() {
     const total = MA.PICKUPS.reduce((s, p) => s + p.w, 0);
@@ -1192,6 +1266,7 @@
         p.obj.position.add(pull);
       }
       if (d < 2.3) {
+        if (p.remote) { mpSend({ t: 'pick', i: p.netId }); delete remotePickups[p.netId]; }
         applyPickup(p.type);
         MA.FX.burst(p.obj.position.clone(), p.type.color, 18, 9, .2);
         MA.FX.ring(p.obj.position.clone(), new THREE.Color(p.type.color), 5, .4);
@@ -1222,6 +1297,7 @@
   /* ============================================================== FLUXO */
   function clearAll() {
     Object.keys(remoteEnemies).forEach(k => delete remoteEnemies[k]);
+    Object.keys(remotePickups).forEach(k => delete remotePickups[k]);
     [enemies, bullets, eBullets, pickups].forEach(arr => {
       arr.forEach(o => { scene.remove(o.obj); MA.disposeObject(o.obj); });
       arr.length = 0;

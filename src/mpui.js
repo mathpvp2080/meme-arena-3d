@@ -43,7 +43,20 @@
         MA._startMultiMatch();
       };
 
-      M.on('peers', () => this.renderPlayers());
+      M.on('peers', () => {
+        this.renderPlayers();
+        /* se eu virei anfitrião no lobby, o botão de começar aparece pra mim */
+        if (M.active && !M.started) {
+          const st = $('mpStart');
+          if (st) st.classList.toggle('hid', !M.isHost);
+          const hint = $('mpHint');
+          if (hint) {
+            hint.innerHTML = M.isHost
+              ? 'Você é o anfitrião: quando todo mundo estiver aqui, clique em <b>COMEÇAR PARTIDA</b>.'
+              : 'Esperando o anfitrião começar a partida…';
+          }
+        }
+      });
       M.on('chat', m => {
         this.addChat(m.name, m.text);
         if (!MA.MetaUI || document.getElementById('multi').classList.contains('hid')) {
