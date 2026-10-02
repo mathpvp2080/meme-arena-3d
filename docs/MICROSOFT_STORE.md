@@ -1,4 +1,4 @@
-# Publicar o MEME ARENA 3D na Microsoft Store
+# Publicar o MEMEPOCALYPSE na Microsoft Store
 
 Guia passo a passo, do zero. Você **não** precisa instalar nada no PC nem usar
 o terminal: tudo é feito por sites.
@@ -35,7 +35,7 @@ individuais.
 7. Quando aprovar, anote o seu **Publisher ID**. Para encontrá-lo:
    Partner Center → engrenagem ⚙ no topo → **Account settings** → **Identity** / **Organization profile**.
    Você vai copiar 3 valores de lá na Parte 3:
-   - `Package/Identity/Name` (algo como `12345MathPvPGames.MemeArena3D`)
+   - `Package/Identity/Name` (algo como `12345MathPvPGames.MEMEPOCALYPSE`)
    - `Package/Identity/Publisher` (algo como `CN=ABCD1234-...`)
    - `Package/Properties/PublisherDisplayName`
 
@@ -47,10 +47,15 @@ individuais.
 2. Em **"Reserve your app's name"**, digite:
 
    ```
-   MEME ARENA 3D
+   MEMEPOCALYPSE
    ```
 
-   Se estiver ocupado, tente `MEME ARENA 3D - Brainrot Survival`.
+   Se estiver ocupado, tente nesta ordem:
+   - `MEMEPOCALYPSE - Brainrot Arena 3D`
+   - `MEMEPOCALYPSE 3D`
+
+   > 💡 Reservar nome é **grátis e sem limite**. Reserve os três de uma vez:
+   > você escolhe qual usar só na hora de publicar.
 3. Clique em **Reserve product name**.
 
 ---
@@ -77,7 +82,7 @@ O jogo já está preparado (manifesto, ícones, capturas de tela e service worke
    | Package ID | o `Package/Identity/Name` da Parte 1 |
    | Publisher display name | o `PublisherDisplayName` da Parte 1 |
    | Publisher ID | o `Package/Identity/Publisher` (começa com `CN=`) |
-   | App name | `MEME ARENA 3D` |
+   | App name | `MEMEPOCALYPSE` |
    | App version | `1.0.1` |
    | Classic package version | `1.0.0` |
 
@@ -141,7 +146,7 @@ Você recebe e-mail quando for aprovado (ou se precisar corrigir algo).
 **Nome do produto**
 
 ```
-MEME ARENA 3D
+MEMEPOCALYPSE
 ```
 
 **Descrição curta (até 100 caracteres)**
@@ -153,9 +158,9 @@ Sobreviva a ondas infinitas de memes da internet nesta arena 3D de ação.
 **Descrição completa**
 
 ```
-A internet quebrou e os memes ganharam corpo. Entre na arena e segure as ondas.
+A internet colapsou e os memes ganharam corpo. Bem-vindo ao MEMEPOCALYPSE.
 
-MEME ARENA 3D é um jogo de ação em terceira pessoa (ou primeira, se preferir)
+MEMEPOCALYPSE é um jogo de ação em terceira pessoa (ou primeira, se preferir)
 onde você enfrenta ondas infinitas de criaturas inspiradas na cultura da
 internet. Cada onda vem mais rápida, mais forte e mais absurda que a anterior.
 
@@ -192,7 +197,7 @@ aparelho.
 **Palavras-chave de busca** (até 7)
 
 ```
-meme, arena, ação, 3d, sobrevivência, multiplayer, brainrot
+meme, brainrot, arena, ação 3d, sobrevivência, multiplayer, horda
 ```
 
 **Capturas de tela** (já estão no repositório, em `assets/screens/`)

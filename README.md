@@ -1,8 +1,8 @@
 <div align="center">
 
-![MEME ARENA 3D](assets/og.jpg)
+![MEMEPOCALYPSE](assets/og.jpg)
 
-# 🧠 MEME ARENA 3D — Brainrot Survival
+# 💀 MEMEPOCALYPSE — Brainrot Arena 3D
 
 **Um shooter de arena 3D que roda direto no navegador.**
 Sobreviva a ondas infinitas de memes, escolha perks, derrube chefes gigantes.

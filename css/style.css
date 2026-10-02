@@ -151,11 +151,12 @@ body:not(.touch) #touch{display:none}
 .sheet.wide{max-width:900px}
 .sheet.narrow{max-width:380px}
 
-.title{font-size:clamp(34px,7.4vw,74px);font-weight:900;letter-spacing:2px;line-height:.98;
+.title{font-size:clamp(25px,6.2vw,68px);font-weight:900;letter-spacing:1px;line-height:.98;
+  white-space:nowrap;
   background:linear-gradient(90deg,#ff00c8,#ffe600,#00ffd5,#ff00c8);background-size:300% 100%;
   -webkit-background-clip:text;background-clip:text;color:transparent;
   animation:slide 4.5s linear infinite;filter:drop-shadow(0 0 18px rgba(255,0,200,.55))}
-.title.small{font-size:clamp(28px,5.4vw,52px)}
+.title.small{font-size:clamp(22px,4.8vw,48px)}
 .title span{-webkit-text-stroke:0}
 @keyframes slide{to{background-position:300% 0}}
 .subtitle{margin-top:4px;font-size:clamp(11px,2vw,16px);letter-spacing:5px;color:#9ddfff;opacity:.9}
