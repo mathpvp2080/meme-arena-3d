@@ -30,6 +30,7 @@
   const S = (r, m, s) => new THREE.Mesh(new THREE.SphereGeometry(r, s || 16, s || 12), m);
   const Cone = (r, h, m, s) => new THREE.Mesh(new THREE.ConeGeometry(r, h, s || 10), m);
   const Cap = (r, l, m) => new THREE.Mesh(new THREE.CapsuleGeometry(r, l, 6, 12), m);
+  const Tor = (r, t, m, seg) => new THREE.Mesh(new THREE.TorusGeometry(r, t, 8, seg || 22), m);
 
   /* alturas de referência do boneco base */
   const HEAD_Y = 2.18, BODY_Y = 1.16;
@@ -38,7 +39,17 @@
 
     /* 😎 CHILL GUY — moletom com bolso, calça bege e chinelos */
     chill(c) {
-      const hood = M(c.skin.hood, { rough: .85 });
+      const hood = M(c.skin.hood, { rough: .82 });
+      /* rosto canino do Chill Guy, mantendo a expressão desenhada */
+      const fur = M(0xc88d5b, { rough: .88 });
+      const muzzle = Cap(.16, .12, M(0xe5bd8f, { rough: .9 }));
+      muzzle.rotation.x = Math.PI / 2; muzzle.position.set(0, 2.08, -.53); c.add(muzzle);
+      const nose = S(.072, M(0x2a211d, { rough: .42 }), 10);
+      nose.position.set(0, 2.12, -.66); c.add(nose);
+      [-1, 1].forEach(s => {
+        const ear = Cone(.15, .34, fur, 5);
+        ear.position.set(s * .38, 2.55, .08); ear.rotation.z = s * .28; c.add(ear);
+      });
       /* bolso canguru na frente */
       const pocket = B(.72, .34, .18, hood);
       pocket.position.set(0, 1.0, -.46); c.add(pocket);
@@ -56,6 +67,13 @@
         const foot = B(.34, .08, .5, M(0x6b4f2a, { rough: .9 }));
         foot.position.set(s * .27, .06, -.06); c.add(foot);
       });
+      /* punhos e barra dão volume real ao moletom */
+      [-1, 1].forEach(s => {
+        const cuff = C(.205, .205, .12, M(0x22305e, { rough: .9 }), 12);
+        cuff.position.set(s * .74, .91, 0); c.add(cuff);
+      });
+      const hem = C(.52, .52, .10, M(0x22305e, { rough: .9 }), 18);
+      hem.position.y = .70; c.add(hem);
       /* mão no bolso: braço esquerdo encostado */
       c.armL.rotation.x = .35; c.armL.position.z = -.12;
     },
@@ -94,6 +112,18 @@
       lap.position.set(-.95, 1.15, 0);
       lap.rotation.z = .35; lap.rotation.y = .5;
       c.add(lap);
+      /* pulseiras de circuito ligam o hacker ao equipamento */
+      [c.armL, c.armR].forEach((arm, i) => {
+        const cuff = Tor(.205, .035, M(0x39ff88, { emissive: 0x0d7a3c, ei: 1.3, metal: .55 }), 18);
+        cuff.rotation.x = Math.PI / 2; cuff.position.y = -.34; arm.add(cuff);
+        const node = S(.055, new THREE.MeshBasicMaterial({ color: 0x39ff88 }), 8);
+        node.position.set(i ? .17 : -.17, -.34, -.08); arm.add(node);
+      });
+      c.anim(t => {
+        const pulse = 1 + Math.sin(t * 5) * .035;
+        scr.scale.setScalar(pulse);
+        lap.rotation.x = Math.sin(t * 2.2) * .035;
+      });
     },
 
     /* 🐕 DOGE — orelhas, focinho e rabo de shiba */
@@ -120,6 +150,15 @@
       chest.position.set(0, 1.2, -.42); c.add(chest);
       const tail = new THREE.Mesh(new THREE.TorusGeometry(.26, .1, 8, 14, Math.PI * 1.5), fur);
       tail.position.set(0, 1.5, .62); tail.rotation.set(.4, 0, .2); c.add(tail);
+      /* patas dianteiras e pequenas garras */
+      [-1, 1].forEach(s => {
+        const paw = S(.23, cream, 12);
+        paw.scale.set(1.05, .55, 1.35); paw.position.set(s * .27, .10, -.14); c.add(paw);
+        [-1, 0, 1].forEach(i => {
+          const claw = Cone(.025, .10, M(0x3a2a21, { rough: .65 }), 6);
+          claw.position.set(s * .27 + i * .055, .10, -.38); claw.rotation.x = -Math.PI / 2; c.add(claw);
+        });
+      });
       c.anim(t => { tail.rotation.z = .2 + Math.sin(t * 9) * .5; });
     },
 
@@ -143,11 +182,21 @@
         const bt = S(.09, M(0xffe14d, { rough: .4 }), 10);
         bt.position.set(0, 1.5 - i * .3, -.52); c.add(bt);
       });
+      /* mangas bufantes com punhos dourados */
+      [-1, 1].forEach(s => {
+        const cuff = Tor(.205, .055, M(0xffe14d, { rough: .3, metal: .7 }), 18);
+        cuff.position.set(s * .74, .91, 0); cuff.rotation.x = Math.PI / 2; c.add(cuff);
+      });
       /* sapatões vermelhos */
       [-1, 1].forEach(s => {
-        const shoe = S(.3, M(0xff2d4d, { rough: .5 }), 12);
+        const shoe = S(.3, M(0xff2d4d, { rough: .42 }), 14);
         shoe.scale.set(1, .55, 1.9);
         shoe.position.set(s * .28, .12, -.2); c.add(shoe);
+      });
+      /* duas abas de casaco atrás deixam a silhueta menos genérica */
+      [-1, 1].forEach(s => {
+        const tail = B(.34, .72, .10, M(s < 0 ? 0x49c8ff : 0xff3dc8, { rough: .78 }));
+        tail.position.set(s * .22, .87, .43); tail.rotation.z = s * .15; c.add(tail);
       });
     },
 
@@ -171,12 +220,28 @@
       chain.rotation.x = Math.PI / 2.3; chain.position.set(0, 1.62, -.26); c.add(chain);
       const pend = S(.1, M(0xffd24d, { rough: .2, metal: .95 }), 10);
       pend.position.set(0, 1.42, -.5); c.add(pend);
+      /* jaqueta aberta com lapelas roxas e ombros marcados */
+      [-1, 1].forEach(s => {
+        const lapel = B(.18, .72, .09, M(0x34206f, { rough: .55, metal: .18 }));
+        lapel.position.set(s * .23, 1.34, -.54); lapel.rotation.z = s * .24; c.add(lapel);
+        const shoulder = S(.28, M(0x6f55e8, { rough: .5 }), 14);
+        shoulder.scale.set(1.25, .7, 1); shoulder.position.set(s * .75, 1.61, 0); c.add(shoulder);
+      });
     },
 
     /* 🗿 SIGMA — terno, gravata e cara fechada */
     sigma(c) {
       c.hood.visible = false;
       const suit = M(0x1b1f27, { rough: .52, metal: .22 });
+      /* cabelo penteado para trás com laterais baixas */
+      const hair = new THREE.Mesh(
+        new THREE.SphereGeometry(.59, 20, 14, 0, TAU, 0, Math.PI * .48),
+        M(0x252a31, { rough: .72, metal: .08 }));
+      hair.position.set(0, 2.27, .02); hair.rotation.x = -.10; c.add(hair);
+      [-1, 1].forEach(s => {
+        const side = B(.18, .33, .18, M(0x1b1e23, { rough: .8 }));
+        side.position.set(s * .48, 2.31, .04); side.rotation.z = s * .18; c.add(side);
+      });
       const jacket = C(.63, .66, 1.12, suit, 18);
       jacket.position.y = 1.18; c.add(jacket);
       const shirt = B(.34, .8, .14, M(0xf2f4f7, { rough: .6 }));
@@ -213,8 +278,20 @@
       c.anim(t => {
         pontas.forEach((p, i) => { p.m.position.y = .18 + Math.sin(t * 4 + i) * .09; });
       });
+      /* mãos de névoa flutuam separadas do lençol */
+      const wisps = [];
+      [-1, 1].forEach(s => {
+        const hand = S(.19, M(0xdfe6f2, { rough: .75, opacity: .58 }), 12);
+        hand.position.set(s * .86, 1.18, -.10); c.add(hand); wisps.push({ hand, s });
+      });
       /* flutua */
-      c.anim(t => { c.head.position.y = HEAD_Y + Math.sin(t * 2.4) * .07; });
+      c.anim(t => {
+        c.head.position.y = HEAD_Y + Math.sin(t * 2.4) * .07;
+        wisps.forEach((w, i) => {
+          w.hand.position.y = 1.18 + Math.sin(t * 2.8 + i * Math.PI) * .12;
+          w.hand.position.x = w.s * (.86 + Math.sin(t * 1.7) * .05);
+        });
+      });
     },
 
     /* 😈 DEMON — chifres maiores, cauda e brasas */
@@ -228,11 +305,17 @@
       bar.position.set(0, -.52, .78); bar.rotation.x = -2.1; tail.add(bar);
       tail.position.set(0, 1.3, .4); c.add(tail);
       c.anim(t => { tail.rotation.y = Math.sin(t * 3.2) * .5; });
-      /* garras nos pés */
+      /* ombreiras com espinhos e garras nos pés */
       [-1, 1].forEach(s => {
+        const shoulder = S(.30, M(0x4b0a18, { rough: .45, metal: .35 }), 14);
+        shoulder.scale.set(1.2, .72, 1); shoulder.position.set(s * .77, 1.63, .02); c.add(shoulder);
+        const spike = Cone(.11, .40, M(0x211017, { rough: .5, metal: .45 }), 7);
+        spike.position.set(s * .91, 1.91, .02); spike.rotation.z = -s * .55; c.add(spike);
         const hoof = C(.2, .26, .2, M(0x2a1016, { rough: .7 }), 10);
         hoof.position.set(s * .27, .1, 0); c.add(hoof);
       });
+      const rune = Tor(.20, .035, M(0xff6a2d, { emissive: 0x8a2100, ei: 1.4, metal: .35 }), 20);
+      rune.position.set(0, 1.40, -.58); c.add(rune);
       /* brasas flutuando */
       const fogo = [];
       for (let i = 0; i < 5; i++) {
@@ -272,6 +355,15 @@
         const ab = B(.24, .2, .12, skinM);
         ab.position.set(s * .15, 1.0 - r * .26, -.48); c.add(ab);
       }));
+      /* topete curto e sobrancelha 3D reforçam a cabeça */
+      const hair = new THREE.Mesh(
+        new THREE.SphereGeometry(.58, 18, 12, 0, TAU, 0, Math.PI * .42),
+        M(0x30343a, { rough: .76 }));
+      hair.position.set(0, 2.31, .02); c.add(hair);
+      [-1, 1].forEach(s => {
+        const brow = B(.25, .055, .06, M(0x35383c, { rough: .7 }));
+        brow.position.set(s * .20, 2.30, -.53); brow.rotation.z = -s * .12; c.add(brow);
+      });
       /* queixo quadrado */
       const jaw = B(.62, .3, .5, skinM);
       jaw.position.set(0, 1.94, -.12); c.add(jaw);
@@ -285,6 +377,13 @@
       /* gola de pele branca */
       const collar = new THREE.Mesh(new THREE.TorusGeometry(.56, .17, 8, 22), M(0xf7f3ea, { rough: .95 }));
       collar.rotation.x = Math.PI / 2; collar.position.y = 1.8; c.add(collar);
+      /* ombreiras reais com rubis */
+      [-1, 1].forEach(s => {
+        const shoulder = S(.34, gold, 16);
+        shoulder.scale.set(1.25, .62, 1.0); shoulder.position.set(s * .79, 1.68, .02); c.add(shoulder);
+        const ruby = S(.09, M(0xff2d6f, { rough: .08, metal: .35, emissive: 0x8a002d, ei: 1.2 }), 10);
+        ruby.position.set(s * .81, 1.72, -.29); c.add(ruby);
+      });
       /* faixa dourada no peito */
       const sash = B(.22, 1.2, .1, gold);
       sash.position.set(.1, 1.25, -.5); sash.rotation.z = .3; c.add(sash);

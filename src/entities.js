@@ -137,8 +137,9 @@
       metalness: metal, transparent: trans, opacity: trans ? .55 : 1
     });
 
-    /* tronco — a cor vem da ARMADURA quando ela não é a inicial */
-    const bodyColor = (armorDef && !armorDef.starter) ? armorDef.color : skin.body;
+    /* A roupa da skin continua por baixo. Cada armadura agora recebe placas
+       próprias em vez de simplesmente pintar o tronco inteiro de outra cor. */
+    const bodyColor = skin.body;
     const body = new THREE.Mesh(
       new THREE.CapsuleGeometry(.56 * bulk, .92, 6, 18),
       new THREE.MeshStandardMaterial({
@@ -148,24 +149,6 @@
       })
     );
     body.position.y = 1.16; body.castShadow = true; g.add(body);
-
-    /* placas de armadura visíveis em armaduras melhores */
-    if (armorDef && (armorDef.hp || 0) >= 50) {
-      const plate = new THREE.Mesh(
-        new THREE.BoxGeometry(1.26 * bulk, .52, .72),
-        new THREE.MeshStandardMaterial({
-          color: armorDef.color, metalness: .8, roughness: .3,
-          emissive: armorDef.color, emissiveIntensity: .28
-        })
-      );
-      plate.position.y = 1.42; plate.castShadow = true; g.add(plate);
-      const sh = new THREE.Mesh(
-        new THREE.SphereGeometry(.3 * bulk, 14, 10),
-        new THREE.MeshStandardMaterial({ color: armorDef.color, metalness: .85, roughness: .25 })
-      );
-      sh.position.set(-.78 * bulk, 1.62, 0); g.add(sh);
-      const sh2 = sh.clone(); sh2.position.x = .78 * bulk; g.add(sh2);
-    }
 
     /* pescoço discreto para a cabeça não "flutuar" */
     const neck = new THREE.Mesh(
@@ -393,6 +376,17 @@
           anim: fn => panim.push(fn)
         });
       } catch (err) { console.warn('[MemeArena] skin 3D falhou:', skin.id, err); }
+    }
+    /* A armadura é uma segunda camada visual independente da skin. */
+    if (MA.applyArmorModel) {
+      try {
+        MA.applyArmorModel({
+          g, body, head, neck, hood, armL, armR, legL, legR, gun,
+          armor: armorDef, skin, bulk, trans,
+          add: m => { m.castShadow = true; g.add(m); return m; },
+          anim: fn => panim.push(fn)
+        });
+      } catch (err) { console.warn('[MemeArena] armadura 3D falhou:', armorDef && armorDef.id, err); }
     }
     g.userData.panim = panim;
 
