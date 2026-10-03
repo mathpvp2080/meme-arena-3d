@@ -15,13 +15,18 @@
 
   function M(color, o) {
     o = o || {};
-    return new THREE.MeshStandardMaterial({
+    const metal = o.metal !== undefined ? o.metal : .07;
+    const opacity = o.opacity !== undefined ? o.opacity : 1;
+    return new THREE.MeshPhysicalMaterial({
       color: color,
-      roughness: o.rough !== undefined ? o.rough : .38,
-      metalness: o.metal !== undefined ? o.metal : .07,
+      roughness: o.rough !== undefined ? o.rough : .34,
+      metalness: metal,
+      clearcoat: o.clear !== undefined ? o.clear : (metal > .5 ? .44 : .22),
+      clearcoatRoughness: o.clearRough !== undefined ? o.clearRough : .22,
       emissive: o.emissive !== undefined ? o.emissive : 0x000000,
       emissiveIntensity: o.ei !== undefined ? o.ei : .6,
-      transparent: !!o.opacity, opacity: o.opacity !== undefined ? o.opacity : 1,
+      transparent: opacity < 1, opacity,
+      depthWrite: opacity >= .98,
       side: o.side || THREE.FrontSide
     });
   }
@@ -54,7 +59,7 @@
   const Tor = (r, t, m, seg) => new THREE.Mesh(new THREE.TorusGeometry(r, t, 8, seg || 22), m);
 
   /* alturas de referência do boneco base */
-  const HEAD_Y = 2.20, BODY_Y = 1.18;
+  const HEAD_Y = 2.17, BODY_Y = 1.19;
 
   const PBUILDS = {
 
@@ -64,12 +69,12 @@
       /* rosto canino do Chill Guy, mantendo a expressão desenhada */
       const fur = M(0xc88d5b, { rough: .88 });
       const muzzle = Cap(.16, .12, M(0xe5bd8f, { rough: .9 }));
-      muzzle.rotation.x = Math.PI / 2; muzzle.position.set(0, 2.08, -.53); c.add(muzzle);
-      const nose = S(.072, M(0x2a211d, { rough: .42 }), 10);
-      nose.position.set(0, 2.12, -.66); c.add(nose);
+      muzzle.rotation.x = Math.PI / 2; muzzle.position.set(0, 2.06, -.60); c.add(muzzle);
+      const nose = S(.076, M(0x2a211d, { rough: .28, clear: .36 }), 14);
+      nose.position.set(0, 2.10, -.75); c.add(nose);
       [-1, 1].forEach(s => {
-        const ear = Cone(.15, .34, fur, 5);
-        ear.position.set(s * .38, 2.55, .08); ear.rotation.z = s * .28; c.add(ear);
+        const ear = Cone(.16, .36, fur, 8);
+        ear.position.set(s * .42, 2.66, .05); ear.rotation.z = s * .28; c.add(ear);
       });
       /* bolso canguru convexo, acompanhando o corpo arredondado */
       const pocket = S(.38, hood, 20);
@@ -90,8 +95,8 @@
       });
       /* punhos e barra dão volume real ao moletom */
       [-1, 1].forEach(s => {
-        const cuff = C(.225, .225, .12, M(0x4351aa, { rough: .48 }), 16);
-        cuff.position.set(s * .76, .92, 0); c.add(cuff);
+        const cuff = C(.23, .23, .12, M(0x4351aa, { rough: .34 }), 18);
+        cuff.position.set(0, -.34, 0); (s < 0 ? c.armL : c.armR).add(cuff);
       });
       const hem = C(.54, .54, .10, M(0x4351aa, { rough: .48 }), 22);
       hem.position.y = .70; c.add(hem);
@@ -104,24 +109,24 @@
       const cloth = M(0x15181d, { rough: .95 });
       /* capuz grande por cima da cabeça */
       const cowl = new THREE.Mesh(
-        new THREE.SphereGeometry(.66, 20, 14, 0, TAU, 0, Math.PI * .62), cloth);
-      cowl.position.set(0, 2.22, .06);
+        new THREE.SphereGeometry(.72, 28, 18, 0, TAU, 0, Math.PI * .60), cloth);
+      cowl.position.set(0, 2.17, .06);
       cowl.rotation.x = -.18;
       c.add(cowl);
       /* aba frontal do capuz */
       const brim = new THREE.Mesh(
-        new THREE.TorusGeometry(.5, .11, 8, 20, Math.PI * 1.15), cloth);
-      brim.position.set(0, 2.2, -.22);
+        new THREE.TorusGeometry(.55, .115, 10, 28, Math.PI * 1.15), cloth);
+      brim.position.set(0, 2.17, -.25);
       brim.rotation.set(Math.PI / 2 - .35, 0, Math.PI * .92);
       c.add(brim);
       /* sombra dentro do capuz + óculos verdes brilhando */
       [-1, 1].forEach(s => {
         const eye = B(.17, .07, .04, new THREE.MeshBasicMaterial({ color: 0x39ff88 }));
-        eye.position.set(s * .17, 2.2, -.56); c.add(eye);
+        eye.position.set(s * .18, 2.18, -.675); c.add(eye);
       });
       /* zíper e detalhes neon no peito */
-      const zip = B(.05, .9, .04, M(0x39ff88, { emissive: 0x0d7a3c, ei: 1 }));
-      zip.position.set(0, 1.2, -.54); c.add(zip);
+      const zip = B(.05, .84, .04, M(0x39ff88, { emissive: 0x0d7a3c, ei: 1 }));
+      zip.position.set(0, 1.20, -.575); c.add(zip);
       /* laptop embaixo do braço */
       const lap = new THREE.Group();
       const base = B(.5, .04, .36, M(0x2a2f36, { rough: .4, metal: .7 }));
@@ -155,15 +160,15 @@
       const cream = M(0xf6e3bb, { rough: .88 });
       const snout = Cap(.17, .14, cream);
       snout.rotation.x = Math.PI / 2;
-      snout.position.set(0, 2.1, -.52); c.add(snout);
-      const nose = S(.08, M(0x241a14, { rough: .35 }), 10);
-      nose.position.set(0, 2.14, -.66); c.add(nose);
+      snout.position.set(0, 2.07, -.60); c.add(snout);
+      const nose = S(.084, M(0x241a14, { rough: .26, clear: .34 }), 14);
+      nose.position.set(0, 2.11, -.76); c.add(nose);
       [-1, 1].forEach(s => {
-        const ear = Cone(.19, .46, fur, 4);
-        ear.position.set(s * .36, 2.62, .04);
+        const ear = Cone(.20, .48, fur, 7);
+        ear.position.set(s * .41, 2.66, .04);
         ear.rotation.set(.1, Math.PI / 4, s * .28); c.add(ear);
-        const inner = Cone(.105, .30, M(0xd68a72, { rough: .9 }), 4);
-        inner.position.set(s * .36, 2.61, -.055);
+        const inner = Cone(.11, .31, M(0xd68a72, { rough: .62 }), 7);
+        inner.position.set(s * .41, 2.65, -.06);
         inner.rotation.set(.1, Math.PI / 4, s * .28); c.add(inner);
       });
       const chest = S(.38, cream);
@@ -185,8 +190,8 @@
 
     /* 🤡 CLOWN — nariz, cabelo, babado e sapatões */
     clown(c) {
-      const nose = S(.15, M(0xff2d4d, { rough: .3 }), 14);
-      nose.position.set(0, 2.14, -.58); c.add(nose);
+      const nose = S(.155, M(0xff2d4d, { rough: .20, clear: .44 }), 18);
+      nose.position.set(0, 2.12, -.65); c.add(nose);
       /* cabelo em tufos */
       [-1, 1].forEach(s => {
         [0, 1, 2].forEach(i => {
@@ -225,16 +230,16 @@
     rizzler(c) {
       const hair = M(0x241c17, { rough: .8 });
       const cap = new THREE.Mesh(
-        new THREE.SphereGeometry(.59, 18, 12, 0, TAU, 0, Math.PI * .55), hair);
-      cap.position.y = 2.2; c.add(cap);
-      const fringe = B(.9, .2, .22, hair);
-      fringe.position.set(0, 2.44, -.42); fringe.rotation.x = .25; c.add(fringe);
-      /* óculos escuros */
-      const bar = B(.9, .05, .05, M(0x14161a, { rough: .3, metal: .5 }));
-      bar.position.set(0, 2.24, -.52); c.add(bar);
+        new THREE.SphereGeometry(.69, 28, 18, 0, TAU, 0, Math.PI * .50), hair);
+      cap.position.y = 2.17; cap.scale.z = .96; c.add(cap);
+      const fringe = B(.98, .21, .23, hair);
+      fringe.position.set(0, 2.45, -.53); fringe.rotation.x = .25; c.add(fringe);
+      /* óculos escuros arredondados e destacados da face */
+      const bar = B(.98, .055, .05, M(0x14161a, { rough: .18, metal: .5 }));
+      bar.position.set(0, 2.22, -.67); c.add(bar);
       [-1, 1].forEach(s => {
-        const lens = B(.34, .2, .05, M(0x14161a, { rough: .15, metal: .7 }));
-        lens.position.set(s * .22, 2.2, -.54); c.add(lens);
+        const lens = B(.38, .22, .055, M(0x14161a, { rough: .10, metal: .62, clear: .58 }));
+        lens.position.set(s * .24, 2.18, -.69); c.add(lens);
       });
       /* corrente de ouro */
       const chain = new THREE.Mesh(new THREE.TorusGeometry(.34, .045, 8, 22), M(0xffd24d, { rough: .2, metal: .95 }));
@@ -256,12 +261,12 @@
       const suit = M(0x1b1f27, { rough: .52, metal: .22 });
       /* cabelo penteado para trás com laterais baixas */
       const hair = new THREE.Mesh(
-        new THREE.SphereGeometry(.59, 20, 14, 0, TAU, 0, Math.PI * .48),
-        M(0x252a31, { rough: .72, metal: .08 }));
-      hair.position.set(0, 2.27, .02); hair.rotation.x = -.10; c.add(hair);
+        new THREE.SphereGeometry(.69, 28, 18, 0, TAU, 0, Math.PI * .46),
+        M(0x252a31, { rough: .48, metal: .08 }));
+      hair.position.set(0, 2.21, .02); hair.scale.z = .96; hair.rotation.x = -.10; c.add(hair);
       [-1, 1].forEach(s => {
-        const side = B(.18, .33, .18, M(0x1b1e23, { rough: .8 }));
-        side.position.set(s * .48, 2.31, .04); side.rotation.z = s * .18; c.add(side);
+        const side = B(.19, .36, .20, M(0x1b1e23, { rough: .52 }));
+        side.position.set(s * .55, 2.28, .03); side.rotation.z = s * .18; c.add(side);
       });
       const jacket = C(.63, .66, 1.12, suit, 18);
       jacket.position.y = 1.18; c.add(jacket);
@@ -275,8 +280,8 @@
         lapel.rotation.z = s * .2; c.add(lapel);
       });
       /* óculos escuros finos */
-      const bar = B(.86, .04, .04, M(0x0d0f12, { rough: .2, metal: .6 }));
-      bar.position.set(0, 2.24, -.52); c.add(bar);
+      const bar = B(.94, .045, .045, M(0x0d0f12, { rough: .12, metal: .62, clear: .55 }));
+      bar.position.set(0, 2.21, -.675); c.add(bar);
     },
 
     /* 👻 GHOST — lençol ondulado em vez de pernas */
@@ -378,16 +383,16 @@
       }));
       /* topete curto e sobrancelha 3D reforçam a cabeça */
       const hair = new THREE.Mesh(
-        new THREE.SphereGeometry(.58, 18, 12, 0, TAU, 0, Math.PI * .42),
-        M(0x30343a, { rough: .76 }));
-      hair.position.set(0, 2.31, .02); c.add(hair);
+        new THREE.SphereGeometry(.68, 28, 18, 0, TAU, 0, Math.PI * .40),
+        M(0x30343a, { rough: .48 }));
+      hair.position.set(0, 2.20, .02); hair.scale.z = .96; c.add(hair);
       [-1, 1].forEach(s => {
-        const brow = B(.25, .055, .06, M(0x35383c, { rough: .7 }));
-        brow.position.set(s * .20, 2.30, -.53); brow.rotation.z = -s * .12; c.add(brow);
+        const brow = B(.27, .058, .065, M(0x35383c, { rough: .42 }));
+        brow.position.set(s * .21, 2.27, -.68); brow.rotation.z = -s * .12; c.add(brow);
       });
-      /* queixo quadrado */
-      const jaw = B(.62, .3, .5, skinM);
-      jaw.position.set(0, 1.94, -.12); c.add(jaw);
+      /* queixo forte, mas com chanfros de brinquedo */
+      const jaw = B(.68, .32, .48, skinM);
+      jaw.position.set(0, 1.91, -.44); c.add(jaw);
       /* pernas mais grossas */
       c.legL.scale.set(1.3, 1, 1.3); c.legR.scale.set(1.3, 1, 1.3);
     },
@@ -412,7 +417,7 @@
       const beard = new THREE.Mesh(
         new THREE.SphereGeometry(.44, 16, 12, 0, TAU, Math.PI * .45, Math.PI * .55),
         M(0xf1ece0, { rough: .95 }));
-      beard.position.set(0, 2.08, -.1); beard.scale.set(1, 1.25, 1.05); c.add(beard);
+      beard.position.set(0, 2.03, -.42); beard.scale.set(1.08, 1.28, .72); c.add(beard);
       /* cetro na mão direita */
       const scepter = new THREE.Group();
       const rod = C(.05, .05, 1.5, gold, 8);
@@ -438,15 +443,15 @@
 
       /* Touca espacial aberta: enquadra o rosto em vez de escondê-lo. */
       const helmet = new THREE.Mesh(
-        new THREE.SphereGeometry(.685, 28, 18, 0, TAU, 0, Math.PI * .37), blue);
-      helmet.position.set(0, 2.20, .025); helmet.scale.z = .98; c.add(helmet);
-      const faceRim = Tor(.515, .045, cyan, 32);
-      faceRim.position.set(0, 2.19, -.555); faceRim.scale.set(1.03, .96, 1); c.add(faceRim);
+        new THREE.SphereGeometry(.735, 32, 20, 0, TAU, 0, Math.PI * .37), blue);
+      helmet.position.set(0, 2.17, .025); helmet.scale.z = .97; c.add(helmet);
+      const faceRim = Tor(.555, .047, cyan, 36);
+      faceRim.position.set(0, 2.16, -.615); faceRim.scale.set(1.03, .96, 1); c.add(faceRim);
       [-1, 1].forEach(s => {
-        const pod = S(.145, s < 0 ? pink : cyan, 18);
-        pod.position.set(s * .635, 2.19, -.015); pod.scale.set(.72, 1, .72); c.add(pod);
-        const dot = S(.052, pearl, 12);
-        dot.position.set(s * .655, 2.19, -.13); c.add(dot);
+        const pod = S(.15, s < 0 ? pink : cyan, 20);
+        pod.position.set(s * .685, 2.16, -.015); pod.scale.set(.72, 1, .72); c.add(pod);
+        const dot = S(.054, pearl, 14);
+        dot.position.set(s * .706, 2.16, -.14); c.add(dot);
       });
 
       /* Macacão esportivo com alças-cápsula, placa peitoral e identidade 67. */

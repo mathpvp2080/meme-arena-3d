@@ -123,6 +123,18 @@
     }
   };
 
+  /* Torso autoral de party-game. O perfil torneado cria ombros largos,
+     barriga arredondada e cintura curta sem copiar uma malha proprietária. */
+  function partyTorsoGeometry(bulk) {
+    const p = [
+      [0, -.55], [.33, -.53], [.47, -.44], [.54, -.20],
+      [.61, .18], [.58, .39], [.46, .51], [0, .54]
+    ].map(v => new THREE.Vector2(v[0] * bulk, v[1]));
+    const geo = new THREE.LatheGeometry(p, 32);
+    geo.computeVertexNormals();
+    return geo;
+  }
+
   function createPlayer(scene, skin, armorDef) {
     skin = skin || MA.SKINS[0];
     armorDef = armorDef || MA.ARMORS[0];
@@ -136,35 +148,36 @@
 
     const mkMat = (col, extraRough) => {
       const color = new THREE.Color(col);
-      return new THREE.MeshStandardMaterial({
+      return new THREE.MeshPhysicalMaterial({
         color, roughness: extraRough === undefined ? rough : extraRough,
         metalness: metal,
+        clearcoat: skin.metal ? .62 : .30,
+        clearcoatRoughness: skin.metal ? .14 : .24,
         emissive: color.clone().multiplyScalar(skin.metal ? .055 : .018),
         emissiveIntensity: 1,
         transparent: trans, opacity: trans ? .55 : 1
       });
     };
 
-    /* Silhueta "party game": tronco em forma de feijão, largo e contínuo.
-       Todas as skins herdam essa base mais fofa sem perder seus acessórios. */
+    /* Silhueta de party-game: torso torneado, ombros macios e cintura curta.
+       A forma é autoral e serve como base consistente para todas as skins. */
     const bodyColor = skin.body;
-    const body = new THREE.Mesh(
-      new THREE.CapsuleGeometry(.60 * bulk, .78, 10, 24),
-      mkMat(bodyColor)
-    );
-    body.position.y = 1.18;
-    body.scale.z = .92;
+    const body = new THREE.Mesh(partyTorsoGeometry(bulk), mkMat(bodyColor, .30));
+    body.position.y = 1.19;
+    body.scale.z = .91;
     body.castShadow = true; g.add(body);
 
-    /* pescoço discreto para a cabeça não "flutuar" */
+    /* O encaixe fica escondido: cabeça e torso se sobrepõem como nos
+       bonecos de party-game, sem pescoço cilíndrico aparente. */
     const neck = new THREE.Mesh(
-      new THREE.CylinderGeometry(.22, .27, .28, 18),
-      new THREE.MeshStandardMaterial({
-        color: MA.shade(skin.skinTone, -18), roughness: .42, metalness: .015,
+      new THREE.CylinderGeometry(.20, .25, .18, 20),
+      new THREE.MeshPhysicalMaterial({
+        color: MA.shade(skin.skinTone, -8), roughness: .34, metalness: .01,
+        clearcoat: .20, clearcoatRoughness: .28,
         transparent: trans, opacity: trans ? .7 : 1
       })
     );
-    neck.position.y = 1.77; g.add(neck);
+    neck.position.y = 1.72; neck.visible = false; g.add(neck);
 
     /* capuz caído sobre as costas (não atravessa mais o queixo) */
     const hood = new THREE.Mesh(
@@ -176,26 +189,29 @@
     hood.scale.set(1.03, .88, 1.12);
     g.add(hood);
 
-    /* Cabeça maior e mais baixa: leitura simpática mesmo nas miniaturas. */
+    /* Cabeça superdimensionada e quase esférica: principal assinatura visual
+       do gênero, com espaço para expressões grandes e leitura em celular. */
     const head = new THREE.Mesh(
-      new THREE.SphereGeometry(.63, 32, 24),
-      new THREE.MeshStandardMaterial({
-        color: MA.shade(skin.skinTone, -5), roughness: .38, metalness: .015,
+      new THREE.SphereGeometry(.68, 36, 28),
+      new THREE.MeshPhysicalMaterial({
+        color: MA.shade(skin.skinTone, -2), roughness: .30, metalness: .01,
+        clearcoat: .24, clearcoatRoughness: .22,
         transparent: trans, opacity: trans ? .7 : 1
       })
     );
-    head.position.y = 2.20; head.scale.set(1, 1.02, .96); head.castShadow = true; g.add(head);
+    head.position.y = 2.17; head.scale.set(1, 1, .955); head.castShadow = true; g.add(head);
 
-    /* rosto limpo, grande e legível; cada meme preserva sua expressão própria */
+    /* rosto pintado grande e legível; cada meme preserva sua expressão própria */
     const pFace = new THREE.Mesh(
-      new THREE.SphereGeometry(.638, 32, 24, -0.95, 1.9, 0.42, 2.3),
-      new THREE.MeshStandardMaterial({
+      new THREE.SphereGeometry(.689, 36, 28, -0.95, 1.9, 0.42, 2.3),
+      new THREE.MeshPhysicalMaterial({
         map: MA.Tex.face(Object.assign({}, skin, {
           id: 'skin:' + skin.id,
           color: skin.skinTone,
           ring: MA.shade(skin.skinTone, -55)
         })),
-        roughness: .30, metalness: .01, transparent: true, opacity: trans ? .75 : 1
+        roughness: .27, metalness: .01, clearcoat: .18, clearcoatRoughness: .24,
+        transparent: true, opacity: trans ? .75 : 1
       })
     );
     pFace.rotation.y = -Math.PI / 2;
@@ -205,44 +221,42 @@
     const hc = skin.hatColor !== undefined ? skin.hatColor : 0xffffff;
     if (skin.hat === 'cap') {
       const cap = new THREE.Mesh(
-        new THREE.SphereGeometry(.655, 28, 14, 0, TAU, 0, 1.03),
-        new THREE.MeshStandardMaterial({ color: hc, emissive: hc, emissiveIntensity: .08, roughness: .28, metalness: .035 })
+        new THREE.SphereGeometry(.705, 32, 16, 0, TAU, 0, 1.02),
+        new THREE.MeshPhysicalMaterial({ color: hc, emissive: hc, emissiveIntensity: .06, roughness: .24, metalness: .025, clearcoat: .34, clearcoatRoughness: .20 })
       );
-      cap.position.y = 2.20; cap.scale.z = .97; g.add(cap);
-      /* aba oval, sem cantos de caixa */
-      const brim = new THREE.Mesh(new THREE.SphereGeometry(.48, 22, 12),
-        new THREE.MeshStandardMaterial({ color: hc, roughness: .30, metalness: .035 }));
-      brim.position.set(0, 2.57, -.49); brim.scale.set(1, .12, .66); g.add(brim);
+      cap.position.y = 2.17; cap.scale.z = .96; g.add(cap);
+      /* aba oval grossa, sem cantos de caixa */
+      const brim = new THREE.Mesh(new THREE.SphereGeometry(.51, 26, 14),
+        new THREE.MeshPhysicalMaterial({ color: hc, roughness: .25, metalness: .025, clearcoat: .34, clearcoatRoughness: .20 }));
+      brim.position.set(0, 2.56, -.53); brim.scale.set(1, .13, .68); g.add(brim);
     } else if (skin.hat === 'crown') {
-      const base = new THREE.Mesh(new THREE.CylinderGeometry(.56, .56, .18, 20),
-        new THREE.MeshStandardMaterial({ color: hc, metalness: .95, roughness: .18 }));
-      base.position.y = 2.64; g.add(base);
+      const crownMat = new THREE.MeshPhysicalMaterial({ color: hc, metalness: .90, roughness: .14, clearcoat: .48, clearcoatRoughness: .12 });
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(.61, .61, .18, 28), crownMat);
+      base.position.y = 2.66; g.add(base);
       for (let i = 0; i < 7; i++) {
-        const sp = new THREE.Mesh(new THREE.ConeGeometry(.1, .34, 6),
-          new THREE.MeshStandardMaterial({ color: hc, metalness: .95, roughness: .18 }));
+        const sp = new THREE.Mesh(new THREE.ConeGeometry(.11, .36, 10), crownMat);
         const a = i / 7 * TAU;
-        sp.position.set(Math.cos(a) * .48, 2.86, Math.sin(a) * .48); g.add(sp);
+        sp.position.set(Math.cos(a) * .52, 2.89, Math.sin(a) * .52); g.add(sp);
       }
     } else if (skin.hat === 'halo') {
-      const halo = new THREE.Mesh(new THREE.TorusGeometry(.42, .055, 8, 28),
+      const halo = new THREE.Mesh(new THREE.TorusGeometry(.47, .058, 10, 36),
         new THREE.MeshBasicMaterial({ color: hc }));
-      halo.rotation.x = Math.PI / 2; halo.position.y = 2.95; g.add(halo);
+      halo.rotation.x = Math.PI / 2; halo.position.y = 3.00; g.add(halo);
       g.userData.halo = halo;
     } else if (skin.hat === 'horns') {
       [-1, 1].forEach(s => {
-        const h = new THREE.Mesh(new THREE.ConeGeometry(.13, .52, 8),
-          new THREE.MeshStandardMaterial({ color: hc, roughness: .5 }));
-        h.position.set(s * .34, 2.62, -.06);
+        const h = new THREE.Mesh(new THREE.ConeGeometry(.14, .54, 12),
+          new THREE.MeshPhysicalMaterial({ color: hc, roughness: .30, clearcoat: .26, clearcoatRoughness: .22 }));
+        h.position.set(s * .39, 2.68, -.04);
         h.rotation.z = -s * .42; h.rotation.x = -.22;
         g.add(h);
       });
     } else if (skin.hat === 'bucket') {
-      const b = new THREE.Mesh(new THREE.CylinderGeometry(.5, .62, .42, 18),
-        new THREE.MeshStandardMaterial({ color: hc, roughness: .6 }));
-      b.position.y = 2.66; g.add(b);
-      const brim = new THREE.Mesh(new THREE.CylinderGeometry(.86, .86, .06, 20),
-        new THREE.MeshStandardMaterial({ color: hc, roughness: .6 }));
-      brim.position.y = 2.46; g.add(brim);
+      const bucketMat = new THREE.MeshPhysicalMaterial({ color: hc, roughness: .32, metalness: .02, clearcoat: .24, clearcoatRoughness: .26 });
+      const b = new THREE.Mesh(new THREE.CylinderGeometry(.54, .67, .43, 28), bucketMat);
+      b.position.y = 2.70; g.add(b);
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(.79, .79, .07, 32), bucketMat);
+      brim.position.y = 2.49; g.add(brim);
     }
 
     /* acessório de costas */
@@ -304,41 +318,45 @@
       g.userData.cape = tail;
     }
 
-    const armMat = mkMat(skin.arms);
-    const armL = new THREE.Mesh(new THREE.CapsuleGeometry(.225 * bulk, .47, 7, 18), armMat);
-    armL.position.set(-.76 * bulk, 1.32, 0); armL.castShadow = true; g.add(armL);
-    const armR = new THREE.Mesh(new THREE.CapsuleGeometry(.225 * bulk, .47, 7, 18), armMat);
-    armR.position.set(.76 * bulk, 1.32, 0); armR.castShadow = true; g.add(armR);
+    const armMat = mkMat(skin.arms, .29);
+    const armL = new THREE.Mesh(new THREE.CapsuleGeometry(.225 * bulk, .43, 9, 22), armMat);
+    armL.position.set(-.75 * bulk, 1.29, 0); armL.rotation.z = -.075; armL.castShadow = true; g.add(armL);
+    const armR = new THREE.Mesh(new THREE.CapsuleGeometry(.225 * bulk, .43, 9, 22), armMat);
+    armR.position.set(.75 * bulk, 1.29, 0); armR.rotation.z = .075; armR.castShadow = true; g.add(armR);
 
-    /* luvas/mãos grandes: leitura clara e amigável à distância */
-    const handMat = mkMat(MA.shade(skin.skinTone, 2), .34);
-    [armL, armR].forEach(arm => {
-      const hand = new THREE.Mesh(new THREE.SphereGeometry(.25 * bulk, 18, 14), handMat);
-      hand.position.y = -.40; hand.scale.set(1.02, .94, 1); hand.castShadow = true; arm.add(hand);
+    /* Mãos-mitten com polegar separado: simples, grandes e expressivas. */
+    const handMat = mkMat(MA.shade(skin.skinTone, 3), .27);
+    [armL, armR].forEach((arm, i) => {
+      const side = i ? 1 : -1;
+      const hand = new THREE.Mesh(new THREE.SphereGeometry(.245 * bulk, 22, 16), handMat);
+      hand.position.y = -.38; hand.scale.set(1.03, .95, 1); hand.castShadow = true; arm.add(hand);
+      const thumb = new THREE.Mesh(new THREE.SphereGeometry(.105 * bulk, 16, 12), handMat);
+      thumb.position.set(-side * .17, -.015, -.08); thumb.scale.set(.92, 1.10, .86); hand.add(thumb);
     });
+    /* Ombros menores só fazem a transição entre manga e torso. */
     [-1, 1].forEach(sg => {
-      const sh = new THREE.Mesh(new THREE.SphereGeometry(.31 * bulk, 20, 14), mkMat(skin.arms));
-      sh.position.set(sg * .61 * bulk, 1.60, 0); sh.scale.set(1, .94, .95); sh.castShadow = true; g.add(sh);
+      const sh = new THREE.Mesh(new THREE.SphereGeometry(.285 * bulk, 22, 16), mkMat(skin.arms, .29));
+      sh.position.set(sg * .60 * bulk, 1.57, 0); sh.scale.set(1, .92, .94); sh.castShadow = true; g.add(sh);
     });
 
-    /* quadril arredondado e pernas curtas, sem a aparência de boneco palito */
-    const hips = new THREE.Mesh(new THREE.SphereGeometry(.51 * bulk, 22, 14), mkMat(skin.legs, .42));
-    hips.position.y = .77; hips.scale.set(1, .58, .88); g.add(hips);
+    /* Quadril alto e pernas curtas mantêm a silhueta compacta. */
+    const hips = new THREE.Mesh(new THREE.SphereGeometry(.49 * bulk, 24, 16), mkMat(skin.legs, .34));
+    hips.position.y = .74; hips.scale.set(1, .56, .87); g.add(hips);
 
-    const legMat = mkMat(skin.legs, .40);
-    const legL = new THREE.Mesh(new THREE.CapsuleGeometry(.24 * bulk, .38, 7, 18), legMat);
-    legL.position.set(-.29 * bulk, .43, 0); legL.castShadow = true; g.add(legL);
-    const legR = new THREE.Mesh(new THREE.CapsuleGeometry(.24 * bulk, .38, 7, 18), legMat);
-    legR.position.set(.29 * bulk, .43, 0); legR.castShadow = true; g.add(legR);
+    const legMat = mkMat(skin.legs, .32);
+    const legL = new THREE.Mesh(new THREE.CapsuleGeometry(.235 * bulk, .34, 9, 22), legMat);
+    legL.position.set(-.285 * bulk, .40, 0); legL.castShadow = true; g.add(legL);
+    const legR = new THREE.Mesh(new THREE.CapsuleGeometry(.235 * bulk, .34, 9, 22), legMat);
+    legR.position.set(.285 * bulk, .40, 0); legR.castShadow = true; g.add(legR);
 
-    /* tênis totalmente arredondados e com sola macia */
-    const shoeMat = mkMat(MA.shade(skin.legs, -38), .32);
-    const soleMat = new THREE.MeshStandardMaterial({ color: 0xf5f6ff, roughness: .30, metalness: .02 });
+    /* Botas grandes, arredondadas e avançadas para a frente. */
+    const shoeMat = mkMat(MA.shade(skin.legs, -34), .25);
+    const soleMat = new THREE.MeshPhysicalMaterial({ color: 0xf6f7ff, roughness: .24, metalness: .01, clearcoat: .24, clearcoatRoughness: .22 });
     [legL, legR].forEach(leg => {
-      const shoe = new THREE.Mesh(new THREE.SphereGeometry(.29 * bulk, 20, 14), shoeMat);
-      shoe.position.set(0, -.38, -.11); shoe.scale.set(.94, .60, 1.32); shoe.castShadow = true; leg.add(shoe);
-      const sole = new THREE.Mesh(new THREE.SphereGeometry(.27 * bulk, 18, 10), soleMat);
-      sole.position.set(0, -.47, -.12); sole.scale.set(1, .22, 1.38); leg.add(sole);
+      const shoe = new THREE.Mesh(new THREE.SphereGeometry(.305 * bulk, 24, 16), shoeMat);
+      shoe.position.set(0, -.35, -.14); shoe.scale.set(.94, .59, 1.38); shoe.castShadow = true; leg.add(shoe);
+      const sole = new THREE.Mesh(new THREE.SphereGeometry(.285 * bulk, 22, 12), soleMat);
+      sole.position.set(0, -.45, -.15); sole.scale.set(1, .22, 1.42); leg.add(sole);
     });
 
     /* Armas com silhuetas próprias. Todos os cinco modelos ficam no suporte,

@@ -30,6 +30,8 @@
         this.renderer.outputEncoding = THREE.sRGBEncoding;
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1.28;
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.renderer.setClearColor(0x000000, 0);
 
         this.scene = new THREE.Scene();
@@ -39,7 +41,12 @@
 
         this.scene.add(new THREE.HemisphereLight(0xdaf8ff, 0x21143f, 1.72));
         const key = new THREE.DirectionalLight(0xfffbff, 2.35);
-        key.position.set(-4, 6, -5); this.scene.add(key);
+        key.position.set(-4, 6, -5); key.castShadow = true;
+        key.shadow.mapSize.set(512, 512);
+        key.shadow.camera.left = key.shadow.camera.bottom = -3.5;
+        key.shadow.camera.right = key.shadow.camera.top = 3.5;
+        key.shadow.camera.near = .1; key.shadow.camera.far = 16;
+        this.scene.add(key);
         const rim = new THREE.DirectionalLight(0xff4fbd, 1.62);
         rim.position.set(5, 3, 4); this.scene.add(rim);
         const fill = new THREE.PointLight(0x2de2ff, 1.35, 12);
@@ -135,7 +142,7 @@
         new THREE.CylinderGeometry(floorRadius, floorRadius * 1.10, .15, 40),
         new THREE.MeshStandardMaterial({ color: 0x20265f, roughness: .25, metalness: .28 })
       );
-      floor.position.y = floorTop - .075; stage.add(floor);
+      floor.position.y = floorTop - .075; floor.receiveShadow = true; stage.add(floor);
       const floorRing = new THREE.Mesh(
         new THREE.TorusGeometry(floorRadius * .83, .035, 8, 40),
         new THREE.MeshBasicMaterial({ color: type === 'weapon' ? 0xff4fbd : 0x2de2ff, transparent: true, opacity: .78 })

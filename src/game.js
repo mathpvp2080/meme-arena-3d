@@ -1513,10 +1513,12 @@
       player.obj.children.forEach(o => {
         o.visible = o.userData.__hid3 === undefined ? true : o.userData.__hid3;
       });
-      player.gun.position.set(.92, 1.26, -.22);
-      player.gun.scale.setScalar(1);
+      const bodyScale = player.skin && player.skin.bulky ? 1.18 : 1;
+      player.gun.position.set(1.02 * bodyScale, 1.22, -.20);
+      player.gun.scale.setScalar(.86);
       if (player.armR) {
-        player.armR.position.set(.74, 1.32, 0);
+        player.armR.position.set(.75 * bodyScale, 1.29, 0);
+        player.armR.rotation.z = .075;
         player.armR.scale.set(1, 1, 1);
       }
     }
@@ -1808,7 +1810,7 @@
           player.obj.rotation.y = Math.sin(menuT * .72) * .13;
           player.legL.rotation.x = Math.sin(menuT * 2.1) * .025;
           player.legR.rotation.x = -player.legL.rotation.x;
-          player.armL.rotation.z = -.04 + Math.sin(menuT * 1.7) * .025;
+          player.armL.rotation.z = -.075 + Math.sin(menuT * 1.7) * .022;
           player.aura.rotation.z += dt * .75;
           player.aura.material.opacity = .26 + Math.sin(menuT * 2.8) * .08;
           MA.animateWeaponModel(player, dt, false);

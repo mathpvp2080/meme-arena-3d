@@ -11,14 +11,19 @@
 
   function M(color, opts) {
     opts = opts || {};
-    return new THREE.MeshStandardMaterial({
+    const metal = opts.metal === undefined ? .55 : opts.metal;
+    const opacity = opts.opacity === undefined ? 1 : opts.opacity;
+    return new THREE.MeshPhysicalMaterial({
       color,
-      roughness: opts.rough === undefined ? .45 : opts.rough,
-      metalness: opts.metal === undefined ? .55 : opts.metal,
+      roughness: opts.rough === undefined ? .36 : opts.rough,
+      metalness: metal,
+      clearcoat: opts.clear === undefined ? (metal > .45 ? .48 : .22) : opts.clear,
+      clearcoatRoughness: opts.clearRough === undefined ? .20 : opts.clearRough,
       emissive: opts.emissive === undefined ? 0x000000 : opts.emissive,
       emissiveIntensity: opts.ei === undefined ? .5 : opts.ei,
-      transparent: opts.opacity !== undefined,
-      opacity: opts.opacity === undefined ? 1 : opts.opacity,
+      transparent: opacity < 1,
+      opacity,
+      depthWrite: opacity >= .98,
       side: opts.side || THREE.FrontSide,
       flatShading: !!opts.flat
     });
@@ -54,17 +59,19 @@
     hoodie(c) {
       const cloth = M(c.skin.body, { rough: .94, metal: .02 });
       const dark = M(MA.shade(c.skin.body, -38), { rough: .9, metal: .04 });
-      const hem = C(.53 * c.bulk, .53 * c.bulk, .11, dark, 20);
-      add(c, hem, [0, .70, 0]);
-      paired(s => {
-        const cuff = C(.205 * c.bulk, .205 * c.bulk, .13, dark, 14);
-        attach(s < 0 ? c.armL : c.armR, cuff, [0, -.36, 0]);
+      if (c.skin.id !== 'chill') {
+        const hem = C(.50 * c.bulk, .50 * c.bulk, .11, dark, 24);
+        add(c, hem, [0, .69, 0]);
+      }
+      if (c.skin.id !== 'chill') paired(s => {
+        const cuff = C(.225 * c.bulk, .225 * c.bulk, .12, dark, 18);
+        attach(s < 0 ? c.armL : c.armR, cuff, [0, -.34, 0]);
       });
       if (c.skin.id !== 'chill') {
-        const pocket = B(.72, .29, .10, cloth);
-        add(c, pocket, [0, 1.03, -.53]);
-        const seam = B(.56, .025, .025, dark);
-        add(c, seam, [0, 1.13, -.595]);
+        const pocket = S(.38, cloth, 22);
+        add(c, pocket, [0, 1.02, -.55], null, [1.04, .48, .22]);
+        const seam = Cap(.018, .48, dark);
+        add(c, seam, [0, 1.12, -.625], [0, 0, PI / 2]);
       }
     },
 
