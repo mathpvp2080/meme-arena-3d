@@ -20,7 +20,7 @@
     },
 
     screen(id) {
-      ['auth', 'hub', 'shop', 'inventory', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
+      ['auth', 'hub', 'shop', 'lootbox', 'inventory', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
         .forEach(s => { const e = $(s); if (e) e.classList.add('hid'); });
       if (id) $(id).classList.remove('hid');
     },
@@ -120,6 +120,13 @@
       $('hubCoins').textContent = MA.fmt(p.coins);
       $('hubSkin').textContent = skin.face + ' ' + skin.name;
       $('hubArmor').textContent = '🛡️ ' + armor.name;
+      if (MA.Season) {
+        const season = MA.Season.progress();
+        if ($('seasonCountdown')) $('seasonCountdown').textContent = MA.Season.countdown();
+        if ($('seasonFragments')) $('seasonFragments').textContent = MA.fmt(season.fragments);
+        if ($('seasonBoosts')) $('seasonBoosts').textContent = season.boosts;
+        if ($('seasonPity')) $('seasonPity').textContent = Math.min(7, season.pity + 1) + '/7';
+      }
       const rank = MA.rankFor((p.stats && p.stats.bestScore) || 0);
       if ($('hubRank')) $('hubRank').textContent = rank.icon + ' ' + rank.name;
       const map = MA.mapById(MA.store.get('map', 'arena'));
@@ -176,6 +183,18 @@
       document.querySelectorAll('#shop .tab').forEach(t =>
         t.classList.toggle('sel', t.dataset.tab === this.shopTab));
 
+      if (MA.Season) {
+        const sp = MA.Season.progress();
+        if ($('seasonShopCountdown')) $('seasonShopCountdown').textContent = MA.Season.countdown();
+        if ($('shopFragments')) $('shopFragments').textContent = MA.fmt(sp.fragments);
+        if ($('shopBoosts')) $('shopBoosts').textContent = sp.boosts;
+      }
+
+      if (this.shopTab === 'box') {
+        this.renderBoxes();
+        return;
+      }
+
       const items = MA.catalog()
         .filter(i => i.type === this.shopTab)
         .sort((a, b) => (a.price - b.price));
@@ -183,6 +202,69 @@
       $('shopGrid').innerHTML = items.map(i => this.card(i, 'shop')).join('');
       this.bindCards('shop');
       if (MA.Previews) MA.Previews.hydrate($('shopGrid'));
+    },
+
+    renderBoxes() {
+      const grid = $('shopGrid');
+      if (!MA.Season) { grid.innerHTML = '<p class="dim">Temporada indisponível.</p>'; return; }
+      const sp = MA.Season.progress();
+      const boxes = MA.SEASON.boxes.map((box, index) => {
+        const can = MA.Profile.data.coins >= box.price;
+        return '<article class="loot-card' + (index ? ' vault' : '') + '">' +
+          '<div class="loot-box-art">' + box.icon + '</div>' +
+          '<div><h3>' + box.name + '</h3><p>' + box.desc + '</p>' +
+          '<div class="loot-odds"><b>CHANCES POR ABERTURA</b><br>' +
+          '42% moedas · 23% XP · 17% Impulso 67 · 18% equipamento<br>' +
+          '<b>7% skin · 6% armadura · 5% arma especial</b></div>' +
+          '<div class="loot-pity">GARANTIA: próxima abertura ' + Math.min(7, sp.pity + 1) + '/7 · item na 7ª sem drop</div>' +
+          '<div class="loot-buy"><button class="ibtn buy' + (can ? '' : ' poor') + '" data-box="' + box.id + '">' +
+          '🪙 ' + MA.fmt(box.price) + '</button><small>somente moeda virtual</small></div></div></article>';
+      }).join('');
+      const missing = MA.SEASON.itemKeys.some(key => {
+        const parts = key.split(':'); return !MA.Profile.owns(parts[0], parts[1]);
+      });
+      const forgeDisabled = sp.fragments < 67 || !missing;
+      grid.innerHTML = '<div class="box-grid">' + boxes +
+        '<div class="forge-card"><span>⬡</span><div><b>FORJA 67 · ' + MA.fmt(sp.fragments) + '/67 FRAGMENTOS</b>' +
+        '<p>Itens repetidos viram fragmentos. Troque 67 pelo primeiro equipamento sazonal que ainda falta.</p></div>' +
+        '<button class="btn mini sec" id="forge67"' + (forgeDisabled ? ' disabled' : '') + '>FORJAR</button></div></div>';
+      grid.querySelectorAll('[data-box]').forEach(btn => {
+        btn.onclick = () => this.openSeasonBox(btn.dataset.box);
+      });
+      const forge = $('forge67');
+      if (forge) forge.onclick = () => {
+        const r = MA.Season.forge();
+        if (r.error) { MA.Audio.deny(); this.toast('❌ ' + r.error, 'bad'); return; }
+        MA.Audio.pickup();
+        this.toast('⬡ Forjado: <b>' + r.item.name + '</b>');
+        this.renderShop();
+      };
+    },
+
+    openSeasonBox(id) {
+      const r = MA.Season.openBox(id);
+      if (r.error) { MA.Audio.deny(); this.toast('❌ ' + r.error, 'bad'); return; }
+      MA.Audio.pickup();
+      this._lastBox = id;
+      this.showLootResults(r);
+    },
+
+    showLootResults(opened) {
+      const colors = { common: '#9fb3c8', rare: '#00eaff', epic: '#b46cff', legendary: '#ff9b43', mythic: '#baff32' };
+      $('lootTitle').textContent = opened.box.name + ' ABERTO';
+      $('lootResults').innerHTML = opened.results.map(r =>
+        '<div class="loot-result ' + (r.guaranteed ? 'guaranteed' : '') + '" style="--rc:' + (colors[r.rarity] || colors.common) + '">' +
+        '<div class="lrico">' + r.icon + '</div><b>' + r.name + '</b><small>' +
+        (r.desc || (r.type === 'coins' ? 'SALDO ADICIONADO' : r.type === 'xp' ? 'EXPERIÊNCIA ADICIONADA' : 'RECOMPENSA 67')) +
+        '</small></div>').join('');
+      const sp = opened.progress;
+      $('lootProgress').innerHTML = 'Caixas abertas: <b>' + MA.fmt(sp.boxesOpened) + '</b> · ' +
+        'próxima garantia: <b>' + Math.min(7, sp.pity + 1) + '/7</b> · ' +
+        'fragmentos: <b>' + MA.fmt(sp.fragments) + '</b> · Impulsos: <b>' + sp.boosts + '</b>';
+      const again = $('lootAgain');
+      again.textContent = 'ABRIR OUTRA · 🪙 ' + MA.fmt(opened.box.price);
+      again.disabled = MA.Profile.data.coins < opened.box.price;
+      this.screen('lootbox');
     },
 
     /* ======================================================== INVENTÁRIO */
@@ -238,6 +320,7 @@
       let action;
       if (ctx === 'shop') {
         if (owned) action = '<button class="ibtn owned" disabled>✔ ADQUIRIDO</button>';
+        else if (item.boxOnly) action = '<button class="ibtn boxonly" data-act="boxes">📦 ABRIR CAIXAS 67</button>';
         else if (!canLv) action = '<button class="ibtn lock" disabled>🔒 NÍVEL ' + item.level + '</button>';
         else action = '<button class="ibtn buy' + (canCoin ? '' : ' poor') + '" data-type="' + item.type +
           '" data-id="' + item.id + '" data-act="buy">🪙 ' + MA.fmt(item.price) + '</button>';
@@ -248,11 +331,14 @@
             '" data-id="' + item.id + '" data-act="equip">' + (eq ? '✔ EQUIPADO' : 'EQUIPAR') + '</button>' +
           (item.starter ? '' :
             '<button class="ibtn sell" data-type="' + item.type + '" data-id="' + item.id +
-            '" data-act="sell" title="Vender por ' + sellv + '">💰 ' + MA.fmt(sellv) + '</button>') +
+            '" data-act="market" title="Revender por um valor definido por você">💱</button>' +
+            (item.boxOnly ? '' : '<button class="ibtn sell" data-type="' + item.type + '" data-id="' + item.id +
+            '" data-act="sell" title="Venda rápida por ' + sellv + '">🪙 ' + MA.fmt(sellv) + '</button>')) +
           '</div>';
       }
 
-      return '<div class="icard ' + item.rarity + (eq ? ' isequipped' : '') + '" style="--rc:' + r.color + '">' +
+      return '<div class="icard ' + item.rarity + (eq ? ' isequipped' : '') + (item.seasonal ? ' seasonal' : '') + '" style="--rc:' + r.color + '">' +
+        (item.seasonal ? '<div class="season-chip">TEMPORADA 67</div>' : '') +
         '<div class="irar" style="color:' + r.color + '">' + r.name + '</div>' +
         '<div class="iico itempreview" data-preview-type="' + item.type + '" data-preview-id="' + item.id + '">' +
           '<span>' + icon + '</span><i></i></div>' +
@@ -266,8 +352,9 @@
       root.querySelectorAll('button[data-act]').forEach(b => {
         b.onclick = () => {
           const type = b.dataset.type, id = b.dataset.id, act = b.dataset.act;
-          const item = Object.assign({ type }, MA.findItem(type, id));
           MA.Audio.ui();
+          if (act === 'boxes') { this.openShop('box'); return; }
+          const item = Object.assign({ type }, MA.findItem(type, id));
           if (act === 'buy') {
             const r = MA.Profile.buy(item);
             if (r.error) { this.toast('❌ ' + r.error, 'bad'); MA.Audio.deny(); return; }
@@ -281,12 +368,20 @@
             if ((type === 'skin' || type === 'armor' || type === 'weapon') && MA._rebuildLook) MA._rebuildLook();
             this.toast(r.equipped ? '✅ Equipado: <b>' + item.name + '</b>' : 'Desequipado: ' + item.name);
             this.renderInventory();
+          } else if (act === 'market') {
+            if (MA.Profile.isEquipped(type, id)) {
+              this.toast('⚠️ Desequipe o item antes de anunciar.', 'bad'); MA.Audio.deny(); return;
+            }
+            if (!MA.Market.online()) {
+              this.toast('🌐 A revenda com preço próprio exige uma conta online.', 'bad'); MA.Audio.deny(); return;
+            }
+            MA.Market.abrir('vender');
           } else if (act === 'sell') {
-            if (!confirm('Vender "' + item.name + '" por ' +
-                MA.fmt(Math.round(item.price * MA.CONFIG.SELL_RATE)) + ' moedas?')) return;
+            if (!confirm('Fazer venda rápida de "' + item.name + '" por ' +
+                MA.fmt(Math.round(item.price * MA.CONFIG.SELL_RATE)) + ' moedas?\n\nNo Mercado você pode definir o seu próprio preço.')) return;
             const r = MA.Profile.sell(item);
             if (r.error) { this.toast('❌ ' + r.error, 'bad'); MA.Audio.deny(); return; }
-            this.toast('💰 Vendido por <b>' + MA.fmt(r.value) + '</b> moedas');
+            this.toast('💰 Venda rápida: <b>' + MA.fmt(r.value) + '</b> moedas');
             this.renderInventory();
           }
         };
@@ -410,6 +505,10 @@
       const box = $('rewardBox');
       let h = '<div class="rwline">🪙 <b>+' + MA.fmt(res.coins) + '</b> moedas</div>' +
               '<div class="rwline">✨ <b>+' + MA.fmt(res.xp) + '</b> XP</div>';
+      if (res.multiplier > 1) {
+        h += '<div class="rwlevel">⚡ IMPULSO 67 APLICADO · RECOMPENSAS +67% · ' +
+             res.boostsRemaining + ' restante' + (res.boostsRemaining === 1 ? '' : 's') + '</div>';
+      }
       if (res.levels > 0) {
         h += '<div class="rwlevel">🎉 SUBIU ' + res.levels + ' NÍVE' + (res.levels > 1 ? 'IS' : 'L') +
              '! Agora é nível <b>' + MA.Profile.data.level + '</b></div>';
@@ -430,7 +529,10 @@
         if (MA._renderMapList) MA._renderMapList();
         this.screen('start');
       });
+      on('seasonBtn', () => this.openShop('box'));
       on('shopBtn', () => this.openShop());
+      on('lootClose', () => this.openShop('box'));
+      on('lootAgain', () => { if (this._lastBox) this.openSeasonBox(this._lastBox); });
       on('invBtn', () => this.openInventory());
       on('mpBtn', () => MA.MPUI.open());
       on('mkBtn', () => { MA.Market.preencherGift(); MA.Market.abrir('comprar'); });
@@ -481,6 +583,14 @@
         t.onclick = () => { MA.Audio.ui(); this.openShop(t.dataset.tab); });
       document.querySelectorAll('#inventory .tab').forEach(t =>
         t.onclick = () => { MA.Audio.ui(); this.openInventory(t.dataset.tab); });
+
+      if (MA.Season && !this._seasonTimer) {
+        this._seasonTimer = setInterval(() => {
+          const txt = MA.Season.countdown();
+          if ($('seasonCountdown')) $('seasonCountdown').textContent = txt;
+          if ($('seasonShopCountdown')) $('seasonShopCountdown').textContent = txt;
+        }, 60000);
+      }
     }
   };
 

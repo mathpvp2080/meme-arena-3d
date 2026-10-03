@@ -3,19 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#0a0320">
-<title>MEME ARENA: APOCALYPSE — Brainrot 3D</title>
-<meta name="description" content="Jogo 3D de arena no navegador: sobreviva a ondas infinitas de memes da internet, enfrente chefes e escolha perks. Feito com Three.js, sem instalar nada.">
+<meta name="theme-color" content="#101827">
+<title>MEME ARENA 3D — Temporada 67</title>
+<meta name="description" content="Temporada 67 do jogo de arena 3D: sobreviva às hordas, abra Caixas 67 e conquiste equipamento sazonal com arte original.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="MEME ARENA: APOCALYPSE">
-<meta property="og:description" content="Sobreviva a ondas infinitas de memes 3D. 16 inimigos, 5 chefes, 5 armas, 20 perks. Jogue direto no navegador.">
+<meta property="og:title" content="MEME ARENA 3D — Temporada 67">
+<meta property="og:description" content="A Temporada 1 chegou: identidade 67, caixas com garantia, equipamento sazonal e arena 3D.">
 <meta property="og:image" content="assets/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="css/style.css?v=22">
+<link rel="stylesheet" href="css/style.css?v=23">
+<link rel="stylesheet" href="css/season67.css?v=23">
 </head>
 <body>
 <div id="app"></div>
@@ -24,7 +25,7 @@
 <!-- ========================================================= HUD ==== -->
 <div id="hud" class="hid">
   <div id="topleft" class="panel">
-    <div class="phead">😎 <span>CHILL GUY</span></div>
+    <div class="phead">67 <span>TEMPORADA 1</span></div>
     <div class="barwrap">
       <div class="barlabel"><span>VIDA</span><span id="hpt">100</span></div>
       <div class="bar"><i id="hpf"></i></div>
@@ -43,7 +44,7 @@
   </div>
 
   <div id="topright" class="panel">
-    <div class="lbl">PONTOS</div>
+    <div class="lbl">67 · PONTOS</div>
     <div id="score">0</div>
     <div id="waveTxt">ONDA 1</div>
     <div id="combo">x1</div>
@@ -95,9 +96,10 @@
 <!-- ================================================= LOGIN / CONTA === -->
 <div id="auth" class="screen">
   <div class="sheet">
+    <div class="season-eyebrow">TEMPORADA 1 · 03 OUT — 28 NOV</div>
     <h1 class="title">MEME <span>ARENA</span></h1>
-    <div class="subtitle">APOCALYPSE</div>
-    <div class="subtitle2">entre pra começar a farmar</div>
+    <div class="subtitle">TEMPORADA 67</div>
+    <div class="subtitle2">seis partes coragem · sete partes caos</div>
     <div class="modeline"><span id="modeBadge" class="modebadge off">💾 LOCAL</span>
       <span id="modeHint" class="dim"></span></div>
 
@@ -147,8 +149,10 @@
         </div>
       </div>
 
-      <div class="lobby-mini-logo" aria-label="Meme Arena Apocalypse">
-        <b>MEME</b><strong>ARENA</strong><span>APOCALYPSE</span>
+      <div class="season-hub-badge" aria-label="Temporada 1: 67">
+        <span>TEMPORADA 1</span>
+        <b><i>6</i><i>7</i></b>
+        <small id="seasonCountdown">TERMINA EM —</small>
       </div>
 
       <div class="lobby-top-actions">
@@ -160,10 +164,11 @@
 
     <main class="lobby-main">
       <nav class="lobby-left" aria-label="Coleção e conta">
-        <div class="lobby-nav-label">COLEÇÃO</div>
-        <button id="shopBtn" class="lobby-tile pink"><span>🛒</span><b>LOJA</b><small>novos itens</small></button>
+        <div class="lobby-nav-label">TEMPORADA 67</div>
+        <button id="seasonBtn" class="lobby-tile acid"><span>67</span><b>CAIXAS 67</b><small>itens exclusivos</small></button>
+        <button id="shopBtn" class="lobby-tile pink"><span>🛒</span><b>LOJA</b><small>arsenal completo</small></button>
         <button id="invBtn" class="lobby-tile cyan"><span>🎒</span><b>VISUAL</b><small>inventário</small></button>
-        <button id="mkBtn" class="lobby-tile violet"><span>💱</span><b>MERCADO</b><small>trocas</small></button>
+        <button id="mkBtn" class="lobby-tile violet"><span>💱</span><b>MERCADO</b><small>defina seu preço</small></button>
         <button id="logoutBtn" class="lobby-exit">↪ SAIR DA CONTA</button>
       </nav>
 
@@ -187,9 +192,9 @@
 
       <aside class="lobby-right">
         <div class="mode-card">
-          <div class="mode-card-head"><span>MODO ATUAL</span><i>SOLO</i></div>
+          <div class="mode-card-head"><span>EVENTO 67 · MODO ATUAL</span><i>SOLO</i></div>
           <div class="mode-map-art"><span id="hubMapIcon">🌐</span></div>
-          <strong id="hubMapName">Arena Brainrot</strong>
+          <strong id="hubMapName">Arena 67</strong>
           <small>SOBREVIVÊNCIA · HORDAS</small>
         </div>
         <button id="mpBtn" class="lobby-multi locked">🔒 MULTIPLAYER</button>
@@ -198,6 +203,11 @@
     </main>
 
     <footer class="lobby-footer">
+      <div class="season-wallet" title="Progresso da Temporada 67">
+        <span>⬡ <b id="seasonFragments">0</b></span>
+        <span>⚡ <b id="seasonBoosts">0</b></span>
+        <span>GARANTIA <b id="seasonPity">1/7</b></span>
+      </div>
       <div id="hubStats" class="hstats"></div>
       <div class="mini-rating" title="Classificação indicativa Livre"><b>L</b><span>LIVRE</span></div>
     </footer>
@@ -208,16 +218,37 @@
 <div id="shop" class="screen hid">
   <div class="sheet wide tall">
     <div class="hubtop">
-      <h2 class="h2">🛒 LOJA</h2>
+      <h2 class="h2">67 · LOJA DA TEMPORADA</h2>
       <div class="hubwallet">🪙 <b id="shopCoins">0</b></div>
     </div>
+    <div class="season-shop-strip">
+      <div><span>TEMPORADA 1</span><b>6<span>7</span></b></div>
+      <p>Arte, modelos e efeitos originais · sem música ou áudio da trend<br><strong id="seasonShopCountdown">03 OUT — 28 NOV 2026</strong> · próxima: 29 NOV 2026</p>
+      <div class="season-shop-stats"><span>⬡ <b id="shopFragments">0</b></span><span>⚡ <b id="shopBoosts">0</b></span></div>
+    </div>
     <div class="tabs">
+      <button class="tab season-tab" data-tab="box">📦 CAIXAS 67</button>
       <button class="tab sel" data-tab="weapon">ARMAS</button>
       <button class="tab" data-tab="skin">SKINS</button>
       <button class="tab" data-tab="armor">ARMADURAS</button>
     </div>
     <div id="shopGrid" class="igrid"></div>
     <div class="btnrow"><button id="shopClose" class="btn sec">← VOLTAR</button></div>
+  </div>
+</div>
+
+<!-- =============================================== ABERTURA CAIXA 67 === -->
+<div id="lootbox" class="screen hid">
+  <div class="sheet season-reveal">
+    <div class="season-eyebrow">TEMPORADA 1 · RECOMPENSA</div>
+    <div class="loot-emblem"><i>6</i><i>7</i></div>
+    <h2 id="lootTitle" class="h2">CAIXA 67 ABERTA</h2>
+    <div id="lootResults" class="loot-results"></div>
+    <div id="lootProgress" class="loot-progress"></div>
+    <div class="btnrow">
+      <button id="lootAgain" class="btn">ABRIR OUTRA</button>
+      <button id="lootClose" class="btn sec">VOLTAR À LOJA</button>
+    </div>
   </div>
 </div>
 
@@ -277,7 +308,7 @@
       Itens anunciados por outros jogadores. O pagamento vai direto pra quem vendeu.
     </div>
     <div id="mkSell" class="dim hid" style="margin:2px 0 6px">
-      Ao anunciar, o item sai do seu inventário e volta se você cancelar.
+      Você define o valor dentro da faixa exclusiva de cada item. Ao anunciar, ele sai do inventário e volta se você cancelar.
     </div>
 
     <div id="mkGift" class="hid">
@@ -370,13 +401,14 @@
 <!-- ================================================== TELA INICIAL === -->
 <div id="start" class="screen hid">
   <div class="sheet wide">
+    <div class="season-eyebrow">TEMPORADA 1 · PROTOCOLO 6·7</div>
     <h1 class="title">MEME <span>ARENA</span></h1>
-    <div class="subtitle">APOCALYPSE</div>
-    <div class="subtitle2">BRAINROT SURVIVAL 3D</div>
+    <div class="subtitle">TEMPORADA 67</div>
+    <div class="subtitle2">SOBREVIVÊNCIA 3D</div>
     <p class="intro">
-      A internet colapsou e o <b>Brainrot</b> vazou dos servidores: os memes ganharam forma 3D.
-      Você é o <b class="pink">Chill Guy</b>, o último com dopamina suficiente pra resistir.
-      Segure a arena, escolha seus <b class="cyan">perks</b> e derrube os <b class="yellow">chefes</b>.
+      O <b>Protocolo 6·7</b> tomou a arena: seis partes coragem, sete partes caos.
+      Escolha seu equipamento, segure as hordas, combine <b class="cyan">perks</b> e derrube os
+      <b class="yellow">chefes</b> antes que a temporada termine.
     </p>
     <div id="menuStats" class="mstats"></div>
 
@@ -407,7 +439,7 @@
       <div class="k"><b>CLIQUE ESQ.</b>atirar</div>
       <div class="k"><b>ESPAÇO</b>pular</div>
       <div class="k"><b>SHIFT</b>dash (i-frames)</div>
-      <div class="k"><b>Q / RODA / 1-5</b>trocar arma</div>
+      <div class="k"><b>Q / RODA / 1-6</b>trocar arma</div>
       <div class="k"><b>E</b>ultimate (Brainrot 100%)</div>
       <div class="k"><b>ESC / P</b>pausar</div>
       <div class="k"><b>M</b>mudo</div>
@@ -524,47 +556,48 @@
 <div id="loading">
   <div class="splash-orb one"></div><div class="splash-orb two"></div>
   <div class="splash-content">
-    <div class="splash-kicker">FEWKSS APRESENTA</div>
-    <div class="splash-logo"><span>💀</span><div><b>MEME</b><strong>ARENA</strong><em>APOCALYPSE</em></div></div>
-    <div class="splash-tagline">ENTRE. SOBREVIVA. NÃO VIRE CONTEÚDO.</div>
+    <div class="splash-kicker">TEMPORADA 1 · 03 OUT — 28 NOV 2026</div>
+    <div class="splash-logo season67-logo"><span><i>6</i><i>7</i></span><div><b>MEME</b><strong>ARENA</strong><em>TEMPORADA 67</em></div></div>
+    <div class="splash-tagline">SEIS PARTES CORAGEM. SETE PARTES CAOS.</div>
     <div class="splash-loader"><i></i></div>
-    <div class="splash-loading">PREPARANDO O CAOS 3D…</div>
+    <div class="splash-loading">SINCRONIZANDO O PROTOCOLO 6·7…</div>
   </div>
   <div class="splash-rating" aria-label="Classificação indicativa Livre">
     <b>L</b><span>CLASSIFICAÇÃO<br><strong>LIVRE</strong></span>
   </div>
-  <div class="splash-foot">Violência fantasiosa · Interação entre usuários · Compras apenas com moeda virtual</div>
+  <div class="splash-foot">Arte e áudio originais · Violência fantasiosa · Interação entre usuários · Apenas moeda virtual</div>
 </div>
 
-<script src="lib/three.min.js?v=22"></script>
-<script src="src/utils.js?v=22"></script>
-<script src="src/config.js?v=22"></script>
-<script src="src/data.js?v=22"></script>
-<script src="src/maps.js?v=22"></script>
-<script src="src/items.js?v=22"></script>
-<script src="src/audio.js?v=22"></script>
-<script src="src/faces.js?v=22"></script>
-<script src="src/textures.js?v=22"></script>
-<script src="src/world.js?v=22"></script>
-<script src="src/builds.js?v=22"></script>
-<script src="src/weapons3d.js?v=22"></script>
-<script src="src/armor3d.js?v=22"></script>
-<script src="src/entities.js?v=22"></script>
-<script src="src/net.js?v=22"></script>
-<script src="src/profile.js?v=22"></script>
-<script src="src/ui.js?v=22"></script>
-<script src="src/pbuilds.js?v=22"></script>
-<script src="src/previews.js?v=22"></script>
-<script src="src/goals.js?v=22"></script>
-<script src="src/market.js?v=22"></script>
-<script src="src/multi.js?v=22"></script>
-<script src="src/mod.js?v=22"></script>
-<script src="src/mpui.js?v=22"></script>
-<script src="src/metaui.js?v=22"></script>
-<script src="src/game.js?v=22"></script>
+<script src="lib/three.min.js?v=23"></script>
+<script src="src/utils.js?v=23"></script>
+<script src="src/config.js?v=23"></script>
+<script src="src/data.js?v=23"></script>
+<script src="src/maps.js?v=23"></script>
+<script src="src/items.js?v=23"></script>
+<script src="src/season.js?v=23"></script>
+<script src="src/audio.js?v=23"></script>
+<script src="src/faces.js?v=23"></script>
+<script src="src/textures.js?v=23"></script>
+<script src="src/world.js?v=23"></script>
+<script src="src/builds.js?v=23"></script>
+<script src="src/weapons3d.js?v=23"></script>
+<script src="src/armor3d.js?v=23"></script>
+<script src="src/entities.js?v=23"></script>
+<script src="src/net.js?v=23"></script>
+<script src="src/profile.js?v=23"></script>
+<script src="src/ui.js?v=23"></script>
+<script src="src/pbuilds.js?v=23"></script>
+<script src="src/previews.js?v=23"></script>
+<script src="src/goals.js?v=23"></script>
+<script src="src/market.js?v=23"></script>
+<script src="src/multi.js?v=23"></script>
+<script src="src/mod.js?v=23"></script>
+<script src="src/mpui.js?v=23"></script>
+<script src="src/metaui.js?v=23"></script>
+<script src="src/game.js?v=23"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=22').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=23').catch(() => {}));
   }
 </script>
 </body>

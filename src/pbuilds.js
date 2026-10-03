@@ -404,6 +404,62 @@
       scepter.rotation.z = .25;
       c.add(scepter);
       c.anim(t => { orb.rotation.y = t; scepter.rotation.x = Math.sin(t * 2) * .08; });
+    },
+
+    /* 67 — personagem inteiramente original da temporada numérica. */
+    sixtyseven(c) {
+      c.hood.visible = false;
+      const ink = M(0x0d1423, { rough: .26, metal: .82 });
+      const steel = M(0xd4e1e9, { rough: .17, metal: .93 });
+      const lime = M(0xbaff32, { rough: .10, metal: .42, emissive: 0x5f9300, ei: 1.55 });
+      const orange = M(0xff6b1a, { rough: .12, metal: .48, emissive: 0x912600, ei: 1.35 });
+      const visor = M(0x08131f, { rough: .06, metal: .88, emissive: 0x00cde8, ei: .65 });
+
+      /* capacete de corrida, com visor contínuo e coroa aerodinâmica */
+      const helmet = new THREE.Mesh(
+        new THREE.SphereGeometry(.64, 22, 15, 0, TAU, 0, Math.PI * .70), ink);
+      helmet.position.set(0, 2.22, .02); helmet.rotation.x = -.15; c.add(helmet);
+      const glass = B(1.0, .27, .10, visor);
+      glass.position.set(0, 2.27, -.54); glass.rotation.x = -.06; c.add(glass);
+      const crest = B(.16, .25, .76, lime);
+      crest.position.set(-.13, 2.68, .08); crest.rotation.x = -.12; c.add(crest);
+      const crest2 = B(.13, .19, .62, orange);
+      crest2.position.set(.14, 2.66, .10); crest2.rotation.x = -.12; c.add(crest2);
+
+      /* emblema frontal: 6 em aro e 7 angular, ambos geométricos */
+      const six = Tor(.14, .035, lime, 18);
+      six.position.set(-.22, 2.25, -.615); c.add(six);
+      const sixStem = B(.045, .22, .045, lime);
+      sixStem.position.set(-.30, 2.36, -.62); sixStem.rotation.z = -.25; c.add(sixStem);
+      const sevenTop = B(.28, .045, .045, orange);
+      sevenTop.position.set(.22, 2.35, -.62); c.add(sevenTop);
+      const sevenLeg = B(.045, .25, .045, orange);
+      sevenLeg.position.set(.24, 2.23, -.62); sevenLeg.rotation.z = -.38; c.add(sevenLeg);
+
+      /* jaqueta esportiva assimétrica e cinto metálico */
+      [-1, 1].forEach(s => {
+        const stripe = B(.20, .92, .07, s < 0 ? lime : orange);
+        stripe.position.set(s * .28, 1.28, -.55); stripe.rotation.z = s * .10; c.add(stripe);
+        const cuff = Tor(.205, .045, s < 0 ? lime : orange, 18);
+        cuff.position.set(s * .74, .92, 0); cuff.rotation.x = Math.PI / 2; c.add(cuff);
+        const shoe = B(.34, .15, .58, s < 0 ? lime : orange);
+        shoe.position.set(s * .27, .10, -.12); c.add(shoe);
+      });
+      const belt = B(.93, .13, .18, steel);
+      belt.position.set(0, .78, -.22); c.add(belt);
+      const buckle = new THREE.Mesh(new THREE.OctahedronGeometry(.12, 0), lime);
+      buckle.position.set(0, .79, -.43); c.add(buckle);
+
+      /* duas aletas traseiras criam o rastro visual sem copiar personagem. */
+      const fins = [];
+      [-1, 1].forEach(s => {
+        const fin = B(.16, .72, .10, s < 0 ? lime : orange);
+        fin.position.set(s * .32, 1.38, .48); fin.rotation.z = s * .14; c.add(fin); fins.push(fin);
+      });
+      c.anim(t => {
+        buckle.rotation.y = t * 1.7;
+        fins.forEach((f, i) => { f.rotation.x = Math.sin(t * 3.4 + i) * .08; });
+      });
     }
   };
 

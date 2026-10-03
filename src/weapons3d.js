@@ -212,7 +212,46 @@
     return finish(g, def.color, [0, .01, -1.90]);
   }
 
-  const BUILDERS = { laser, shot: shotgun, rpg: rocket, mini: minigun, rail: railgun };
+  /* Temporada 67: rifle de pulso original com dois núcleos assimétricos.
+     O anel representa o 6 e os trilhos angulares formam o gesto gráfico do 7. */
+  function pulse67(def) {
+    const g = new THREE.Group();
+    const ink = mat(0x0d1423, { rough: .20, metal: .96 });
+    const steel = mat(0xc8d8e5, { rough: .15, metal: .98 });
+    const lime = mat(0xbaff32, { rough: .08, metal: .46, emissive: 0x78b900, ei: 1.65 });
+    const orange = mat(0xff6b1a, { rough: .10, metal: .52, emissive: 0x9a2800, ei: 1.45 });
+    const glass = basic(0xdffff5, .76);
+
+    box(g, [.44, .42, 1.08], ink, [0, 0, -.34]);
+    box(g, [.54, .12, .88], steel, [0, .24, -.45]);
+    box(g, [.27, .47, .25], ink, [0, -.34, .06], [-.22, 0, 0]);
+    box(g, [.32, .20, .42], ink, [0, .02, .43]);
+
+    /* núcleo "6" */
+    const six = new THREE.Group();
+    six.position.set(-.26, .02, -.55); g.add(six);
+    const sixRing = ring(six, .18, .052, lime, 0, 22);
+    tube(six, .052, .52, lime, [-.13, .16, -.12], 10).rotation.set(0, 0, -.42);
+    g.userData.energy = sixRing;
+
+    /* trilhos em "7", mantidos como detalhe abstrato e legível */
+    box(g, [.42, .07, .10], orange, [.23, .20, -.60]);
+    box(g, [.07, .43, .10], orange, [.27, .01, -.68], [0, 0, -.42]);
+
+    [-1, 1].forEach(s => {
+      box(g, [.105, .15, 1.25], s < 0 ? lime : orange, [s * .24, .01, -1.10]);
+      box(g, [.06, .07, 1.18], glass, [s * .24, .02, -1.12]);
+      bolt(g, s * .24, .17, -.97, s < 0 ? lime : orange, .055);
+    });
+    [ -.62, -.98, -1.34, -1.66 ].forEach((z, i) =>
+      ring(g, .31 - i * .018, .025, i % 2 ? orange : lime, z, 24));
+    tube(g, .075, 1.42, lime, [0, .01, -1.05], 12);
+    box(g, [.40, .07, .28], orange, [0, -.24, .22]);
+
+    return finish(g, def.color, [0, .01, -1.88]);
+  }
+
+  const BUILDERS = { laser, shot: shotgun, rpg: rocket, mini: minigun, rail: railgun, pulse67 };
 
   MA.createWeaponModel = function (weapon) {
     const def = typeof weapon === 'string'

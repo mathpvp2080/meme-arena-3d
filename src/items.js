@@ -99,10 +99,9 @@
     MA.ARMORS.forEach(a => out.push(Object.assign({ type: 'armor' }, a)));
     MA.WEAPONS.forEach(w => {
       const m = MA.WEAPON_SHOP[w.id] || { price: 1000, level: 1, rarity: 'common' };
-      out.push({
-        type: 'weapon', id: w.id, name: w.name, icon: w.icon, desc: w.desc,
-        price: m.price, level: m.level, rarity: m.rarity, starter: !!m.starter
-      });
+      out.push(Object.assign({
+        type: 'weapon', id: w.id, name: w.name, icon: w.icon, desc: w.desc
+      }, m, { starter: !!m.starter }));
     });
     return out;
   };
@@ -117,6 +116,22 @@
       return Object.assign({}, w, m, { type: 'weapon' });
     }
     return null;
+  };
+
+  /* Cada item tem a sua própria faixa de revenda. Itens sazonais declaram
+     limites explícitos; o catálogo permanente deriva a faixa do valor e da
+     raridade. O servidor repete os mesmos limites antes de aceitar o anúncio. */
+  MA.marketPriceBounds = function (item) {
+    if (!item) return { min: 10, max: 1000 };
+    if (item.marketMin !== undefined && item.marketMax !== undefined) {
+      return { min: Math.max(10, item.marketMin | 0), max: Math.max(item.marketMin | 0, item.marketMax | 0) };
+    }
+    const base = Math.max(100, item.price || 100);
+    const mult = { common: 3, rare: 4, epic: 6, legendary: 8, mythic: 10 }[item.rarity] || 3;
+    return {
+      min: Math.max(10, Math.round(base * .25)),
+      max: Math.max(100, Math.round(base * mult))
+    };
   };
 
   MA.itemKey = (type, id) => type + ':' + id;

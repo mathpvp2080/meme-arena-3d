@@ -69,12 +69,64 @@ create table if not exists public.market_listings (
   id          bigserial primary key,
   seller_id   uuid not null references auth.users (id) on delete cascade,
   seller_name text not null,
-  item        text not null,            -- 'skin:doge' | 'weapon:laser' | 'armor:tank'
-  price       int  not null check (price > 0 and price <= 1000000),
+  item        text not null,            -- 'skin:doge' | 'weapon:laser' | 'armor:pixel'
+  price       int  not null,
   sold        boolean not null default false,
   buyer_name  text,
   created_at  timestamptz not null default now()
 );
+
+-- Versões antigas usavam um teto global de 1.000.000. Agora a tabela só
+-- exige preço positivo; a função market_sell valida a faixa do item abaixo.
+alter table public.market_listings drop constraint if exists market_listings_price_check;
+alter table public.market_listings drop constraint if exists market_listings_price_positive;
+alter table public.market_listings
+  add constraint market_listings_price_positive check (price > 0);
+
+-- Limites individuais de revenda. O cliente mostra a mesma faixa, mas esta
+-- tabela é a autoridade: editar o JavaScript não permite anunciar fora dela.
+create table if not exists public.market_price_limits (
+  item       text primary key,
+  min_price  int not null check (min_price > 0),
+  max_price  int not null check (max_price >= min_price),
+  tradable   boolean not null default true
+);
+
+insert into public.market_price_limits (item, min_price, max_price, tradable) values
+  ('skin:chill',          25,    300, false),
+  ('skin:hacker',        450,   7200, true),
+  ('skin:doge',          600,   9600, true),
+  ('skin:rizzler',      1125,  27000, true),
+  ('skin:sigma',        1300,  31200, true),
+  ('skin:clown',         700,  11200, true),
+  ('skin:ghost',        1500,  36000, true),
+  ('skin:demon',        2375,  76000, true),
+  ('skin:gigachad',     3000,  96000, true),
+  ('skin:king',         6250, 250000, true),
+  ('skin:sixtyseven',   1670,  26700, true),
+  ('armor:hoodie',        25,    300, false),
+  ('armor:cardboard',    225,   2700, true),
+  ('armor:pixel',        650,  10400, true),
+  ('armor:neon',        1550,  37200, true),
+  ('armor:sigma',       2750,  88000, true),
+  ('armor:chadplate',   5500, 220000, true),
+  ('armor:protocol67',  2670,  46700, true),
+  ('weapon:laser',       113,   1350, false),
+  ('weapon:shot',        400,   6400, true),
+  ('weapon:rpg',         950,  22800, true),
+  ('weapon:mini',       1875,  60000, true),
+  ('weapon:rail',       3500, 140000, true),
+  ('weapon:pulse67',    3670,  67000, true)
+on conflict (item) do update set
+  min_price = excluded.min_price,
+  max_price = excluded.max_price,
+  tradable = excluded.tradable;
+
+alter table public.market_price_limits enable row level security;
+drop policy if exists "limites do mercado leitura" on public.market_price_limits;
+create policy "limites do mercado leitura" on public.market_price_limits
+  for select using (true);
+grant select on public.market_price_limits to anon, authenticated;
 
 create index if not exists market_open_idx on public.market_listings (sold, created_at desc);
 
@@ -121,17 +173,28 @@ create policy "ve meus presentes" on public.gifts for select
 -- Anunciar um item: só se ele estiver mesmo no inventário; sai do inventário na hora.
 create or replace function public.market_sell(p_item text, p_price int)
 returns json language plpgsql security definer as $$
-declare me uuid := auth.uid(); inv jsonb; nome text;
+declare
+  me uuid := auth.uid(); inv jsonb; equip jsonb; nome text;
+  minimo int; maximo int; pode_vender boolean;
 begin
   /* operação confiável: roda dentro do banco, a trava anti-trapaça libera */
   perform set_config('app.trusted', 'on', true);
   if me is null then return json_build_object('error','Sem sessão.'); end if;
-  if p_price is null or p_price < 1 or p_price > 1000000 then
-    return json_build_object('error','Preço inválido.');
+  select min_price, max_price, tradable into minimo, maximo, pode_vender
+    from public.market_price_limits where item = p_item;
+  if minimo is null then return json_build_object('error','Item não reconhecido pelo mercado.'); end if;
+  if not pode_vender then return json_build_object('error','Itens iniciais não podem ser vendidos.'); end if;
+  if p_price is null or p_price < minimo or p_price > maximo then
+    return json_build_object('error', format('Este item aceita preços de %s a %s moedas.', minimo, maximo));
   end if;
-  select inventory, username into inv, nome from public.profiles where id = me;
+  select inventory, username, equipped into inv, nome, equip from public.profiles where id = me;
   if inv is null then return json_build_object('error','Perfil não encontrado.'); end if;
   if not (inv ? p_item) then return json_build_object('error','Você não tem esse item.'); end if;
+  if (split_part(p_item, ':', 1) = 'skin' and coalesce(equip->>'skin', '') = split_part(p_item, ':', 2))
+     or (split_part(p_item, ':', 1) = 'armor' and coalesce(equip->>'armor', '') = split_part(p_item, ':', 2))
+     or (split_part(p_item, ':', 1) = 'weapon' and coalesce(equip->'weapons', '[]'::jsonb) ? split_part(p_item, ':', 2)) then
+    return json_build_object('error','Desequipe o item antes de vender.');
+  end if;
   if (select count(*) from public.market_listings
         where seller_id = me and sold = false) >= 6 then
     return json_build_object('error','Você já tem 6 anúncios abertos.');

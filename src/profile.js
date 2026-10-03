@@ -23,6 +23,7 @@
       d.stats = Object.assign(
         { games: 0, bestScore: 0, totalScore: 0, kills: 0, bosses: 0, bestWave: 0, maxCombo: 1, playtime: 0 },
         d.stats || {});
+      if (MA.Season) MA.Season.migrate(d);
       /* todo mundo nasce com a skin e a armadura iniciais */
       MA.SKINS.filter(s => s.starter).forEach(s => this.grant('skin', s.id, true));
       MA.ARMORS.filter(a => a.starter).forEach(a => this.grant('armor', a.id, true));
@@ -110,6 +111,7 @@
     /* -------------------------------------------------------------- loja */
     canBuy(item) {
       if (this.owns(item.type, item.id)) return { error: 'Você já tem esse item.' };
+      if (item.boxOnly) return { error: 'Item exclusivo das Caixas 67.' };
       if (this.data.level < (item.level || 1)) return { error: 'Precisa ser nível ' + item.level + '.' };
       if (this.data.coins < item.price) return { error: 'Moedas insuficientes.' };
       return { ok: true };
@@ -130,6 +132,7 @@
     sell(item) {
       if (!this.owns(item.type, item.id)) return { error: 'Você não possui esse item.' };
       if (item.starter) return { error: 'Itens iniciais não podem ser vendidos.' };
+      if (item.boxOnly) return { error: 'Itens sazonais são revendidos no Mercado com preço definido por você.' };
       if (this.isEquipped(item.type, item.id)) return { error: 'Desequipe o item antes de vender.' };
       const value = Math.round((item.price || 0) * CFG.SELL_RATE);
       this.revoke(item.type, item.id);
@@ -141,15 +144,21 @@
     /* ----------------------------------------------- recompensas da run */
     rewards(g) {
       const diffMul = g.diff ? g.diff.pts : 1;
-      const coins = Math.round((g.score / 22 + g.kills * 3 + g.wave * 16 + g.bossesKilled * 220) * diffMul);
-      const xp    = Math.round((g.score / 14 + g.kills * 4 + g.wave * 26 + g.bossesKilled * 320) * diffMul);
-      return { coins, xp };
+      const seasonMul = MA.Season ? MA.Season.rewardMultiplier() : 1;
+      const coins = Math.round((g.score / 22 + g.kills * 3 + g.wave * 16 + g.bossesKilled * 220) * diffMul * seasonMul);
+      const xp    = Math.round((g.score / 14 + g.kills * 4 + g.wave * 26 + g.bossesKilled * 320) * diffMul * seasonMul);
+      return { coins, xp, multiplier: seasonMul };
     },
 
     applyRun(g, seconds) {
       const r = this.rewards(g);
       this.addCoins(r.coins);
       const levels = this.addXp(r.xp);
+      if (r.multiplier > 1 && MA.Season) {
+        MA.Season.consumeBoost();
+        const sp = MA.Season.progress();
+        r.boostsRemaining = sp ? sp.boosts : 0;
+      }
       const s = this.data.stats;
       s.games++;
       s.totalScore += g.score;
@@ -160,7 +169,11 @@
       s.maxCombo = Math.max(s.maxCombo, g.maxCombo);
       s.playtime += Math.max(0, Math.round(seconds || 0));
       this.save(true);
-      return { coins: r.coins, xp: r.xp, levels };
+      return {
+        coins: r.coins, xp: r.xp, levels,
+        multiplier: r.multiplier,
+        boostsRemaining: r.boostsRemaining || 0
+      };
     },
 
     /* ------------------------------------------------------------ bônus */

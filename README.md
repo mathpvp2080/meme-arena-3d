@@ -20,6 +20,21 @@ Sobreviva a ondas infinitas de memes, escolha perks, derrube chefes gigantes.
 A internet colapsou e o **Brainrot** vazou dos servidores: os memes ganharam forma 3D.
 Você é o **Chill Guy**, o último com dopamina suficiente pra resistir. Segure a arena.
 
+### Temporada 1 · 67
+
+- **Período:** 03/10/2026 a 28/11/2026; a próxima temporada começa em 29/11/2026.
+- Identidade visual própria em lima, laranja, ciano e grafite, com a **Arena 67**.
+- **Caixa 67** e **Cofre 67**, comprados somente com moedas virtuais. As chances ficam
+  visíveis na loja e a 7ª abertura sem equipamento garante um item sazonal.
+- Conteúdo exclusivo: skin **Corredor 67**, armadura **Protocolo 6·7** e arma
+  **Pulso Seis-Sete**, todos com modelos 3D procedurais próprios.
+- **Impulso 67** concede +67% de moedas e XP na próxima partida; duplicatas viram
+  fragmentos e 67 fragmentos forjam um item sazonal que ainda falta.
+- O mercado usa limites mínimo e máximo **específicos por item**, e o jogador escolhe
+  o valor do anúncio dentro dessa faixa.
+- A temporada usa o conceito numérico do meme. Não inclui música, voz, foto,
+  personagem ou arte da trend; todos os visuais, efeitos e sons são originais.
+
 Tudo é **gerado proceduralmente** — não existe um único arquivo de imagem, modelo 3D ou
 áudio no projeto. Texturas são desenhadas em `<canvas>`, modelos são montados com
 geometrias primitivas e toda a trilha sonora e efeitos vêm de osciladores WebAudio.
@@ -30,7 +45,7 @@ geometrias primitivas e toda a trilha sonora e efeitos vêm de osciladores WebAu
 |---|---|
 | 🧟 **16 inimigos** | Trollface, Amogus, Pepe, Skibidi Toilet, Doge, Rizzler, Nyan Cat, Bluescreen, Ohio, Stonks, Sigma, Grimace, Tralalero, Tung Tung, Bombardiro, Goofy Ahh |
 | 👹 **5 chefes** | Com **3 fases**, barragens em leque, investidas com onda de impacto e invocação de lacaios |
-| 🔫 **5 armas** | Laser, Shotgun, RPG com dano em área, Minigun e Railgun perfurante — liberadas conforme as ondas |
+| 🔫 **6 armas** | Laser, Shotgun, RPG, Minigun, Railgun e o Pulso Seis-Sete sazonal |
 | 🃏 **20 perks** | Escolha 1 de 3 cartas a cada onda. Comuns, raras e épicas. Acumulam entre si |
 | 🧠 **Ultimate** | Encha o medidor de Brainrot e vire invencível com dano x1.8 e cadência dobrada |
 | 🎁 **6 itens** | Cura, dano dobrado, velocidade, escudo, overdrive e a Nuke de Meme |
@@ -50,7 +65,7 @@ geometrias primitivas e toda a trilha sonora e efeitos vêm de osciladores WebAu
 | `Clique esquerdo` | Atirar |
 | `Espaço` | Pular |
 | `Shift` | Dash (com frames de invencibilidade) |
-| `Q` / `Roda` / `1`–`5` | Trocar de arma |
+| `Q` / `Roda` / `1`–`6` | Trocar de arma |
 | `E` | Ultimate (Brainrot em 100%) |
 | `Esc` / `P` | Pausar |
 | `M` | Mudo |
@@ -144,7 +159,7 @@ Three.js é distribuído sob a licença MIT (© three.js authors).
   **600 moedas** — o bastante para comprar a arma inicial (Laser de Doge, 450).
 - **Nível e XP** até o nível 60. Ganhe XP e moedas a cada partida (pontos,
   abates, ondas e chefes, multiplicados pela dificuldade).
-- **Loja** com 10 skins, 6 armaduras e 5 armas. As armaduras dão **+HP** e
+- **Loja** com 11 skins, 7 armaduras, 6 armas e caixas sazonais. As armaduras dão **+HP** e
   **redução de dano**, e aparecem no boneco 3D.
 - **Inventário** para equipar (até 3 armas ao mesmo tempo) e **vender** itens
   por 50% do preço.
@@ -165,7 +180,7 @@ Three.js é distribuído sob a licença MIT (© three.js authors).
 
 | Mapa | Libera no nível |
 |---|---|
-| 🌐 Arena Brainrot | 1 |
+| 6⁷ Arena 67 | 1 |
 | 🌽 Planície de Ohio | 4 |
 | 🚽 Esgoto Skibidi | 9 |
 | 🦈 Praia Italiana | 15 |
@@ -186,5 +201,6 @@ Para funcionar pela internet é preciso rodar `supabase/schema_multiplayer.sql`
 no SQL Editor do Supabase. Sem isso, o multiplayer ainda funciona em **modo
 local** entre abas do mesmo navegador.
 
-O mercado de itens (vender/presentear) já tem as tabelas e as funções prontas
-nesse mesmo SQL — a tela chega na parte 2.
+O mercado de itens (vender/presentear) usa o mesmo SQL. Depois desta atualização,
+rode o arquivo novamente para criar `market_price_limits` e ativar no servidor as
+faixas de preço individuais, inclusive para os três equipamentos da Temporada 67.

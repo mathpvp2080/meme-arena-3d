@@ -725,6 +725,28 @@
       x.globalAlpha = 1;
     },
 
+    /* Temporada 67 — visor de piloto com glifos geométricos próprios. */
+    sixtyseven(x, S) {
+      const g = x.createLinearGradient(0, 0, S, S);
+      g.addColorStop(0, '#101827'); g.addColorStop(.55, '#07131e'); g.addColorStop(1, '#18343a');
+      x.fillStyle = g; x.fillRect(0, 0, S, S);
+      /* reflexo ciano do visor */
+      x.fillStyle = 'rgba(0,234,255,.22)';
+      x.beginPath(); x.moveTo(0, S * .18); x.lineTo(S, S * .08); x.lineTo(S, S * .48); x.lineTo(0, S * .62); x.closePath(); x.fill();
+      line(x, 0, S * .61, S, S * .47, '#d8f8ff', 5);
+      /* 6: aro e haste */
+      x.strokeStyle = '#baff32'; x.lineWidth = S * .055; x.lineCap = 'round';
+      x.beginPath(); x.arc(S * .34, S * .49, S * .15, 0, TAU); x.stroke();
+      line(x, S * .23, S * .45, S * .31, S * .23, '#baff32', S * .055);
+      /* 7: topo e diagonal */
+      line(x, S * .55, S * .29, S * .80, S * .29, '#ff6b1a', S * .06);
+      line(x, S * .78, S * .31, S * .61, S * .67, '#ff6b1a', S * .06);
+      /* pequenos pontos de leitura do capacete */
+      circ(x, S * .12, S * .79, S * .025, '#baff32');
+      circ(x, S * .20, S * .79, S * .025, '#00eaff');
+      circ(x, S * .28, S * .79, S * .025, '#ff6b1a');
+    },
+
     /* 👑 Rei do Brainrot */
     king(x, S, d) {
       skinBase(x, S, d.skinTone);

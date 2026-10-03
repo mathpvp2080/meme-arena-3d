@@ -198,6 +198,51 @@
       add(c, B(.32, .065, .055, cyan), [0, 1.23, -.73], [0, 0, -.30]);
     },
 
+    /* Temporada 67: placas assimétricas 6|7 com amortecedores de impacto. */
+    protocol67(c) {
+      const ink = M(0x0d1423, { rough: .24, metal: .92 });
+      const steel = M(0xc7d7e3, { rough: .16, metal: .96 });
+      const lime = M(0xbaff32, { rough: .08, metal: .48, emissive: 0x609900, ei: 1.55 });
+      const orange = M(0xff6b1a, { rough: .10, metal: .55, emissive: 0x8d2500, ei: 1.40 });
+
+      /* peito em duas metades: aro circular e faixa angular */
+      paired(s => {
+        const plate = B(.54 * c.bulk, .91, .20, ink);
+        add(c, plate, [s * .28 * c.bulk, 1.31, -.57], [0, 0, s * .045]);
+      });
+      const six = Tor(.25, .065, lime, 24);
+      add(c, six, [-.26, 1.39, -.72]);
+      add(c, B(.075, .42, .06, lime), [-.39, 1.56, -.73], [0, 0, -.34]);
+      add(c, B(.43, .075, .06, orange), [.25, 1.61, -.73]);
+      add(c, B(.075, .51, .06, orange), [.29, 1.34, -.73], [0, 0, -.38]);
+      add(c, B(.78, .13, .22, steel), [0, .79, -.47]);
+
+      paired(s => {
+        const color = s < 0 ? lime : orange;
+        const shoulder = S(.38, ink, 16);
+        add(c, shoulder, [s * .82 * c.bulk, 1.67, 0], null, [1.28, .66, 1.05]);
+        const bumper = Tor(.285, .055, color, 20);
+        add(c, bumper, [s * .83 * c.bulk, 1.68, -.08], [PI / 2, 0, 0]);
+        const arm = s < 0 ? c.armL : c.armR;
+        attach(arm, C(.255, .21, .50, ink, 14), [0, -.15, 0]);
+        attach(arm, B(.09, .42, .13, color), [0, -.15, -.23]);
+        const leg = s < 0 ? c.legL : c.legR;
+        attach(leg, B(.32, .48, .38, ink), [0, -.15, -.04]);
+        attach(leg, B(.11, .35, .10, color), [0, -.14, -.24]);
+      });
+
+      const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.14, 1), steel);
+      add(c, core, [0, 1.18, -.75]);
+      const orbit = Tor(.23, .035, lime, 24);
+      add(c, orbit, [0, 1.18, -.73]);
+      c.anim(t => {
+        core.rotation.x = t * .8; core.rotation.y = t * 1.5;
+        orbit.rotation.z = -t * 1.1;
+        const pulse = 1 + Math.sin(t * 6.7) * .07;
+        core.scale.setScalar(pulse);
+      });
+    },
+
     /* Casca de Gigachad: armadura mítica dourada, enorme e cerimonial. */
     chadplate(c) {
       const gold = M(0xffc92e, { rough: .13, metal: .98, emissive: 0x5e3900, ei: .52 });

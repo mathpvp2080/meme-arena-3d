@@ -1375,7 +1375,7 @@
 
   function startGame() {
     MA.Audio.init(); MA.Audio.resume();
-    ['start', 'over', 'pausebox', 'settings', 'board', 'perkScreen', 'help', 'auth', 'hub', 'shop', 'inventory', 'multi']
+    ['start', 'over', 'pausebox', 'settings', 'board', 'perkScreen', 'help', 'auth', 'hub', 'shop', 'lootbox', 'inventory', 'multi']
       .forEach(id => $(id).classList.add('hid'));
     $('hud').classList.remove('hid');
     if (isTouch) $('touch').classList.remove('hid');
@@ -1586,7 +1586,7 @@
         return;
       }
       if (e.code === 'KeyQ') cycleWeapon(1);
-      if (/^Digit[1-5]$/.test(e.code)) selectWeapon(parseInt(e.code.slice(5), 10) - 1);
+      if (/^Digit[1-6]$/.test(e.code)) selectWeapon(parseInt(e.code.slice(5), 10) - 1);
       if (e.code === 'KeyE') activateUlt();
       if (e.code === 'KeyP' || e.code === 'Escape') togglePause();
       if (e.code === 'KeyM') doMute();
@@ -1696,9 +1696,11 @@
     MA.WEAPONS.forEach(w => {
       const d = document.createElement('div');
       d.className = 'rc';
+      const shopDef = MA.WEAPON_SHOP[w.id] || {};
+      const source = shopDef.boxOnly ? 'exclusiva das Caixas 67'
+        : shopDef.price ? 'loja · 🪙 ' + MA.fmt(shopDef.price) : 'loja';
       d.innerHTML = '<i>' + w.icon + '</i><b>' + w.name + '</b><span>' + w.desc +
-                    '<br><em>' + ((MA.WEAPON_SHOP[w.id] && MA.WEAPON_SHOP[w.id].price) ?
-                      'loja · 🪙 ' + MA.fmt(MA.WEAPON_SHOP[w.id].price) : 'loja') + '</em></span>';
+                    '<br><em>' + source + '</em></span>';
       wl.appendChild(d);
     });
 

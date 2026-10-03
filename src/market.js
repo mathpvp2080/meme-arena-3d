@@ -9,7 +9,7 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const PRECO_MIN = 10, PRECO_MAX = 1000000;
+  const PRECO_MIN = 10;
 
   const Market = {
     tab: 'comprar',
@@ -169,12 +169,14 @@
       html += vendaveis.length ? vendaveis.map(key => {
         const [t, i] = key.split(':');
         const it = MA.findItem(t, i);
-        const sugerido = Math.max(PRECO_MIN, Math.round((it.price || 100) * .7));
+        const bounds = MA.marketPriceBounds ? MA.marketPriceBounds(it) : { min: PRECO_MIN, max: 1000000 };
+        const sugerido = Math.max(bounds.min, Math.min(bounds.max, Math.round((it.price || 100) * .7)));
         return '<div class="mkitem ' + (it.rarity || 'common') + '">' +
           '<div class="mkico">' + (it.icon || it.face || '🎁') + '</div>' +
           '<div class="mkinfo"><b>' + it.name + '</b><div class="dim">' +
-          (t === 'skin' ? 'Skin' : t === 'armor' ? 'Armadura' : 'Arma') + '</div></div>' +
-          '<input class="inp mkp" type="number" min="' + PRECO_MIN + '" max="' + PRECO_MAX +
+          (t === 'skin' ? 'Skin' : t === 'armor' ? 'Armadura' : 'Arma') +
+          ' · faixa 🪙 ' + MA.fmt(bounds.min) + '–' + MA.fmt(bounds.max) + '</div></div>' +
+          '<input class="inp mkp" type="number" min="' + bounds.min + '" max="' + bounds.max +
           '" value="' + sugerido + '" data-price="' + key + '">' +
           '<button class="btn mini" data-sell="' + key + '">ANUNCIAR</button>' +
           '</div>';
@@ -219,8 +221,13 @@
     async acaoVender(key, preco) {
       if (!this.online()) { MA.Audio.deny(); this.msg('Isso só funciona com conta online.'); return; }
       if (this._busy) return;
-      if (!(preco >= PRECO_MIN && preco <= PRECO_MAX)) {
-        MA.Audio.deny(); this.msg('Preço entre ' + PRECO_MIN + ' e ' + MA.fmt(PRECO_MAX) + '.'); return;
+      const parts = String(key || '').split(':');
+      const item = MA.findItem(parts[0], parts[1]);
+      const bounds = MA.marketPriceBounds ? MA.marketPriceBounds(item) : { min: PRECO_MIN, max: 1000000 };
+      if (!item || !(preco >= bounds.min && preco <= bounds.max)) {
+        MA.Audio.deny();
+        this.msg('Este item aceita valores entre 🪙 ' + MA.fmt(bounds.min) + ' e ' + MA.fmt(bounds.max) + '.');
+        return;
       }
       this._busy = true; this.msg('Anunciando…');
       const r = await this.vender(key, preco);

@@ -1,8 +1,8 @@
 {
   "id": "/meme-arena-3d/",
-  "name": "MEME ARENA: APOCALYPSE",
-  "short_name": "MEME ARENA",
-  "description": "Arena 3D de ação: sobreviva a ondas infinitas de criaturas inspiradas nos memes da internet. Cinco mapas, dezesseis inimigos, cinco chefes, vinte melhorias, loja de skins e armas, co-op e PvP online em tempo real.",
+  "name": "MEME ARENA 3D — Temporada 67",
+  "short_name": "MEME ARENA 67",
+  "description": "Temporada 67 da arena 3D: sobreviva às hordas, abra caixas com moeda virtual, conquiste equipamento sazonal original e jogue co-op ou PvP.",
   "lang": "pt-BR",
   "dir": "ltr",
   "start_url": "./",
@@ -10,8 +10,8 @@
   "display": "fullscreen",
   "display_override": ["window-controls-overlay", "fullscreen", "standalone"],
   "orientation": "landscape",
-  "background_color": "#05030f",
-  "theme_color": "#0a0320",
+  "background_color": "#08101d",
+  "theme_color": "#101827",
   "categories": ["games", "entertainment"],
   "icons": [
     { "src": "assets/icon-48.png",  "sizes": "48x48",   "type": "image/png", "purpose": "any" },
@@ -28,7 +28,7 @@
     { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ],
   "screenshots": [
-    { "src": "assets/screens/01-arena.png",    "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Arena Brainrot: ondas de memes atacando" },
+    { "src": "assets/screens/01-arena.png",    "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Arena 67: ondas de criaturas atacando" },
     { "src": "assets/screens/02-ohio.png",     "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Planície de Ohio: milharal infinito" },
     { "src": "assets/screens/03-praia.png",    "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Praia do Tubarão: chefe final" },
     { "src": "assets/screens/04-esgoto.png",   "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Esgoto Skibidi" },
