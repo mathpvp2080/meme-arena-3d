@@ -134,31 +134,33 @@
       this.camera.aspect = width / height;
       this.camera.updateProjectionMatrix();
 
-      /* Base de exposição real: formas macias, aro luminoso e halo 67.
-         O fundo em raios continua no CSS, então a miniatura permanece leve. */
-      const floorTop = type === 'weapon' ? -.47 : (portrait ? -.30 : -.23);
-      const floorRadius = type === 'weapon' ? 1.58 : (portrait ? 1.30 : 1.15);
-      const floor = new THREE.Mesh(
-        new THREE.CylinderGeometry(floorRadius, floorRadius * 1.10, .15, 40),
-        new THREE.MeshStandardMaterial({ color: 0x20265f, roughness: .25, metalness: .28 })
-      );
-      floor.position.y = floorTop - .075; floor.receiveShadow = true; stage.add(floor);
-      const floorRing = new THREE.Mesh(
-        new THREE.TorusGeometry(floorRadius * .83, .035, 8, 40),
-        new THREE.MeshBasicMaterial({ color: type === 'weapon' ? 0xff4fbd : 0x2de2ff, transparent: true, opacity: .78 })
-      );
-      floorRing.rotation.x = Math.PI / 2; floorRing.position.y = floorTop + .006; stage.add(floorRing);
-      if (type !== 'weapon') {
-        const halo = new THREE.Mesh(
-          new THREE.TorusGeometry(portrait ? 1.28 : 1.18, .022, 8, 48),
-          new THREE.MeshBasicMaterial({ color: 0x6572ff, transparent: true, opacity: .34, depthWrite: false })
+      /* Loja/inventário usam pedestal de exposição. O retrato do lobby fica
+         limpo, só com a sombra em CSS, como nos menus clássicos de party-game. */
+      if (!portrait) {
+        const floorTop = type === 'weapon' ? -.47 : -.23;
+        const floorRadius = type === 'weapon' ? 1.58 : 1.15;
+        const floor = new THREE.Mesh(
+          new THREE.CylinderGeometry(floorRadius, floorRadius * 1.10, .15, 40),
+          new THREE.MeshStandardMaterial({ color: 0x20265f, roughness: .25, metalness: .28 })
         );
-        halo.position.set(0, 1.38, .47); stage.add(halo);
-        const haloAccent = new THREE.Mesh(
-          new THREE.TorusGeometry(portrait ? 1.16 : 1.06, .014, 8, 48),
-          new THREE.MeshBasicMaterial({ color: 0xff4fbd, transparent: true, opacity: .26, depthWrite: false })
+        floor.position.y = floorTop - .075; floor.receiveShadow = true; stage.add(floor);
+        const floorRing = new THREE.Mesh(
+          new THREE.TorusGeometry(floorRadius * .83, .035, 8, 40),
+          new THREE.MeshBasicMaterial({ color: type === 'weapon' ? 0xff4fbd : 0x2de2ff, transparent: true, opacity: .78 })
         );
-        haloAccent.position.set(0, 1.38, .48); stage.add(haloAccent);
+        floorRing.rotation.x = Math.PI / 2; floorRing.position.y = floorTop + .006; stage.add(floorRing);
+        if (type !== 'weapon') {
+          const halo = new THREE.Mesh(
+            new THREE.TorusGeometry(1.18, .022, 8, 48),
+            new THREE.MeshBasicMaterial({ color: 0x6572ff, transparent: true, opacity: .34, depthWrite: false })
+          );
+          halo.position.set(0, 1.38, .47); stage.add(halo);
+          const haloAccent = new THREE.Mesh(
+            new THREE.TorusGeometry(1.06, .014, 8, 48),
+            new THREE.MeshBasicMaterial({ color: 0xff4fbd, transparent: true, opacity: .26, depthWrite: false })
+          );
+          haloAccent.position.set(0, 1.38, .48); stage.add(haloAccent);
+        }
       }
 
       if (type === 'weapon') {
@@ -190,7 +192,7 @@
           avatar.gun.visible = wi >= 0;
           avatar.obj.rotation.y = -.20;
           avatar.obj.position.y = -.22;
-          avatar.aura.material.opacity = .38;
+          avatar.aura.visible = false;
           this.camera.position.set(2.75, 2.55, -7.4);
           this.camera.lookAt(0, 1.34, 0);
         } else {

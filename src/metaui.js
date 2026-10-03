@@ -98,8 +98,8 @@
       if (mp) {
         const liberado = MA.Profile.canMultiplayer();
         mp.classList.toggle('locked', !liberado);
-        mp.textContent = liberado ? '🌐 MULTIPLAYER'
-          : '🔒 MULTIPLAYER (nv ' + MA.CONFIG.MULTIPLAYER_LEVEL + ')';
+        mp.textContent = liberado ? '👥 GRUPO'
+          : '🔒 GRUPO (nv ' + MA.CONFIG.MULTIPLAYER_LEVEL + ')';
       }
       if (MA.Market) MA.Market.checarPresentes();
       this.refreshGoalDot();
@@ -118,7 +118,8 @@
       $('hubXpFill').style.width = (MA.Profile.xpProgress() * 100) + '%';
       $('hubXpTxt').textContent = MA.fmt(p.xp) + ' / ' + MA.fmt(need) + ' XP';
       $('hubCoins').textContent = MA.fmt(p.coins);
-      $('hubSkin').textContent = skin.face + ' ' + skin.name;
+      $('hubSkin').textContent = skin.face;
+      $('hubSkin').title = skin.name;
       $('hubArmor').textContent = '🛡️ ' + armor.name;
       if (MA.Season) {
         const season = MA.Season.progress();
@@ -164,8 +165,8 @@
       const btn = $('mpBtn');
       btn.classList.toggle('locked', !ok);
       btn.innerHTML = ok
-        ? '⚔️ MULTIPLAYER'
-        : '🔒 MULTIPLAYER <em>nível ' + MA.CONFIG.MULTIPLAYER_LEVEL + '</em>';
+        ? '👥 GRUPO'
+        : '🔒 GRUPO <em>nível ' + MA.CONFIG.MULTIPLAYER_LEVEL + '</em>';
 
       $('playBtnHub').classList.toggle('needweapon', wIdx.length === 0);
     },
