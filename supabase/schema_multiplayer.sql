@@ -16,7 +16,8 @@ returns trigger language plpgsql as $$
 begin
   new.updated_at = now();
   return new;
-end $$;
+end;
+$$;
 
 create table if not exists public.rooms (
   code        text primary key,
@@ -222,7 +223,8 @@ begin
   values (me, nome, p_item, p_price);
 
   return json_build_object('ok', true);
-end $$;
+end;
+$$;
 
 -- Cancelar anúncio: devolve o item para o inventário.
 create or replace function public.market_cancel(p_id bigint)
@@ -238,7 +240,8 @@ begin
   if it is null then return json_build_object('error','Anúncio não encontrado.'); end if;
   update public.profiles set inventory = inventory || to_jsonb(it) where id = me;
   return json_build_object('ok', true);
-end $$;
+end;
+$$;
 
 -- Comprar: tira moedas do comprador, dá o item, paga o vendedor. Tudo junto.
 create or replace function public.market_buy(p_id bigint)
@@ -267,7 +270,8 @@ begin
      set sold = true, buyer_name = meu_nome where id = l.id;
 
   return json_build_object('ok', true, 'item', l.item, 'price', l.price);
-end $$;
+end;
+$$;
 
 -- Presentear outro jogador pelo nome: item sai de quem envia e entra em quem recebe.
 create or replace function public.send_gift(p_to text, p_item text, p_coins int default 0, p_note text default null)
@@ -303,7 +307,8 @@ begin
   values (me, meu_nome, alvo, coalesce(p_item,''), coalesce(p_coins,0), p_note, true);
 
   return json_build_object('ok', true);
-end $$;
+end;
+$$;
 
 grant execute on function public.market_sell(text,int)  to authenticated;
 grant execute on function public.market_cancel(bigint)  to authenticated;

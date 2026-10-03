@@ -27,7 +27,8 @@ returns trigger language plpgsql as $$
 begin
   new.updated_at = now();
   return new;
-end $$;
+end;
+$$;
 
 drop trigger if exists profiles_touch on public.profiles;
 create trigger profiles_touch before update on public.profiles

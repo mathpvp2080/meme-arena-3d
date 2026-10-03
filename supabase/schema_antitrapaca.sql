@@ -198,7 +198,8 @@ begin
   end if;
 
   return new;
-end $$;
+end;
+$$;
 
 drop trigger if exists profiles_guard on public.profiles;
 create trigger profiles_guard before update on public.profiles

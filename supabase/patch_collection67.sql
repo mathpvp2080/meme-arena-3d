@@ -16,7 +16,8 @@ begin
      or to_regclass('public.profiles') is null then
     raise exception 'Schema-base ausente. Execute os arquivos supabase/schema.sql e supabase/schema_multiplayer.sql completos, sem selecionar apenas parte do texto.';
   end if;
-end $$;
+end;
+$$;
 
 insert into public.market_price_limits (item, min_price, max_price, tradable) values
   ('skin:sixorbit',         650,  10400, true),
@@ -85,7 +86,8 @@ begin
   values (me, nome, p_item, p_price);
 
   return json_build_object('ok', true);
-end $$;
+end;
+$$;
 
 grant execute on function public.market_sell(text, int) to authenticated;
 

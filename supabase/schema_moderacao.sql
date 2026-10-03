@@ -50,7 +50,8 @@ begin
   values (me, left(p_nome, 40), left(coalesce(p_motivo,'outro'), 40), left(coalesce(p_trecho,''), 200));
 
   return json_build_object('ok', true);
-end $$;
+end;
+$$;
 
 grant execute on function public.report_player(text, text, text) to authenticated;
 

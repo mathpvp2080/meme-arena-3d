@@ -43,6 +43,7 @@ begin
   delete from auth.users where id = me;
 
   return jsonb_build_object('ok', true);
-end $$;
+end;
+$$;
 
 grant execute on function public.delete_my_account() to authenticated;
