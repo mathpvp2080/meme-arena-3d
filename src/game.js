@@ -1798,8 +1798,9 @@
       if (!G.running) {
         const hubOpen = !$('hub').classList.contains('hid');
         if (hubOpen && player) {
-          /* Lobby: personagem central, câmera frontal e idle suave. O centro
-             fica livre entre os botões como nos menus de party games. */
+          /* O lobby usa um retrato 3D dedicado no DOM para nunca ficar oculto
+             pelo fundo. Esconde a cópia do canvas e mantém a câmera no palco. */
+          player.obj.visible = false;
           menuT += dt;
           player.obj.position.set(0, Math.sin(menuT * 2.1) * .025, 0);
           player.obj.rotation.y = Math.sin(menuT * .72) * .13;
@@ -1814,6 +1815,7 @@
           camera.position.set(0, 2.65, -7.7);
           camera.lookAt(0, 1.35, 0);
         } else {
+          if (player) player.obj.visible = true;
           menuT += dt * .12;
           const r = 52;
           camera.position.set(Math.cos(menuT) * r, 16 + Math.sin(menuT * 2) * 5, Math.sin(menuT) * r);

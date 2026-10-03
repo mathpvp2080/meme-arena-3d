@@ -131,6 +131,21 @@
         ? wIdx.map(i => '<span class="chip">' + MA.WEAPONS[i].icon + ' ' + MA.WEAPONS[i].name + '</span>').join('')
         : '<span class="chip warn">⚠️ nenhuma arma — compre na loja</span>';
 
+      /* Retrato 3D dedicado: não depende do canvas do mapa ficar visível por
+         trás do lobby e sempre reflete skin, armadura e primeira arma. */
+      const hero = $('hubCharacterPreview');
+      if (hero && MA.Previews) {
+        const weaponId = wIdx.length ? MA.WEAPONS[wIdx[0]].id : 'none';
+        const lookKey = skin.id + '|' + armor.id + '|' + weaponId;
+        if (hero.dataset.lookKey !== lookKey) {
+          hero.dataset.lookKey = lookKey;
+          hero.dataset.previewId = lookKey;
+          hero.dataset.previewReady = '';
+          hero.innerHTML = '<span>' + skin.face + '</span><i></i>';
+        }
+        MA.Previews.hydrate(hero.parentElement);
+      }
+
       const s = p.stats;
       $('hubStats').innerHTML =
         st('PARTIDAS', MA.fmt(s.games)) + st('RECORDE', MA.fmt(s.bestScore)) +

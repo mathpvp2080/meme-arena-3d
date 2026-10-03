@@ -118,6 +118,12 @@
     snapshot(type, id) {
       this.clearStage();
       const stage = this.stage;
+      const portrait = type === 'avatar';
+      const width = portrait ? 360 : 320;
+      const height = portrait ? 480 : 196;
+      this.renderer.setSize(width, height, false);
+      this.camera.aspect = width / height;
+      this.camera.updateProjectionMatrix();
 
       if (type === 'weapon') {
         const weapon = MA.findItem('weapon', id) || MA.WEAPONS[0];
@@ -130,27 +136,49 @@
         this.camera.position.set(3.5, 2.15, -4.6);
         this.camera.lookAt(0, 0, -.55);
       } else {
-        const skin = type === 'skin'
-          ? (MA.findItem('skin', id) || MA.SKINS[0])
+        const parts = portrait ? String(id).split('|') : [];
+        const skinId = portrait ? parts[0] : id;
+        const armorId = portrait ? parts[1] : id;
+        const weaponId = portrait ? parts[2] : '';
+        const skin = (type === 'skin' || portrait)
+          ? (MA.findItem('skin', skinId) || MA.SKINS[0])
           : MA.SKINS[0];
-        const armor = type === 'armor'
-          ? (MA.findItem('armor', id) || MA.ARMORS[0])
+        const armor = (type === 'armor' || portrait)
+          ? (MA.findItem('armor', armorId) || MA.ARMORS[0])
           : MA.ARMORS[0];
         const avatar = MA.createPlayer(stage, skin, armor);
-        avatar.gun.visible = false;
+        if (portrait) {
+          const wi = MA.WEAPONS.findIndex(w => w.id === weaponId);
+          avatar.weapon = wi >= 0 ? wi : 0;
+          MA.syncWeaponModel(avatar);
+          avatar.gun.visible = wi >= 0;
+          avatar.obj.rotation.y = -.20;
+          avatar.obj.position.y = -.22;
+          avatar.aura.material.opacity = .38;
+          this.camera.position.set(2.75, 2.55, -7.4);
+          this.camera.lookAt(0, 1.34, 0);
+        } else {
+          avatar.gun.visible = false;
+          avatar.obj.rotation.y = -.52;
+          avatar.obj.position.y = -.15;
+          avatar.aura.material.opacity = .28;
+          this.camera.position.set(3.8, 2.55, -5.9);
+          this.camera.lookAt(0, 1.32, 0);
+        }
         avatar.ultAura.visible = false;
         avatar.shieldMesh.visible = false;
-        avatar.aura.material.opacity = .28;
-        avatar.obj.rotation.y = -.52;
-        avatar.obj.position.y = -.15;
         stage.add(avatar.obj);
-        this.camera.position.set(3.8, 2.55, -5.9);
-        this.camera.lookAt(0, 1.32, 0);
       }
 
       this.renderer.render(this.scene, this.camera);
-      const url = this.renderer.domElement.toDataURL('image/webp', .88);
+      const url = this.renderer.domElement.toDataURL('image/webp', .90);
       this.clearStage();
+      /* As miniaturas da loja continuam no formato horizontal. */
+      if (portrait) {
+        this.renderer.setSize(320, 196, false);
+        this.camera.aspect = 320 / 196;
+        this.camera.updateProjectionMatrix();
+      }
       return url;
     }
   };
