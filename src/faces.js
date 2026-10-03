@@ -565,19 +565,13 @@
   }
 
   const SK = {
-    /* 😎 Chill Guy — olhos semicerrados e sorrisinho tranquilo */
+    /* 😎 Chill Guy — leitura mínima de party-game: dois olhos verticais. */
     chill(x, S, d) {
       skinBase(x, S, d.skinTone);
-      brows(x, S, .36, .31, '#6b4226', 8);
       [-1, 1].forEach(s => {
-        x.beginPath(); x.ellipse(S / 2 + s * S * .17, S * .47, S * .085, S * .055, 0, 0, TAU);
-        x.fillStyle = '#fff'; x.fill(); stroke(x, '#6b4226', 4);
-        circ(x, S / 2 + s * S * .17, S * .48, S * .036, '#2a1a08');
+        ell(x, S / 2 + s * S * .17, S * .50, S * .035, S * .105, '#211913');
+        ell(x, S / 2 + s * S * .158, S * .465, S * .010, S * .025, 'rgba(255,255,255,.72)');
       });
-      // bochechas
-      circ(x, S * .24, S * .60, S * .055, 'rgba(255,140,130,.35)');
-      circ(x, S * .76, S * .60, S * .055, 'rgba(255,140,130,.35)');
-      smile(x, S, S * .66, S * .17, S * .12, '#5a3318', 8);
     },
 
     /* 🕶️ Hacker — capuz escuro e óculos com reflexo verde */
@@ -725,36 +719,19 @@
       x.globalAlpha = 1;
     },
 
-    /* Temporada 67 — rosto aberto, simpático e legível em miniatura. */
+    /* Temporada 67 — olhos mínimos; identidade fica no traje e nos glifos. */
     sixtyseven(x, S) {
-      skinBase(x, S, '#f3c8ab');
-      /* sombras suaves nas laterais dão volume sem poluir a expressão */
-      const shade = x.createLinearGradient(0, 0, S, 0);
-      shade.addColorStop(0, 'rgba(101,114,255,.18)');
-      shade.addColorStop(.24, 'rgba(255,255,255,0)');
-      shade.addColorStop(.76, 'rgba(255,255,255,0)');
-      shade.addColorStop(1, 'rgba(255,79,189,.16)');
-      x.fillStyle = shade; x.fillRect(0, 0, S, S);
-      /* olhos grandes, sobrancelhas leves e brilhos ciano */
+      skinBase(x, S, '#e7aa7c');
       [-1, 1].forEach(s => {
-        const cx = S / 2 + s * S * .18;
-        ell(x, cx, S * .45, S * .115, S * .10, '#ffffff'); stroke(x, '#3f3165', 4);
-        ell(x, cx + s * S * .012, S * .47, S * .052, S * .064, '#342653');
-        circ(x, cx - S * .020, S * .445, S * .019, '#c8f8ff');
+        ell(x, S / 2 + s * S * .17, S * .49, S * .036, S * .108, '#211829');
+        ell(x, S / 2 + s * S * .158, S * .454, S * .010, S * .026, 'rgba(255,255,255,.72)');
       });
-      line(x, S * .21, S * .32, S * .42, S * .34, '#62507e', S * .032);
-      line(x, S * .58, S * .34, S * .79, S * .32, '#62507e', S * .032);
-      /* nariz e sorriso confiante */
-      x.beginPath(); x.moveTo(S * .50, S * .47); x.quadraticCurveTo(S * .46, S * .59, S * .52, S * .60); stroke(x, '#bd7f7d', 5);
-      smile(x, S, S * .64, S * .16, S * .10, '#7b345d', 7);
-      circ(x, S * .27, S * .64, S * .065, 'rgba(255,107,180,.20)');
-      circ(x, S * .73, S * .64, S * .065, 'rgba(255,107,180,.20)');
-      /* microglifos 6 e 7, como pintura facial autoral */
-      x.strokeStyle = '#2de2ff'; x.lineWidth = S * .020; x.lineCap = 'round';
-      x.beginPath(); x.arc(S * .25, S * .72, S * .034, 0, TAU); x.stroke();
-      line(x, S * .23, S * .70, S * .25, S * .65, '#2de2ff', S * .020);
-      line(x, S * .72, S * .67, S * .79, S * .67, '#ff4fbd', S * .022);
-      line(x, S * .78, S * .68, S * .73, S * .76, '#ff4fbd', S * .022);
+      /* pintura facial 6·7 minúscula, sem sobrancelha, nariz ou boca */
+      x.strokeStyle = '#2de2ff'; x.lineWidth = S * .016; x.lineCap = 'round';
+      x.beginPath(); x.arc(S * .30, S * .70, S * .025, 0, TAU); x.stroke();
+      line(x, S * .285, S * .682, S * .30, S * .645, '#2de2ff', S * .016);
+      line(x, S * .67, S * .66, S * .72, S * .66, '#ff4fbd', S * .017);
+      line(x, S * .715, S * .668, S * .68, S * .73, '#ff4fbd', S * .017);
     },
 
     /* 👑 Rei do Brainrot */

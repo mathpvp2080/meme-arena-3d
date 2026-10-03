@@ -36,7 +36,7 @@
     MA.SKINS.push({
       id: 'sixtyseven', name: 'Corredor 67', rarity: 'mythic', price: 6700, level: 1,
       desc: 'Herói party-game com touca espacial, traje azul-magenta e energia ciano.',
-      face: '67', skinTone: '#f3c8ab', body: 0x6572ff, hood: 0xff4fbd,
+      face: '67', skinTone: '#e7aa7c', body: 0x6572ff, hood: 0xff4fbd,
       arms: 0x2de2ff, legs: 0x343066, hat: 'none', hatColor: 0xff4fbd,
       aura: 0xff4fbd, extra: 'none', seasonal: true, season: '67', boxOnly: true,
       marketMin: 1670, marketMax: 26700

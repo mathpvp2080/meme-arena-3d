@@ -127,8 +127,8 @@
      barriga arredondada e cintura curta sem copiar uma malha proprietária. */
   function partyTorsoGeometry(bulk) {
     const p = [
-      [0, -.55], [.33, -.53], [.47, -.44], [.54, -.20],
-      [.61, .18], [.58, .39], [.46, .51], [0, .54]
+      [0, -.54], [.38, -.53], [.47, -.47], [.51, -.31],
+      [.57, .16], [.63, .38], [.59, .49], [.42, .53], [0, .54]
     ].map(v => new THREE.Vector2(v[0] * bulk, v[1]));
     const geo = new THREE.LatheGeometry(p, 32);
     geo.computeVertexNormals();
@@ -150,7 +150,7 @@
      chanfros largos. É uma construção própria baseada em formas genéricas. */
   function partyHeadGeometry(w, h, d, radius) {
     const sh = roundedRectShape(w, h, radius);
-    const bevel = .075;
+    const bevel = .12;
     const uv = {
       generateTopUV(geo, vertices, a, b, c) {
         return [a, b, c].map(i => new THREE.Vector2(
@@ -175,9 +175,13 @@
     return geo;
   }
 
-  function partyHeadBackGeometry(w, h, radius) {
-    const geo = new THREE.ShapeGeometry(roundedRectShape(w, h, radius), 8);
-    geo.computeVertexNormals();
+  function partyFaceGeometry(w, h, radius) {
+    const geo = new THREE.ShapeGeometry(roundedRectShape(w, h, radius), 12);
+    const pos = geo.attributes.position, uv = geo.attributes.uv;
+    for (let i = 0; i < pos.count; i++) {
+      uv.setXY(i, pos.getX(i) / w + .5, pos.getY(i) / h + .5);
+    }
+    uv.needsUpdate = true; geo.computeVertexNormals();
     return geo;
   }
 
@@ -251,16 +255,17 @@
         ring: MA.shade(skin.skinTone, -55),
         noRing: true
       })),
-      roughness: .27, metalness: .01, clearcoat: .16, clearcoatRoughness: .25,
+      roughness: .27, metalness: .01, clearcoat: .12, clearcoatRoughness: .28,
+      side: THREE.DoubleSide,
       transparent: trans, opacity: trans ? .75 : 1, depthWrite: !trans
     });
-    const headW = 1.08, headH = .92, headD = 1.16, headR = .22;
-    const head = new THREE.Mesh(partyHeadGeometry(headW, headH, headD, headR), [faceMat, headMat]);
-    /* A extrusão compartilha material nas duas tampas; esta tampa lisa cobre
-       o verso para que o rosto exista somente na frente. */
-    const headBack = new THREE.Mesh(partyHeadBackGeometry(headW, headH, headR), headMat);
-    headBack.position.z = headD / 2 + .002; head.add(headBack);
-    head.position.y = 2.17; head.castShadow = true; g.add(head);
+    const headW = .88, headH = .72, headD = .92, headR = .31;
+    const head = new THREE.Mesh(partyHeadGeometry(headW, headH, headD, headR), headMat);
+    /* A face é uma camada fina sobre a frente; o restante da cabeça continua
+       como uma única peça lisa, sem rosto duplicado na traseira. */
+    const face = new THREE.Mesh(partyFaceGeometry(headW, headH, headR), faceMat);
+    face.position.z = -headD / 2 - .002; head.add(face);
+    head.position.y = 2.13; head.castShadow = true; g.add(head);
 
     /* chapéu / acessório de cabeça */
     const hc = skin.hatColor !== undefined ? skin.hatColor : 0xffffff;
@@ -269,7 +274,7 @@
         new THREE.SphereGeometry(.63, 32, 16, 0, TAU, 0, 1.04),
         new THREE.MeshPhysicalMaterial({ color: hc, emissive: hc, emissiveIntensity: .06, roughness: .24, metalness: .025, clearcoat: .34, clearcoatRoughness: .20 })
       );
-      cap.position.y = 2.17; cap.scale.z = .96; g.add(cap);
+      cap.position.y = 2.13; cap.scale.z = .92; g.add(cap);
       /* aba oval grossa, sem cantos de caixa */
       const brim = new THREE.Mesh(new THREE.SphereGeometry(.51, 26, 14),
         new THREE.MeshPhysicalMaterial({ color: hc, roughness: .25, metalness: .025, clearcoat: .34, clearcoatRoughness: .20 }));
@@ -380,8 +385,8 @@
     });
     /* Ombros menores só fazem a transição entre manga e torso. */
     [-1, 1].forEach(sg => {
-      const sh = new THREE.Mesh(new THREE.SphereGeometry(.285 * bulk, 22, 16), mkMat(skin.arms, .29));
-      sh.position.set(sg * .60 * bulk, 1.57, 0); sh.scale.set(1, .92, .94); sh.castShadow = true; g.add(sh);
+      const sh = new THREE.Mesh(new THREE.SphereGeometry(.245 * bulk, 22, 16), mkMat(skin.arms, .29));
+      sh.position.set(sg * .62 * bulk, 1.55, 0); sh.scale.set(1, .94, .94); sh.castShadow = true; g.add(sh);
     });
 
     /* Quadril alto e pernas curtas mantêm a silhueta compacta. */

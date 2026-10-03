@@ -59,39 +59,21 @@
   const Tor = (r, t, m, seg) => new THREE.Mesh(new THREE.TorusGeometry(r, t, 8, seg || 22), m);
 
   /* alturas de referência do boneco base */
-  const HEAD_Y = 2.17, BODY_Y = 1.19;
+  const HEAD_Y = 2.13, BODY_Y = 1.19;
 
   const PBUILDS = {
 
-    /* 😎 CHILL GUY — herói casual limpo, com boné e moletom */
+    /* 😎 CHILL GUY — visual inicial limpo, sem peças que deformem a base. */
     chill(c) {
-      const hood = M(c.skin.hood, { rough: .58, clear: .16 });
-      /* bolso canguru convexo, acompanhando o corpo arredondado */
-      const pocket = S(.38, hood, 20);
-      pocket.scale.set(1.02, .52, .24); pocket.position.set(0, 1.02, -.54); c.add(pocket);
-      /* cordões do capuz */
+      const blue = M(0x287fd6, { rough: .34, clear: .22 });
+      [c.legL, c.legR].forEach(l => { l.material = blue; });
+      /* punhos e barra discretos; o torso continua liso e legível */
       [-1, 1].forEach(s => {
-        const str = C(.035, .035, .42, M(0xf3f3f3, { rough: .8 }), 6);
-        str.position.set(s * .17, 1.62, -.42); c.add(str);
-        const tip = S(.055, M(0xf3f3f3, { rough: .8 }), 8);
-        tip.position.set(s * .17, 1.41, -.42); c.add(tip);
-      });
-      /* calça bege */
-      [c.legL, c.legR].forEach(l => { l.material = M(0xc9a87c, { rough: .9 }); });
-      /* chinelos com cantos macios */
-      [-1, 1].forEach(s => {
-        const foot = S(.28, M(0x6b4f2a, { rough: .62 }), 16);
-        foot.scale.set(.76, .20, 1.30); foot.position.set(s * .29, .08, -.14); c.add(foot);
-      });
-      /* punhos e barra dão volume real ao moletom */
-      [-1, 1].forEach(s => {
-        const cuff = C(.23, .23, .12, M(0x4351aa, { rough: .34 }), 18);
+        const cuff = C(.23, .23, .10, M(0x4b5cc0, { rough: .32 }), 18);
         cuff.position.set(0, -.34, 0); (s < 0 ? c.armL : c.armR).add(cuff);
       });
-      const hem = C(.54, .54, .10, M(0x4351aa, { rough: .48 }), 22);
-      hem.position.y = .70; c.add(hem);
-      /* mão no bolso: braço esquerdo encostado */
-      c.armL.rotation.x = .35; c.armL.position.z = -.12;
+      const hem = C(.50, .50, .08, M(0x4b5cc0, { rough: .34 }), 24);
+      hem.position.y = .69; c.add(hem);
     },
 
     /* 💻 HACKER — capuz fechado, rosto na sombra e brilho verde */
@@ -100,7 +82,7 @@
       /* capuz grande por cima da cabeça */
       const cowl = new THREE.Mesh(
         new THREE.SphereGeometry(.66, 28, 18, 0, TAU, 0, Math.PI * .60), cloth);
-      cowl.position.set(0, 2.17, .06);
+      cowl.position.set(0, 2.13, .06);
       cowl.rotation.x = -.18;
       c.add(cowl);
       /* aba frontal do capuz */
@@ -112,7 +94,7 @@
       /* sombra dentro do capuz + óculos verdes brilhando */
       [-1, 1].forEach(s => {
         const eye = B(.17, .07, .04, new THREE.MeshBasicMaterial({ color: 0x39ff88 }));
-        eye.position.set(s * .18, 2.18, -.675); c.add(eye);
+        eye.position.set(s * .18, 2.15, -.49); c.add(eye);
       });
       /* zíper e detalhes neon no peito */
       const zip = B(.05, .84, .04, M(0x39ff88, { emissive: 0x0d7a3c, ei: 1 }));
@@ -221,15 +203,15 @@
       const hair = M(0x241c17, { rough: .8 });
       const cap = new THREE.Mesh(
         new THREE.SphereGeometry(.63, 28, 18, 0, TAU, 0, Math.PI * .50), hair);
-      cap.position.y = 2.17; cap.scale.z = .96; c.add(cap);
+      cap.position.y = 2.13; cap.scale.z = .92; c.add(cap);
       const fringe = B(.98, .21, .23, hair);
       fringe.position.set(0, 2.45, -.53); fringe.rotation.x = .25; c.add(fringe);
       /* óculos escuros arredondados e destacados da face */
       const bar = B(.98, .055, .05, M(0x14161a, { rough: .18, metal: .5 }));
-      bar.position.set(0, 2.22, -.67); c.add(bar);
+      bar.position.set(0, 2.18, -.50); c.add(bar);
       [-1, 1].forEach(s => {
         const lens = B(.38, .22, .055, M(0x14161a, { rough: .10, metal: .62, clear: .58 }));
-        lens.position.set(s * .24, 2.18, -.69); c.add(lens);
+        lens.position.set(s * .24, 2.15, -.52); c.add(lens);
       });
       /* corrente de ouro */
       const chain = new THREE.Mesh(new THREE.TorusGeometry(.34, .045, 8, 22), M(0xffd24d, { rough: .2, metal: .95 }));
@@ -253,7 +235,7 @@
       const hair = new THREE.Mesh(
         new THREE.SphereGeometry(.63, 28, 18, 0, TAU, 0, Math.PI * .46),
         M(0x252a31, { rough: .48, metal: .08 }));
-      hair.position.set(0, 2.21, .02); hair.scale.z = .96; hair.rotation.x = -.10; c.add(hair);
+      hair.position.set(0, 2.15, .02); hair.scale.z = .92; hair.rotation.x = -.10; c.add(hair);
       [-1, 1].forEach(s => {
         const side = B(.19, .36, .20, M(0x1b1e23, { rough: .52 }));
         side.position.set(s * .55, 2.28, .03); side.rotation.z = s * .18; c.add(side);
@@ -271,7 +253,7 @@
       });
       /* óculos escuros finos */
       const bar = B(.94, .045, .045, M(0x0d0f12, { rough: .12, metal: .62, clear: .55 }));
-      bar.position.set(0, 2.21, -.675); c.add(bar);
+      bar.position.set(0, 2.17, -.50); c.add(bar);
     },
 
     /* 👻 GHOST — lençol ondulado em vez de pernas */
@@ -375,10 +357,10 @@
       const hair = new THREE.Mesh(
         new THREE.SphereGeometry(.63, 28, 18, 0, TAU, 0, Math.PI * .40),
         M(0x30343a, { rough: .48 }));
-      hair.position.set(0, 2.20, .02); hair.scale.z = .96; c.add(hair);
+      hair.position.set(0, 2.14, .02); hair.scale.z = .92; c.add(hair);
       [-1, 1].forEach(s => {
         const brow = B(.27, .058, .065, M(0x35383c, { rough: .42 }));
-        brow.position.set(s * .21, 2.27, -.68); brow.rotation.z = -s * .12; c.add(brow);
+        brow.position.set(s * .21, 2.23, -.50); brow.rotation.z = -s * .12; c.add(brow);
       });
       /* queixo forte, mas com chanfros de brinquedo */
       const jaw = B(.68, .32, .48, skinM);
@@ -434,9 +416,9 @@
       /* Touca espacial aberta: enquadra o rosto em vez de escondê-lo. */
       const helmet = new THREE.Mesh(
         new THREE.SphereGeometry(.66, 32, 20, 0, TAU, 0, Math.PI * .37), blue);
-      helmet.position.set(0, 2.17, .025); helmet.scale.z = .97; c.add(helmet);
+      helmet.position.set(0, 2.13, .025); helmet.scale.z = .92; c.add(helmet);
       const faceRim = Tor(.555, .047, cyan, 36);
-      faceRim.position.set(0, 2.16, -.615); faceRim.scale.set(1.03, .96, 1); c.add(faceRim);
+      faceRim.position.set(0, 2.12, -.505); faceRim.scale.set(1.03, .96, 1); c.add(faceRim);
       [-1, 1].forEach(s => {
         const pod = S(.15, s < 0 ? pink : cyan, 20);
         pod.position.set(s * .685, 2.16, -.015); pod.scale.set(.72, 1, .72); c.add(pod);
@@ -452,8 +434,8 @@
         cuff.rotation.x = Math.PI / 2; cuff.position.y = -.34;
         (s < 0 ? c.armL : c.armR).add(cuff);
       });
-      const chest = S(.33, navy, 22);
-      chest.position.set(0, 1.33, -.53); chest.scale.set(1.18, .78, .22); c.add(chest);
+      const chest = S(.23, navy, 22);
+      chest.position.set(0, 1.38, -.56); chest.scale.set(1.12, .74, .16); c.add(chest);
       const six = Tor(.105, .030, cyan, 22);
       six.position.set(-.115, 1.34, -.605); c.add(six);
       const sixStem = Cap(.027, .11, cyan);
