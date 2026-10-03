@@ -63,19 +63,9 @@
 
   const PBUILDS = {
 
-    /* 😎 CHILL GUY — moletom com bolso, calça bege e chinelos */
+    /* 😎 CHILL GUY — herói casual limpo, com boné e moletom */
     chill(c) {
-      const hood = M(c.skin.hood, { rough: .82 });
-      /* rosto canino do Chill Guy, mantendo a expressão desenhada */
-      const fur = M(0xc88d5b, { rough: .88 });
-      const muzzle = Cap(.16, .12, M(0xe5bd8f, { rough: .9 }));
-      muzzle.rotation.x = Math.PI / 2; muzzle.position.set(0, 2.06, -.60); c.add(muzzle);
-      const nose = S(.076, M(0x2a211d, { rough: .28, clear: .36 }), 14);
-      nose.position.set(0, 2.10, -.75); c.add(nose);
-      [-1, 1].forEach(s => {
-        const ear = Cone(.16, .36, fur, 8);
-        ear.position.set(s * .42, 2.66, .05); ear.rotation.z = s * .28; c.add(ear);
-      });
+      const hood = M(c.skin.hood, { rough: .58, clear: .16 });
       /* bolso canguru convexo, acompanhando o corpo arredondado */
       const pocket = S(.38, hood, 20);
       pocket.scale.set(1.02, .52, .24); pocket.position.set(0, 1.02, -.54); c.add(pocket);
@@ -109,7 +99,7 @@
       const cloth = M(0x15181d, { rough: .95 });
       /* capuz grande por cima da cabeça */
       const cowl = new THREE.Mesh(
-        new THREE.SphereGeometry(.72, 28, 18, 0, TAU, 0, Math.PI * .60), cloth);
+        new THREE.SphereGeometry(.66, 28, 18, 0, TAU, 0, Math.PI * .60), cloth);
       cowl.position.set(0, 2.17, .06);
       cowl.rotation.x = -.18;
       c.add(cowl);
@@ -230,7 +220,7 @@
     rizzler(c) {
       const hair = M(0x241c17, { rough: .8 });
       const cap = new THREE.Mesh(
-        new THREE.SphereGeometry(.69, 28, 18, 0, TAU, 0, Math.PI * .50), hair);
+        new THREE.SphereGeometry(.63, 28, 18, 0, TAU, 0, Math.PI * .50), hair);
       cap.position.y = 2.17; cap.scale.z = .96; c.add(cap);
       const fringe = B(.98, .21, .23, hair);
       fringe.position.set(0, 2.45, -.53); fringe.rotation.x = .25; c.add(fringe);
@@ -261,7 +251,7 @@
       const suit = M(0x1b1f27, { rough: .52, metal: .22 });
       /* cabelo penteado para trás com laterais baixas */
       const hair = new THREE.Mesh(
-        new THREE.SphereGeometry(.69, 28, 18, 0, TAU, 0, Math.PI * .46),
+        new THREE.SphereGeometry(.63, 28, 18, 0, TAU, 0, Math.PI * .46),
         M(0x252a31, { rough: .48, metal: .08 }));
       hair.position.set(0, 2.21, .02); hair.scale.z = .96; hair.rotation.x = -.10; c.add(hair);
       [-1, 1].forEach(s => {
@@ -383,7 +373,7 @@
       }));
       /* topete curto e sobrancelha 3D reforçam a cabeça */
       const hair = new THREE.Mesh(
-        new THREE.SphereGeometry(.68, 28, 18, 0, TAU, 0, Math.PI * .40),
+        new THREE.SphereGeometry(.63, 28, 18, 0, TAU, 0, Math.PI * .40),
         M(0x30343a, { rough: .48 }));
       hair.position.set(0, 2.20, .02); hair.scale.z = .96; c.add(hair);
       [-1, 1].forEach(s => {
@@ -443,7 +433,7 @@
 
       /* Touca espacial aberta: enquadra o rosto em vez de escondê-lo. */
       const helmet = new THREE.Mesh(
-        new THREE.SphereGeometry(.735, 32, 20, 0, TAU, 0, Math.PI * .37), blue);
+        new THREE.SphereGeometry(.66, 32, 20, 0, TAU, 0, Math.PI * .37), blue);
       helmet.position.set(0, 2.17, .025); helmet.scale.z = .97; c.add(helmet);
       const faceRim = Tor(.555, .047, cyan, 36);
       faceRim.position.set(0, 2.16, -.615); faceRim.scale.set(1.03, .96, 1); c.add(faceRim);

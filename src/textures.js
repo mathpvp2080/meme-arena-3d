@@ -15,7 +15,8 @@
       bg = def ? def.color : bg;
       ring = def ? def.ring : ring;
       const drawer = def && MA.FACES && MA.FACES[def.id];
-      const key = 'f|' + (def ? def.id : emoji) + '|' + bg + '|' + (elite ? 'E' : '');
+      const noRing = !!(def && def.noRing);
+      const key = 'f|' + (def ? def.id : emoji) + '|' + bg + '|' + (elite ? 'E' : '') + (noRing ? '|flat' : '');
       if (this.cache[key]) return this.cache[key];
 
       const S = 256, c = this._c(S), x = c.getContext('2d');
@@ -34,13 +35,16 @@
         x.fillText(emoji, S / 2, S / 2 - 6);
       }
 
-      /* aro externo (dourado quando é elite) */
-      x.strokeStyle = elite ? '#ffd400' : ring;
-      x.lineWidth = elite ? 20 : 14;
-      x.beginPath(); x.arc(S / 2, S / 2, S / 2 - 11, 0, TAU); x.stroke();
-      if (elite) {
-        x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 5;
-        x.beginPath(); x.arc(S / 2, S / 2, S / 2 - 28, 0, TAU); x.stroke();
+      /* Inimigos mantêm o aro de leitura. Jogadores usam o rosto direto na
+         tampa frontal da cabeça soft-cube, sem moldura de adesivo. */
+      if (!noRing) {
+        x.strokeStyle = elite ? '#ffd400' : ring;
+        x.lineWidth = elite ? 20 : 14;
+        x.beginPath(); x.arc(S / 2, S / 2, S / 2 - 11, 0, TAU); x.stroke();
+        if (elite) {
+          x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 5;
+          x.beginPath(); x.arc(S / 2, S / 2, S / 2 - 28, 0, TAU); x.stroke();
+        }
       }
 
       const t = new THREE.CanvasTexture(c);

@@ -135,6 +135,52 @@
     return geo;
   }
 
+  function roundedRectShape(w, h, radius) {
+    const x = -w / 2, y = -h / 2, r = radius;
+    const sh = new THREE.Shape();
+    sh.moveTo(x + r, y);
+    sh.lineTo(x + w - r, y); sh.quadraticCurveTo(x + w, y, x + w, y + r);
+    sh.lineTo(x + w, y + h - r); sh.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    sh.lineTo(x + r, y + h); sh.quadraticCurveTo(x, y + h, x, y + h - r);
+    sh.lineTo(x, y + r); sh.quadraticCurveTo(x, y, x + r, y);
+    return sh;
+  }
+
+  /* Cabeça "soft cube": frente plana para o rosto, laterais profundas e
+     chanfros largos. É uma construção própria baseada em formas genéricas. */
+  function partyHeadGeometry(w, h, d, radius) {
+    const sh = roundedRectShape(w, h, radius);
+    const bevel = .075;
+    const uv = {
+      generateTopUV(geo, vertices, a, b, c) {
+        return [a, b, c].map(i => new THREE.Vector2(
+          vertices[i * 3] / w + .5,
+          vertices[i * 3 + 1] / h + .5
+        ));
+      },
+      generateSideWallUV(geo, vertices, a, b, c, e) {
+        return [a, b, c, e].map(i => new THREE.Vector2(
+          vertices[i * 3] / w + .5,
+          vertices[i * 3 + 2] / d + .5
+        ));
+      }
+    };
+    let geo = new THREE.ExtrudeGeometry(sh, {
+      depth: d - bevel * 2, steps: 1, curveSegments: 8,
+      bevelEnabled: true, bevelSegments: 5,
+      bevelSize: bevel, bevelThickness: bevel, UVGenerator: uv
+    });
+    geo.translate(0, 0, -d / 2 + bevel);
+    geo.computeVertexNormals();
+    return geo;
+  }
+
+  function partyHeadBackGeometry(w, h, radius) {
+    const geo = new THREE.ShapeGeometry(roundedRectShape(w, h, radius), 8);
+    geo.computeVertexNormals();
+    return geo;
+  }
+
   function createPlayer(scene, skin, armorDef) {
     skin = skin || MA.SKINS[0];
     armorDef = armorDef || MA.ARMORS[0];
@@ -189,39 +235,38 @@
     hood.scale.set(1.03, .88, 1.12);
     g.add(hood);
 
-    /* Cabeça superdimensionada e quase esférica: principal assinatura visual
-       do gênero, com espaço para expressões grandes e leitura em celular. */
-    const head = new THREE.Mesh(
-      new THREE.SphereGeometry(.68, 36, 28),
-      new THREE.MeshPhysicalMaterial({
-        color: MA.shade(skin.skinTone, -2), roughness: .30, metalness: .01,
-        clearcoat: .24, clearcoatRoughness: .22,
-        transparent: trans, opacity: trans ? .7 : 1
-      })
-    );
-    head.position.y = 2.17; head.scale.set(1, 1, .955); head.castShadow = true; g.add(head);
-
-    /* rosto pintado grande e legível; cada meme preserva sua expressão própria */
-    const pFace = new THREE.Mesh(
-      new THREE.SphereGeometry(.689, 36, 28, -0.95, 1.9, 0.42, 2.3),
-      new THREE.MeshPhysicalMaterial({
-        map: MA.Tex.face(Object.assign({}, skin, {
-          id: 'skin:' + skin.id,
-          color: skin.skinTone,
-          ring: MA.shade(skin.skinTone, -55)
-        })),
-        roughness: .27, metalness: .01, clearcoat: .18, clearcoatRoughness: .24,
-        transparent: true, opacity: trans ? .75 : 1
-      })
-    );
-    pFace.rotation.y = -Math.PI / 2;
-    head.add(pFace);
+    /* Cabeça arredondada com frente levemente plana, mais próxima da
+       modelagem de party-games atuais do que uma esfera genérica. */
+    const skinColor = MA.shade(skin.skinTone, -2);
+    const headMat = new THREE.MeshPhysicalMaterial({
+      color: skinColor, roughness: .29, metalness: .01,
+      clearcoat: .24, clearcoatRoughness: .22,
+      transparent: trans, opacity: trans ? .7 : 1, depthWrite: !trans
+    });
+    const faceMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      map: MA.Tex.face(Object.assign({}, skin, {
+        id: 'skin:' + skin.id,
+        color: skin.skinTone,
+        ring: MA.shade(skin.skinTone, -55),
+        noRing: true
+      })),
+      roughness: .27, metalness: .01, clearcoat: .16, clearcoatRoughness: .25,
+      transparent: trans, opacity: trans ? .75 : 1, depthWrite: !trans
+    });
+    const headW = 1.08, headH = .92, headD = 1.16, headR = .22;
+    const head = new THREE.Mesh(partyHeadGeometry(headW, headH, headD, headR), [faceMat, headMat]);
+    /* A extrusão compartilha material nas duas tampas; esta tampa lisa cobre
+       o verso para que o rosto exista somente na frente. */
+    const headBack = new THREE.Mesh(partyHeadBackGeometry(headW, headH, headR), headMat);
+    headBack.position.z = headD / 2 + .002; head.add(headBack);
+    head.position.y = 2.17; head.castShadow = true; g.add(head);
 
     /* chapéu / acessório de cabeça */
     const hc = skin.hatColor !== undefined ? skin.hatColor : 0xffffff;
     if (skin.hat === 'cap') {
       const cap = new THREE.Mesh(
-        new THREE.SphereGeometry(.705, 32, 16, 0, TAU, 0, 1.02),
+        new THREE.SphereGeometry(.63, 32, 16, 0, TAU, 0, 1.04),
         new THREE.MeshPhysicalMaterial({ color: hc, emissive: hc, emissiveIntensity: .06, roughness: .24, metalness: .025, clearcoat: .34, clearcoatRoughness: .20 })
       );
       cap.position.y = 2.17; cap.scale.z = .96; g.add(cap);
