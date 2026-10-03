@@ -125,9 +125,9 @@ insert into public.market_price_limits (item, min_price, max_price, tradable) va
   ('weapon:prism7',     3175, 101600, true),
   ('weapon:rail',       3500, 140000, true),
   ('weapon:pulse67',    3670,  67000, true),
-  ('ability:repulse6',   900,  14400, true),
-  ('ability:blink7',    1925,  46200, true),
-  ('ability:overclock67',4175,133600, true)
+  ('ability:repulse6',  1050,  16800, true),
+  ('ability:blink7',    2100,  50400, true),
+  ('ability:overclock67',4675,149600, true)
 on conflict (item) do update set
   min_price = excluded.min_price,
   max_price = excluded.max_price,

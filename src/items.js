@@ -124,15 +124,15 @@
   /* Habilidades equipáveis usam F (ou o botão ✦ no touch). Elas não são
      armas disfarçadas: cada uma altera movimento/área/ritmo de combate. */
   MA.ABILITIES = [
-    { id:'repulse6', name:'Repulsão 6', icon:'⑥', rarity:'rare', price:3600, level:6, cooldown:12,
+    { id:'repulse6', name:'Repulsão 6', icon:'⑥', rarity:'rare', price:4200, level:6, cooldown:12,
       desc:'Pulso circular causa 46 de dano e empurra inimigos próximos.',
-      color:0x2de2ff, marketMin:900, marketMax:14400 },
-    { id:'blink7', name:'Passo 7', icon:'⑦', rarity:'epic', price:7700, level:11, cooldown:8,
+      color:0x2de2ff, marketMin:1050, marketMax:16800 },
+    { id:'blink7', name:'Passo 7', icon:'⑦', rarity:'epic', price:8400, level:11, cooldown:8,
       desc:'Salto instantâneo de 7 metros na direção da mira, com breve invulnerabilidade.',
-      color:0xff4fbd, marketMin:1925, marketMax:46200 },
-    { id:'overclock67', name:'Sobrecarga 67', icon:'67', rarity:'legendary', price:16700, level:20, cooldown:24,
+      color:0xff4fbd, marketMin:2100, marketMax:50400 },
+    { id:'overclock67', name:'Sobrecarga 67', icon:'67', rarity:'legendary', price:18700, level:20, cooldown:24,
       desc:'Durante 6,7 s aumenta cadência, dano e velocidade.',
-      color:0x9b65ff, marketMin:4175, marketMax:133600 }
+      color:0x9b65ff, marketMin:4675, marketMax:149600 }
   ];
 
   /* catálogo unificado usado pela loja e pelo inventário */
