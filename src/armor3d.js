@@ -206,6 +206,83 @@
       add(c, B(.32, .065, .055, cyan), [0, 1.23, -.73], [0, 0, -.30]);
     },
 
+    /* Colete Órbita 6: leve, assimétrico e construído em torno de um anel. */
+    orbit6(c) {
+      const ink = M(0x17345b, { rough: .26, metal: .78 });
+      const blue = M(0x327fda, { rough: .13, metal: .52, emissive: 0x133b78, ei: .72 });
+      const cyan = M(0x2de2ff, { rough: .07, metal: .34, emissive: 0x08778c, ei: 1.28 });
+      const pearl = M(0xe8f7ff, { rough: .18, metal: .62 });
+
+      const chest = S(.52, ink, 22);
+      add(c, chest, [0, 1.35, -.50], null, [.92 * c.bulk, 1.03, .27]);
+      const orbit = Tor(.31, .055, cyan, 32);
+      add(c, orbit, [-.18, 1.40, -.69]);
+      const stem = Cap(.048, .42, blue);
+      add(c, stem, [-.34, 1.56, -.69], [0, 0, -.34]);
+      const core = S(.10, pearl, 16);
+      add(c, core, [-.18, 1.40, -.73]);
+      add(c, B(.62, .10, .18, blue), [.20, .96, -.50], [0, 0, -.14]);
+
+      paired(s => {
+        const arm = s < 0 ? c.armL : c.armR;
+        const bracer = C(.245, .215, .40, ink, 16);
+        attach(arm, bracer, [0, -.16, 0]);
+        const rail = Cap(.040, .22, s < 0 ? cyan : blue);
+        attach(arm, rail, [0, -.16, -.235]);
+        const leg = s < 0 ? c.legL : c.legR;
+        attach(leg, C(.245, .215, .35, ink, 14), [0, -.15, 0]);
+      });
+      /* Só o ombro esquerdo leva o satélite: silhueta propositalmente desigual. */
+      const shoulder = Tor(.32, .075, blue, 26);
+      add(c, shoulder, [-.78 * c.bulk, 1.66, -.02], [PI / 2, 0, 0]);
+      const satellite = S(.10, cyan, 14);
+      add(c, satellite, [-1.02 * c.bulk, 1.85, -.06]);
+      c.anim(t => {
+        orbit.rotation.z = t * .72;
+        core.scale.setScalar(1 + Math.sin(t * 4.6) * .10);
+        satellite.position.y = 1.85 + Math.sin(t * 2.8) * .07;
+      });
+    },
+
+    /* Bastião Prisma 7: placas angulares em degraus, sem repetir o anel do 6. */
+    prism7(c) {
+      const ink = M(0x1b1738, { rough: .22, metal: .90 });
+      const violet = M(0x9b65ff, { rough: .09, metal: .46, emissive: 0x482694, ei: 1.05 });
+      const pink = M(0xff4fbd, { rough: .08, metal: .42, emissive: 0x8e195b, ei: 1.06 });
+      const pearl = M(0xf5efff, { rough: .12, metal: .88 });
+
+      /* sete lâminas peitorais inclinadas compõem uma couraça em leque */
+      for (let i = -3; i <= 3; i++) {
+        const h = .62 - Math.abs(i) * .045;
+        const plate = B(.18, h, .20, i % 2 ? violet : ink);
+        add(c, plate, [i * .145, 1.38 - Math.abs(i) * .025, -.58], [0, 0, -i * .055]);
+        const tip = new THREE.Mesh(new THREE.OctahedronGeometry(.075, 0), i % 2 ? pink : pearl);
+        add(c, tip, [i * .145, 1.68 - Math.abs(i) * .03, -.71]);
+      }
+      add(c, B(.92 * c.bulk, .15, .23, ink), [0, .82, -.08]);
+      add(c, Cap(.055, .52, pink), [.20, 1.19, -.72], [0, 0, -.42]);
+      add(c, Cap(.055, .42, pearl), [.07, 1.58, -.72], [0, 0, PI / 2]);
+
+      paired(s => {
+        const sh = B(.53, .18, .62, ink);
+        add(c, sh, [s * .79 * c.bulk, 1.67, 0], [0, 0, s * .13]);
+        const crest = new THREE.Mesh(new THREE.OctahedronGeometry(.16, 0), s < 0 ? violet : pink);
+        add(c, crest, [s * .91 * c.bulk, 1.82, -.13], [0, 0, s * .20], [1.35, .75, .70]);
+        const arm = s < 0 ? c.armL : c.armR;
+        attach(arm, B(.34, .46, .39, ink), [0, -.15, 0]);
+        attach(arm, Cap(.045, .30, s < 0 ? violet : pink), [0, -.15, -.235]);
+        const leg = s < 0 ? c.legL : c.legR;
+        attach(leg, B(.32, .42, .38, ink), [0, -.15, -.03]);
+        attach(leg, B(.12, .28, .08, pearl), [0, -.14, -.245]);
+      });
+      const crestTop = new THREE.Mesh(new THREE.OctahedronGeometry(.13, 0), pink);
+      add(c, crestTop, [0, 1.86, .02], null, [1, 1.65, .72]);
+      c.anim(t => {
+        crestTop.rotation.y = t * 1.8;
+        crestTop.scale.set(1, 1.65 + Math.sin(t * 4) * .12, .72);
+      });
+    },
+
     /* Temporada 67: placas arredondadas 6|7 com amortecedores de impacto. */
     protocol67(c) {
       const navy = M(0x151a43, { rough: .20, metal: .78 });

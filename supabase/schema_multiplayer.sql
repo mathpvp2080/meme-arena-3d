@@ -104,6 +104,9 @@ insert into public.market_price_limits (item, min_price, max_price, tradable) va
   ('skin:gigachad',     3000,  96000, true),
   ('skin:king',         6250, 250000, true),
   ('skin:sixtyseven',   1670,  26700, true),
+  ('skin:sixorbit',      650,  10400, true),
+  ('skin:sevenbreak',   1925,  46200, true),
+  ('skin:duo67',        6675, 267000, true),
   ('armor:hoodie',        25,    300, false),
   ('armor:cardboard',    225,   2700, true),
   ('armor:pixel',        650,  10400, true),
@@ -111,12 +114,20 @@ insert into public.market_price_limits (item, min_price, max_price, tradable) va
   ('armor:sigma',       2750,  88000, true),
   ('armor:chadplate',   5500, 220000, true),
   ('armor:protocol67',  2670,  46700, true),
+  ('armor:orbit6',       900,  14400, true),
+  ('armor:prism7',      3925, 125600, true),
   ('weapon:laser',       113,   1350, false),
   ('weapon:shot',        400,   6400, true),
+  ('weapon:boomerang',   725,  11600, true),
   ('weapon:rpg',         950,  22800, true),
+  ('weapon:gravity6',   1675,  40200, true),
   ('weapon:mini',       1875,  60000, true),
+  ('weapon:prism7',     3175, 101600, true),
   ('weapon:rail',       3500, 140000, true),
-  ('weapon:pulse67',    3670,  67000, true)
+  ('weapon:pulse67',    3670,  67000, true),
+  ('ability:repulse6',   900,  14400, true),
+  ('ability:blink7',    1925,  46200, true),
+  ('ability:overclock67',4175,133600, true)
 on conflict (item) do update set
   min_price = excluded.min_price,
   max_price = excluded.max_price,
@@ -192,6 +203,7 @@ begin
   if not (inv ? p_item) then return json_build_object('error','Você não tem esse item.'); end if;
   if (split_part(p_item, ':', 1) = 'skin' and coalesce(equip->>'skin', '') = split_part(p_item, ':', 2))
      or (split_part(p_item, ':', 1) = 'armor' and coalesce(equip->>'armor', '') = split_part(p_item, ':', 2))
+     or (split_part(p_item, ':', 1) = 'ability' and coalesce(equip->>'ability', '') = split_part(p_item, ':', 2))
      or (split_part(p_item, ':', 1) = 'weapon' and coalesce(equip->'weapons', '[]'::jsonb) ? split_part(p_item, ':', 2)) then
     return json_build_object('error','Desequipe o item antes de vender.');
   end if;

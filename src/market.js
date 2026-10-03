@@ -128,7 +128,7 @@
       return '<div class="mkitem ' + raro + '">' +
         '<div class="mkico">' + icone + '</div>' +
         '<div class="mkinfo"><b>' + nome + '</b>' +
-        '<div class="dim">' + (tipo === 'skin' ? 'Skin' : tipo === 'armor' ? 'Armadura' : 'Arma') +
+        '<div class="dim">' + (tipo === 'skin' ? 'Skin' : tipo === 'armor' ? 'Armadura' : tipo === 'ability' ? 'Habilidade' : 'Arma') +
         ' · vendedor: ' + l.seller_name + '</div></div>' +
         '<div class="mkprice">🪙 ' + MA.fmt(l.price) + '</div>' + botao +
         '</div>';
@@ -152,7 +152,8 @@
       const d = MA.Profile.data;
       /* o que dá para vender: o que está no inventário, menos itens iniciais e equipados */
       const equipados = [
-        'skin:' + d.equipped.skin, 'armor:' + d.equipped.armor
+        'skin:' + d.equipped.skin, 'armor:' + d.equipped.armor,
+        'ability:' + (d.equipped.ability || '')
       ].concat((d.equipped.weapons || []).map(w => 'weapon:' + w));
       const vendaveis = d.inventory.filter(key => {
         const [t, i] = key.split(':');
@@ -174,7 +175,7 @@
         return '<div class="mkitem ' + (it.rarity || 'common') + '">' +
           '<div class="mkico">' + (it.icon || it.face || '🎁') + '</div>' +
           '<div class="mkinfo"><b>' + it.name + '</b><div class="dim">' +
-          (t === 'skin' ? 'Skin' : t === 'armor' ? 'Armadura' : 'Arma') +
+          (t === 'skin' ? 'Skin' : t === 'armor' ? 'Armadura' : t === 'ability' ? 'Habilidade' : 'Arma') +
           ' · faixa 🪙 ' + MA.fmt(bounds.min) + '–' + MA.fmt(bounds.max) + '</div></div>' +
           '<input class="inp mkp" type="number" min="' + bounds.min + '" max="' + bounds.max +
           '" value="' + sugerido + '" data-price="' + key + '">' +
@@ -273,7 +274,8 @@
       const sel = $('giftItem');
       if (!sel) return;
       const d = MA.Profile.data;
-      const equipados = ['skin:' + d.equipped.skin, 'armor:' + d.equipped.armor]
+      const equipados = ['skin:' + d.equipped.skin, 'armor:' + d.equipped.armor,
+        'ability:' + (d.equipped.ability || '')]
         .concat((d.equipped.weapons || []).map(w => 'weapon:' + w));
       const itens = d.inventory.filter(key => {
         const [t, i] = key.split(':');

@@ -63,7 +63,25 @@
     { id:'king', name:'Rei do Brainrot', rarity:'mythic', price:25000, level:30,
       desc:'A skin final. Ouro, coroa e capa. Você venceu a internet.',
       face:'👑', skinTone:'#ffd98a', body:0xd4a017, hood:0xb8860b, arms:0xffd700, legs:0x8a6508,
-      hat:'crown', hatColor:0xffd700, aura:0xffc42e, extra:'cape', extraColor:0xb8860b, metal:true }
+      hat:'crown', hatColor:0xffd700, aura:0xffc42e, extra:'cape', extraColor:0xb8860b, metal:true },
+
+    { id:'sixorbit', name:'Seis em Órbita', rarity:'rare', price:2600, level:5,
+      desc:'A opção acessível da coleção: piloto ciano com órbita assimétrica em forma de 6.',
+      face:'6', skinTone:'#e9ae7d', body:0x327fda, hood:0x174a91, arms:0x4da9ee, legs:0x173760,
+      hat:'none', hatColor:0x2de2ff, aura:0x2de2ff, extra:'none', seasonal:true, season:'67',
+      marketMin:650, marketMax:10400 },
+
+    { id:'sevenbreak', name:'Sete Quebra-Loop', rarity:'epic', price:7700, level:11,
+      desc:'Corredora violeta com viseira angular, faixa diagonal e energia em sete pontas.',
+      face:'7', skinTone:'#d89b76', body:0x713ed4, hood:0x3d1e87, arms:0x9b65ff, legs:0x25194d,
+      hat:'none', hatColor:0xff4fbd, aura:0xff4fbd, extra:'none', seasonal:true, season:'67',
+      marketMin:1925, marketMax:46200 },
+
+    { id:'duo67', name:'Fusão 67', rarity:'mythic', price:26700, level:27,
+      desc:'Duas frequências na mesma skin: lado 6 orbital, lado 7 prismático e núcleo sincronizado.',
+      face:'67', skinTone:'#edb184', body:0x29316f, hood:0x151a43, arms:0x6572ff, legs:0x171a3f,
+      hat:'none', hatColor:0xf5f7ff, aura:0x9b65ff, extra:'none', seasonal:true, season:'67', metal:true,
+      marketMin:6675, marketMax:267000 }
   ];
 
   /* --------------------------------------------------------- ARMADURAS -- */
@@ -79,18 +97,43 @@
     { id:'sigma', name:'Placa Sigma', rarity:'legendary', price:11000, level:17,
       desc:'Forjada em disciplina e banho gelado.', hp:130, dr:.21, color:0x9aa6b0 },
     { id:'chadplate', name:'Casca de Gigachad', rarity:'mythic', price:22000, level:26,
-      desc:'Não é armadura. É só o peitoral dele.', hp:190, dr:.28, color:0xffd700 }
+      desc:'Não é armadura. É só o peitoral dele.', hp:190, dr:.28, color:0xffd700 },
+    { id:'orbit6', name:'Colete Órbita 6', rarity:'rare', price:3600, level:6,
+      desc:'Anel amortecedor lateral e placas leves: proteção móvel sem virar uma caixa.',
+      hp:58, dr:.10, color:0x2de2ff, seasonal:true, season:'67',
+      marketMin:900, marketMax:14400 },
+    { id:'prism7', name:'Bastião Prisma 7', rarity:'legendary', price:15700, level:19,
+      desc:'Sete placas angulares desviam impacto e acendem uma crista prismática.',
+      hp:145, dr:.23, color:0xff4fbd, seasonal:true, season:'67',
+      marketMin:3925, marketMax:125600 }
   ];
 
   /* ------------------------------------------- preços/níveis das armas --
      Mescla com MA.WEAPONS (definido em data.js) pelo índice/id.         */
   MA.WEAPON_SHOP = {
-    laser: { price: 450,  level: 1,  rarity:'common',    starter:true },
-    shot:  { price: 1600, level: 3,  rarity:'rare' },
-    rpg:   { price: 3800, level: 6,  rarity:'epic' },
-    mini:  { price: 7500, level: 12, rarity:'legendary' },
-    rail:  { price: 14000,level: 18, rarity:'mythic' }
+    laser:     { price: 450,   level: 1,  rarity:'common', starter:true },
+    shot:      { price: 1600,  level: 3,  rarity:'rare' },
+    boomerang: { price: 2900,  level: 5,  rarity:'rare', marketMin:725, marketMax:11600 },
+    rpg:       { price: 3800,  level: 6,  rarity:'epic' },
+    gravity6:  { price: 6700,  level: 10, rarity:'epic', marketMin:1675, marketMax:40200 },
+    mini:      { price: 7500,  level: 12, rarity:'legendary' },
+    prism7:    { price: 12700, level: 17, rarity:'legendary', marketMin:3175, marketMax:101600 },
+    rail:      { price: 14000, level: 18, rarity:'mythic' }
   };
+
+  /* Habilidades equipáveis usam F (ou o botão ✦ no touch). Elas não são
+     armas disfarçadas: cada uma altera movimento/área/ritmo de combate. */
+  MA.ABILITIES = [
+    { id:'repulse6', name:'Repulsão 6', icon:'⑥', rarity:'rare', price:3600, level:6, cooldown:12,
+      desc:'Pulso circular causa 46 de dano e empurra inimigos próximos.',
+      color:0x2de2ff, marketMin:900, marketMax:14400 },
+    { id:'blink7', name:'Passo 7', icon:'⑦', rarity:'epic', price:7700, level:11, cooldown:8,
+      desc:'Salto instantâneo de 7 metros na direção da mira, com breve invulnerabilidade.',
+      color:0xff4fbd, marketMin:1925, marketMax:46200 },
+    { id:'overclock67', name:'Sobrecarga 67', icon:'67', rarity:'legendary', price:16700, level:20, cooldown:24,
+      desc:'Durante 6,7 s aumenta cadência, dano e velocidade.',
+      color:0x9b65ff, marketMin:4175, marketMax:133600 }
+  ];
 
   /* catálogo unificado usado pela loja e pelo inventário */
   MA.catalog = function () {
@@ -103,12 +146,14 @@
         type: 'weapon', id: w.id, name: w.name, icon: w.icon, desc: w.desc
       }, m, { starter: !!m.starter }));
     });
+    MA.ABILITIES.forEach(a => out.push(Object.assign({ type: 'ability' }, a)));
     return out;
   };
 
   MA.findItem = function (type, id) {
-    if (type === 'skin')   return MA.SKINS.find(s => s.id === id);
-    if (type === 'armor')  return MA.ARMORS.find(a => a.id === id);
+    if (type === 'skin')    return MA.SKINS.find(s => s.id === id);
+    if (type === 'armor')   return MA.ARMORS.find(a => a.id === id);
+    if (type === 'ability') return MA.ABILITIES.find(a => a.id === id);
     if (type === 'weapon') {
       const w = MA.WEAPONS.find(x => x.id === id);
       if (!w) return null;

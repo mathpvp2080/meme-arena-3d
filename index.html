@@ -15,8 +15,8 @@
 <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="css/style.css?v=28">
-<link rel="stylesheet" href="css/season67.css?v=28">
+<link rel="stylesheet" href="css/style.css?v=29">
+<link rel="stylesheet" href="css/season67.css?v=29">
 </head>
 <body>
 <div id="app"></div>
@@ -60,6 +60,7 @@
   <div id="bottomleft" class="panel">
     <div class="wrow"><span id="wicon">✨</span><b id="wname">Laser de Doge</b></div>
     <div id="wdesc" class="dim"></div>
+    <div id="abilitySlot" class="ability-slot hid"></div>
     <div id="weaponList"></div>
   </div>
 
@@ -81,6 +82,7 @@
   <div id="stick"><div id="nub"></div></div>
   <div class="tbtns">
     <button id="tUlt"  class="tb small">🧠</button>
+    <button id="tAbility" class="tb small">✦</button>
     <button id="tSwap" class="tb small">🔄</button>
     <button id="tView" class="tb small">👁️</button>
     <button id="tDash" class="tb small">💨</button>
@@ -231,6 +233,7 @@
     <div class="tabs">
       <button class="tab season-tab" data-tab="box">📦 CAIXAS 67</button>
       <button class="tab sel" data-tab="weapon">ARMAS</button>
+      <button class="tab" data-tab="ability">HABILIDADES</button>
       <button class="tab" data-tab="skin">SKINS</button>
       <button class="tab" data-tab="armor">ARMADURAS</button>
     </div>
@@ -264,6 +267,7 @@
     <div class="tabs">
       <button class="tab sel" data-tab="all">TUDO</button>
       <button class="tab" data-tab="weapon">ARMAS</button>
+      <button class="tab" data-tab="ability">HABILIDADES</button>
       <button class="tab" data-tab="skin">SKINS</button>
       <button class="tab" data-tab="armor">ARMADURAS</button>
     </div>
@@ -441,7 +445,8 @@
       <div class="k"><b>CLIQUE ESQ.</b>atirar</div>
       <div class="k"><b>ESPAÇO</b>pular</div>
       <div class="k"><b>SHIFT</b>dash (i-frames)</div>
-      <div class="k"><b>Q / RODA / 1-6</b>trocar arma</div>
+      <div class="k"><b>Q / RODA / 1-9</b>trocar arma</div>
+      <div class="k"><b>F</b>habilidade especial equipada</div>
       <div class="k"><b>E</b>ultimate (Brainrot 100%)</div>
       <div class="k"><b>ESC / P</b>pausar</div>
       <div class="k"><b>M</b>mudo</div>
@@ -454,6 +459,7 @@
     <ul class="bul">
       <li><b>Combo:</b> abates em sequência multiplicam os pontos (reseta se você levar dano).</li>
       <li><b>Brainrot:</b> enche matando memes. Em 100% aperte <b>E</b>: invencível, dano x1.8 e cadência dobrada.</li>
+      <li><b>Habilidade:</b> equipe uma na loja/inventário e aperte <b>F</b>. Cada habilidade tem sua própria recarga.</li>
       <li><b>Perks:</b> ao limpar cada onda você escolhe 1 de 3 cartas permanentes. Elas acumulam.</li>
       <li><b>Elites:</b> inimigos com coroa dourada — muito mais vida e pontos.</li>
       <li><b>Chefes:</b> a cada 5 ondas, com 3 fases e invocação de lacaios.</li>
@@ -570,36 +576,36 @@
   <div class="splash-foot">Arte e áudio originais · Violência fantasiosa · Interação entre usuários · Apenas moeda virtual</div>
 </div>
 
-<script src="lib/three.min.js?v=28"></script>
-<script src="src/utils.js?v=28"></script>
-<script src="src/config.js?v=28"></script>
-<script src="src/data.js?v=28"></script>
-<script src="src/maps.js?v=28"></script>
-<script src="src/items.js?v=28"></script>
-<script src="src/season.js?v=28"></script>
-<script src="src/audio.js?v=28"></script>
-<script src="src/faces.js?v=28"></script>
-<script src="src/textures.js?v=28"></script>
-<script src="src/world.js?v=28"></script>
-<script src="src/builds.js?v=28"></script>
-<script src="src/weapons3d.js?v=28"></script>
-<script src="src/armor3d.js?v=28"></script>
-<script src="src/entities.js?v=28"></script>
-<script src="src/net.js?v=28"></script>
-<script src="src/profile.js?v=28"></script>
-<script src="src/ui.js?v=28"></script>
-<script src="src/pbuilds.js?v=28"></script>
-<script src="src/previews.js?v=28"></script>
-<script src="src/goals.js?v=28"></script>
-<script src="src/market.js?v=28"></script>
-<script src="src/multi.js?v=28"></script>
-<script src="src/mod.js?v=28"></script>
-<script src="src/mpui.js?v=28"></script>
-<script src="src/metaui.js?v=28"></script>
-<script src="src/game.js?v=28"></script>
+<script src="lib/three.min.js?v=29"></script>
+<script src="src/utils.js?v=29"></script>
+<script src="src/config.js?v=29"></script>
+<script src="src/data.js?v=29"></script>
+<script src="src/maps.js?v=29"></script>
+<script src="src/items.js?v=29"></script>
+<script src="src/season.js?v=29"></script>
+<script src="src/audio.js?v=29"></script>
+<script src="src/faces.js?v=29"></script>
+<script src="src/textures.js?v=29"></script>
+<script src="src/world.js?v=29"></script>
+<script src="src/builds.js?v=29"></script>
+<script src="src/weapons3d.js?v=29"></script>
+<script src="src/armor3d.js?v=29"></script>
+<script src="src/entities.js?v=29"></script>
+<script src="src/net.js?v=29"></script>
+<script src="src/profile.js?v=29"></script>
+<script src="src/ui.js?v=29"></script>
+<script src="src/pbuilds.js?v=29"></script>
+<script src="src/previews.js?v=29"></script>
+<script src="src/goals.js?v=29"></script>
+<script src="src/market.js?v=29"></script>
+<script src="src/multi.js?v=29"></script>
+<script src="src/mod.js?v=29"></script>
+<script src="src/mpui.js?v=29"></script>
+<script src="src/metaui.js?v=29"></script>
+<script src="src/game.js?v=29"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=28').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=29').catch(() => {}));
   }
 </script>
 </body>

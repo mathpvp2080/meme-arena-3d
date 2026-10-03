@@ -212,6 +212,84 @@
     return finish(g, def.color, [0, .01, -1.90]);
   }
 
+  /* Bumerangue de combate: silhueta curva, sem cano, coronha ou receptor. */
+  function boomerang(def) {
+    const g = new THREE.Group();
+    const edge = mat(0xe9fff8, { rough: .14, metal: .94 });
+    const dark = mat(0x163b3d, { rough: .34, metal: .68 });
+    const mint = mat(def.color, { rough: .09, metal: .46, emissive: 0x08785e, ei: 1.25 });
+
+    const arc = add(g, new THREE.TorusGeometry(.58, .115, 10, 36, PI * 1.34), dark,
+      [0, .02, -.48], [0, 0, -.42]);
+    const lightArc = add(g, new THREE.TorusGeometry(.58, .035, 8, 36, PI * 1.34), mint,
+      [0, .02, -.505], [0, 0, -.42]);
+    g.userData.energy = lightArc;
+    /* pontas largas deixam claro que é uma peça arremessável */
+    [-1, 1].forEach(s => {
+      const blade = add(g, new THREE.ConeGeometry(.16, .48, 10), edge,
+        [s * .53, s < 0 ? -.33 : .36, -.50], [0, 0, s < 0 ? -.72 : PI - .72]);
+      blade.scale.z = .48;
+      bolt(g, s * .35, s * .24, -.54, mint, .065);
+    });
+    const grip = tube(g, .085, .38, dark, [0, -.03, .03], 14);
+    grip.rotation.set(0, 0, PI / 2);
+    ring(g, .13, .035, mint, -.08, 20);
+    return finish(g, def.color, [0, .02, -1.08]);
+  }
+
+  /* Orbe 6: foco flutuante com anéis giroscópicos, não uma arma de fogo. */
+  function gravity6(def) {
+    const g = new THREE.Group();
+    const ink = mat(0x171a3f, { rough: .20, metal: .88 });
+    const pearl = mat(0xe9efff, { rough: .12, metal: .82 });
+    const blue = mat(def.color, { rough: .06, metal: .34, emissive: 0x242a91, ei: 1.55 });
+    const cyan = mat(0x2de2ff, { rough: .06, metal: .32, emissive: 0x087f95, ei: 1.45 });
+
+    const cradle = new THREE.Group(); cradle.position.set(0, .06, -.72); g.add(cradle);
+    const core = add(cradle, new THREE.IcosahedronGeometry(.27, 2), blue, [0, 0, 0]);
+    const r1 = add(cradle, new THREE.TorusGeometry(.43, .045, 8, 32), cyan, [0, 0, 0], [PI / 2, 0, 0]);
+    const r2 = add(cradle, new THREE.TorusGeometry(.52, .035, 8, 32), pearl, [0, 0, 0], [0, PI / 2, .38]);
+    const six = add(cradle, new THREE.TorusGeometry(.19, .043, 8, 24), blue, [-.08, 0, -.31]);
+    box(cradle, [.055, .30, .055], blue, [-.20, .16, -.31], [0, 0, -.32]);
+    g.userData.energy = cradle;
+
+    /* manopla curta abaixo do orbe */
+    box(g, [.24, .42, .25], ink, [0, -.35, -.12], [-.28, 0, 0]);
+    box(g, [.38, .14, .48], pearl, [0, -.03, -.12]);
+    [-1, 1].forEach(s => box(g, [.08, .20, .72], ink, [s * .28, .02, -.47], [0, 0, s * .16]));
+    bolt(g, 0, -.02, -.35, cyan, .08);
+    cradle.userData.rings = [r1, r2, six];
+    return finish(g, def.color, [0, .06, -1.30]);
+  }
+
+  /* Arco-lâmina 7: uma arma de energia transversal que dispara sete prismas. */
+  function prism7(def) {
+    const g = new THREE.Group();
+    const ink = mat(0x19142f, { rough: .22, metal: .91 });
+    const pearl = mat(0xf3edff, { rough: .12, metal: .88 });
+    const pink = mat(def.color, { rough: .06, metal: .42, emissive: 0x8d185d, ei: 1.5 });
+    const violet = mat(0x9b65ff, { rough: .07, metal: .40, emissive: 0x4b279d, ei: 1.35 });
+
+    box(g, [.25, .24, 1.26], ink, [0, 0, -.48]);
+    box(g, [.09, .10, 1.46], pink, [0, .14, -.58]);
+    box(g, [.22, .43, .22], ink, [0, -.30, .02], [-.22, 0, 0]);
+    /* braços do arco criam um sete largo visto de frente */
+    [-1, 1].forEach(s => {
+      box(g, [.82, .10, .13], s < 0 ? violet : pink, [s * .34, .20, -.78], [0, s * .20, s * .22]);
+      box(g, [.10, .46, .12], pearl, [s * .64, .01, -.76], [0, 0, -s * .34]);
+    });
+    box(g, [1.30, .025, .025], pearl, [0, -.13, -.79]);
+    /* sete cristais com tamanhos alternados */
+    for (let i = -3; i <= 3; i++) {
+      const crystal = add(g, new THREE.OctahedronGeometry(.09 + (3 - Math.abs(i)) * .012, 0),
+        i % 2 ? violet : pink, [i * .16, .15 - Math.abs(i) * .018, -.93]);
+      crystal.scale.z = 1.45;
+    }
+    const blade = box(g, [.10, .08, .72], pearl, [.18, .24, -.56], [0, 0, -.43]);
+    g.userData.energy = blade;
+    return finish(g, def.color, [0, .02, -1.46]);
+  }
+
   /* Temporada 67: rifle de pulso original com dois núcleos assimétricos.
      O anel representa o 6 e os trilhos angulares formam o gesto gráfico do 7. */
   function pulse67(def) {
@@ -252,7 +330,10 @@
     return finish(g, def.color, [0, .01, -1.88]);
   }
 
-  const BUILDERS = { laser, shot: shotgun, rpg: rocket, mini: minigun, rail: railgun, pulse67 };
+  const BUILDERS = {
+    laser, shot: shotgun, rpg: rocket, mini: minigun, rail: railgun,
+    boomerang, gravity6, prism7, pulse67
+  };
 
   MA.createWeaponModel = function (weapon) {
     const def = typeof weapon === 'string'

@@ -163,7 +163,33 @@
         }
       }
 
-      if (type === 'weapon') {
+      if (type === 'ability') {
+        const ability = MA.findItem('ability', id) || MA.ABILITIES[0];
+        const color = ability.color || 0x9b65ff;
+        const coreMat = new THREE.MeshPhysicalMaterial({
+          color: 0xf5f7ff, roughness: .10, metalness: .68,
+          emissive: color, emissiveIntensity: .55, clearcoat: .62
+        });
+        const glowMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .82 });
+        const core = new THREE.Mesh(new THREE.OctahedronGeometry(.48, 1), coreMat);
+        core.position.y = .45; core.rotation.set(.35, .45, .12); stage.add(core);
+        const orbitA = new THREE.Mesh(new THREE.TorusGeometry(.78, .065, 10, 38), glowMat);
+        orbitA.position.y = .45; orbitA.rotation.set(.55, .35, .18); stage.add(orbitA);
+        const orbitB = new THREE.Mesh(new THREE.TorusGeometry(.62, .035, 8, 34),
+          new THREE.MeshBasicMaterial({ color: id === 'blink7' ? 0xff4fbd : 0x2de2ff }));
+        orbitB.position.y = .45; orbitB.rotation.set(-.62, .18, -.34); stage.add(orbitB);
+        if (id === 'repulse6') {
+          const six = new THREE.Mesh(new THREE.TorusGeometry(.24, .055, 8, 26), glowMat);
+          six.position.set(-.08, .45, -.56); stage.add(six);
+        } else if (id === 'blink7') {
+          const top = new THREE.Mesh(new THREE.BoxGeometry(.48, .07, .08), glowMat);
+          top.position.set(.03, .58, -.56); stage.add(top);
+          const leg = new THREE.Mesh(new THREE.BoxGeometry(.08, .46, .08), glowMat);
+          leg.position.set(.10, .39, -.56); leg.rotation.z = -.42; stage.add(leg);
+        }
+        this.camera.position.set(2.8, 1.75, -4.2);
+        this.camera.lookAt(0, .42, 0);
+      } else if (type === 'weapon') {
         const weapon = MA.findItem('weapon', id) || MA.WEAPONS[0];
         const visual = MA.createWeaponModel(weapon);
         visual.muzzle.visible = false;

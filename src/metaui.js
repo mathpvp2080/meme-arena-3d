@@ -135,9 +135,11 @@
       if ($('hubMapName')) $('hubMapName').textContent = map.name;
 
       const wIdx = MA.Profile.equippedWeapons();
-      $('hubWeapons').innerHTML = wIdx.length
+      const ability = MA.Profile.equippedAbility();
+      $('hubWeapons').innerHTML = (wIdx.length
         ? wIdx.map(i => '<span class="chip">' + MA.WEAPONS[i].icon + ' ' + MA.WEAPONS[i].name + '</span>').join('')
-        : '<span class="chip warn">⚠️ nenhuma arma — compre na loja</span>';
+        : '<span class="chip warn">⚠️ nenhuma arma — compre na loja</span>') +
+        (ability ? '<span class="chip ability">✦ ' + ability.name + '</span>' : '');
 
       /* Retrato 3D dedicado: não depende do canvas do mapa ficar visível por
          trás do lobby e sempre reflete skin, armadura e primeira arma. */
@@ -304,6 +306,7 @@
 
       const icon = item.type === 'skin' ? item.face
                  : item.type === 'armor' ? '🛡️'
+                 : item.type === 'ability' ? (item.icon || '✦')
                  : item.icon || '🔫';
 
       let stats = '';
@@ -316,6 +319,8 @@
         const w = MA.WEAPONS.find(x => x.id === item.id);
         if (w) stats = '<div class="istats"><span>' + w.dmg + ' dano</span><span>' +
           (w.count > 1 ? w.count + ' projéteis' : (1 / w.rate).toFixed(1) + '/s') + '</span></div>';
+      } else if (item.type === 'ability') {
+        stats = '<div class="istats"><span>TECLA F</span><span>' + item.cooldown + 's recarga</span></div>';
       }
 
       let action;
@@ -366,7 +371,7 @@
             const r = MA.Profile.equip(type, id);
             if (r.error) { this.toast('❌ ' + r.error, 'bad'); MA.Audio.deny(); return; }
             MA.Profile.save();
-            if ((type === 'skin' || type === 'armor' || type === 'weapon') && MA._rebuildLook) MA._rebuildLook();
+            if ((type === 'skin' || type === 'armor' || type === 'weapon' || type === 'ability') && MA._rebuildLook) MA._rebuildLook();
             this.toast(r.equipped ? '✅ Equipado: <b>' + item.name + '</b>' : 'Desequipado: ' + item.name);
             this.renderInventory();
           } else if (act === 'market') {

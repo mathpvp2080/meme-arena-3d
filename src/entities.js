@@ -483,6 +483,7 @@
       hp: 100 + bonusHp, maxhp: 100 + bonusHp,
       energy: 100, maxenergy: 100,
       weapon: 0, cooldown: 0, invuln: 0,
+      ability: '', abilityCd: 0, abilityBuff: 0,
       dashCd: 0, dashCharges: 1, dashMax: 1, dashTimer: 0,
       bob: 0, recoil: 0, radius: .85 * bulk,
       bDmg: 0, bSpeed: 0, bShield: 0, bRate: 0,

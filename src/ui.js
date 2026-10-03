@@ -8,7 +8,7 @@
 
     init() {
       const ids = ['hud','hpf','hpt','enf','ent','rzf','rzt','score','waveTxt','combo','powers',
-        'wname','wicon','wdesc','weaponList','minimap','banner','bannerT','bannerS','floats',
+        'wname','wicon','wdesc','abilitySlot','weaponList','minimap','banner','bannerT','bannerS','floats',
         'vig','killfeed','hitmark','fps','bossbar','bossname','bossfill','dashpips','perkbar','crosshair'];
       ids.forEach(i => this.el[i] = $(i));
       this.mm = this.el.minimap.getContext('2d');
@@ -42,6 +42,17 @@
       e.wicon.textContent = w.icon;
       e.wdesc.textContent = w.desc;
 
+      const ability = p.ability ? MA.ABILITIES.find(a => a.id === p.ability) : null;
+      if (ability) {
+        const ready = p.abilityCd <= 0;
+        e.abilitySlot.className = 'ability-slot' + (ready ? ' ready' : '');
+        e.abilitySlot.innerHTML = '<i>' + ability.icon + '</i><b>[F] ' + ability.name + '</b><span>' +
+          (ready ? 'PRONTA' : p.abilityCd.toFixed(1) + 's') + '</span>';
+      } else {
+        e.abilitySlot.className = 'ability-slot hid';
+        e.abilitySlot.innerHTML = '';
+      }
+
       /* pips de dash */
       let pips = '';
       for (let i = 0; i < p.dashMax; i++)
@@ -54,6 +65,7 @@
       if (p.bSpeed > 0)  html += tag('😏 RIZZ', '#7a5bff', p.bSpeed);
       if (p.bShield > 0) html += tag('🗿 ESCUDO', '#b9c4cc', p.bShield);
       if (p.bRate > 0)   html += tag('🔥 OVERDRIVE', '#ffc42e', p.bRate);
+      if (p.abilityBuff > 0) html += tag('67 SOBRECARGA', '#9b65ff', p.abilityBuff);
       if (G.ult > 0)     html += tag('🧠 BRAINROT', '#ff00c8', G.ult);
       e.powers.innerHTML = html;
 

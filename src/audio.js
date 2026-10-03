@@ -84,6 +84,9 @@
         case 'shot':   this.noise(.2, .32, 1100); this.tone(130, .15, 'square', .16, 48); break;
         case 'rocket': this.tone(190, .26, 'triangle', .18, 740); this.noise(.22, .18, 700); break;
         case 'rail':   this.tone(1500, .3, 'sawtooth', .16, 160); this.noise(.3, .14, 4200, 'highpass'); break;
+        case 'boomerang': this.tone(420, .18, 'triangle', .13, 1120); this.noise(.10, .06, 5200, 'highpass'); break;
+        case 'orb':    this.tone(180, .34, 'sine', .16, 760); this.tone(540, .22, 'triangle', .08, 160); break;
+        case 'prism':  [920, 1240, 1580].forEach((f, i) => setTimeout(() => this.tone(f, .10, 'square', .07), i * 22)); break;
         default:       this.tone(900, .085, 'sawtooth', .12, 230);
       }
     },

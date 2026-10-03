@@ -719,6 +719,43 @@
       x.globalAlpha = 1;
     },
 
+    /* Coleção 6 — olhos simples e uma pequena marca orbital. */
+    sixorbit(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      [-1, 1].forEach(s => {
+        ell(x, S / 2 + s * S * .17, S * .49, S * .035, S * .105, '#17253a');
+        ell(x, S / 2 + s * S * .158, S * .455, S * .009, S * .024, 'rgba(255,255,255,.72)');
+      });
+      arc(x, S * .29, S * .70, S * .034, -.35, TAU - .35, '#2de2ff', S * .017);
+      line(x, S * .267, S * .673, S * .286, S * .625, '#2de2ff', S * .017);
+    },
+
+    /* Coleção 7 — mesma leitura limpa, com pintura prismática discreta. */
+    sevenbreak(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      [-1, 1].forEach(s => {
+        ell(x, S / 2 + s * S * .17, S * .49, S * .036, S * .106, '#25172f', s * .025);
+        ell(x, S / 2 + s * S * .158, S * .454, S * .009, S * .024, 'rgba(255,255,255,.72)');
+      });
+      line(x, S * .68, S * .65, S * .75, S * .65, '#ff4fbd', S * .019);
+      line(x, S * .743, S * .66, S * .69, S * .75, '#9b65ff', S * .019);
+    },
+
+    /* Fusão 67 — olhos mínimos e dois glifos, um de cada frequência. */
+    duo67(x, S, d) {
+      skinBase(x, S, d.skinTone);
+      x.fillStyle = 'rgba(101,114,255,.10)'; x.fillRect(0, 0, S / 2, S);
+      x.fillStyle = 'rgba(255,79,189,.10)'; x.fillRect(S / 2, 0, S / 2, S);
+      [-1, 1].forEach(s => {
+        ell(x, S / 2 + s * S * .17, S * .49, S * .037, S * .108, '#191629');
+        ell(x, S / 2 + s * S * .158, S * .454, S * .010, S * .025, 'rgba(255,255,255,.76)');
+      });
+      arc(x, S * .31, S * .70, S * .030, -.35, TAU - .35, '#2de2ff', S * .016);
+      line(x, S * .29, S * .676, S * .305, S * .638, '#2de2ff', S * .016);
+      line(x, S * .67, S * .66, S * .72, S * .66, '#ff4fbd', S * .017);
+      line(x, S * .714, S * .67, S * .68, S * .735, '#ff4fbd', S * .017);
+    },
+
     /* Temporada 67 — olhos mínimos; identidade fica no traje e nos glifos. */
     sixtyseven(x, S) {
       skinBase(x, S, '#e7aa7c');

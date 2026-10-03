@@ -20,6 +20,7 @@
       d.equipped.skin = d.equipped.skin || 'chill';
       d.equipped.armor = d.equipped.armor || 'hoodie';
       d.equipped.weapons = d.equipped.weapons || [];
+      d.equipped.ability = d.equipped.ability || '';
       d.stats = Object.assign(
         { games: 0, bestScore: 0, totalScore: 0, kills: 0, bosses: 0, bestWave: 0, maxCombo: 1, playtime: 0 },
         d.stats || {});
@@ -103,6 +104,7 @@
 
     equippedSkin()  { return MA.findItem('skin',  this.data.equipped.skin)  || MA.SKINS[0]; },
     equippedArmor() { return MA.findItem('armor', this.data.equipped.armor) || MA.ARMORS[0]; },
+    equippedAbility() { return MA.findItem('ability', this.data.equipped.ability) || null; },
     equippedWeapons() {
       const ids = this.data.equipped.weapons.filter(id => this.owns('weapon', id));
       return ids.map(id => MA.WEAPONS.findIndex(w => w.id === id)).filter(i => i >= 0);
@@ -124,6 +126,8 @@
       this.grant(item.type, item.id, true);
       if (item.type === 'weapon' && this.data.equipped.weapons.length < 3)
         this.data.equipped.weapons.push(item.id);
+      if (item.type === 'ability' && !this.data.equipped.ability)
+        this.data.equipped.ability = item.id;
       if (MA.Goals) { MA.Goals.track('buys', 1); MA.Goals.track('inv', 0); }
       this.save();
       return { ok: true };

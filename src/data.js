@@ -39,10 +39,16 @@
       desc:'Automático equilibrado. Cadência alta, dano médio.' },
     { id:'shot',   name:'Shotgun Gigachad',  icon:'💥', kind:'shot',   dmg:14, rate:0.60,  speed:58, spread:0.105, count:9, color:0x00ffd5, size:0.18, life:0.85, unlock:1,
       desc:'9 projéteis. Devastador de pertinho.' },
+    { id:'boomerang', name:'Bumerangue do Loop', icon:'🪃', kind:'boomerang', dmg:34, rate:.72, speed:44, spread:0, count:1, color:0x45f0c2, size:.28, life:1.75, pierce:2, returnAt:.62, unlock:2,
+      desc:'Arco físico que atravessa alvos, faz a curva e volta para a mão.' },
     { id:'rpg',    name:'Lança-Skibidi',     icon:'🚀', kind:'rocket', dmg:80, rate:1.00,  speed:46, spread:0.0,   count:1, color:0xff2d6f, size:0.40, life:3.0, splash:7.5, unlock:2,
       desc:'Foguete com dano em área e empurrão.' },
+    { id:'gravity6', name:'Orbe Gravitacional 6', icon:'🔮', kind:'orb', dmg:62, rate:1.12, speed:32, spread:0, count:1, color:0x6572ff, size:.38, life:1.45, splash:6.2, gravityPull:7, unlock:4,
+      desc:'Orbe flutuante que implode ao contato e puxa o grupo para o centro.' },
     { id:'mini',   name:'Minigun Brainrot',  icon:'🧠', kind:'laser',  dmg:9,  rate:0.045, speed:88, spread:0.045, count:1, color:0xff00c8, size:0.16, life:1.3, unlock:4,
       desc:'Cadência insana, precisão duvidosa.' },
+    { id:'prism7', name:'Lâmina Prisma 7', icon:'🔷', kind:'prism', dmg:19, rate:.82, speed:82, spread:.14, count:7, color:0xff4fbd, size:.19, life:1.15, pierce:1, unlock:6,
+      desc:'Arco-lâmina que libera sete estilhaços prismáticos perfurantes.' },
     { id:'rail',   name:'Railgun Sigma',     icon:'🕶️', kind:'rail',   dmg:150,rate:1.25,  speed:200,spread:0.0,   count:1, color:0x00e5ff, size:0.26, life:1.2, pierce:99, unlock:6,
       desc:'Perfura tudo em linha reta. Alto dano.' }
   ];
