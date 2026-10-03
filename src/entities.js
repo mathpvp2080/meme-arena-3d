@@ -129,66 +129,73 @@
     const g = new THREE.Group();
     const trans = !!skin.ghost;
     const bulk = skin.bulky ? 1.18 : 1;
-    const metal = skin.metal ? .85 : .15;
-    const rough = skin.metal ? .22 : .7;
+    /* Materiais de brinquedo premium: suaves, levemente brilhantes e sem o
+       aspecto áspero/plástico barato da antiga base. */
+    const metal = skin.metal ? .62 : .06;
+    const rough = skin.metal ? .18 : .36;
 
-    const mkMat = (col, extraRough) => new THREE.MeshStandardMaterial({
-      color: col, roughness: extraRough === undefined ? rough : extraRough,
-      metalness: metal, transparent: trans, opacity: trans ? .55 : 1
-    });
+    const mkMat = (col, extraRough) => {
+      const color = new THREE.Color(col);
+      return new THREE.MeshStandardMaterial({
+        color, roughness: extraRough === undefined ? rough : extraRough,
+        metalness: metal,
+        emissive: color.clone().multiplyScalar(skin.metal ? .055 : .018),
+        emissiveIntensity: 1,
+        transparent: trans, opacity: trans ? .55 : 1
+      });
+    };
 
-    /* A roupa da skin continua por baixo. Cada armadura agora recebe placas
-       próprias em vez de simplesmente pintar o tronco inteiro de outra cor. */
+    /* Silhueta "party game": tronco em forma de feijão, largo e contínuo.
+       Todas as skins herdam essa base mais fofa sem perder seus acessórios. */
     const bodyColor = skin.body;
     const body = new THREE.Mesh(
-      new THREE.CapsuleGeometry(.56 * bulk, .92, 6, 18),
-      new THREE.MeshStandardMaterial({
-        color: bodyColor, roughness: rough, metalness: metal,
-        emissive: new THREE.Color(bodyColor).multiplyScalar(.12), emissiveIntensity: .5,
-        transparent: trans, opacity: trans ? .55 : 1
-      })
+      new THREE.CapsuleGeometry(.60 * bulk, .78, 10, 24),
+      mkMat(bodyColor)
     );
-    body.position.y = 1.16; body.castShadow = true; g.add(body);
+    body.position.y = 1.18;
+    body.scale.z = .92;
+    body.castShadow = true; g.add(body);
 
     /* pescoço discreto para a cabeça não "flutuar" */
     const neck = new THREE.Mesh(
-      new THREE.CylinderGeometry(.21, .26, .3, 14),
+      new THREE.CylinderGeometry(.22, .27, .28, 18),
       new THREE.MeshStandardMaterial({
-        color: MA.shade(skin.skinTone, -28), roughness: .7,
+        color: MA.shade(skin.skinTone, -18), roughness: .42, metalness: .015,
         transparent: trans, opacity: trans ? .7 : 1
       })
     );
-    neck.position.y = 1.76; g.add(neck);
+    neck.position.y = 1.77; g.add(neck);
 
     /* capuz caído sobre as costas (não atravessa mais o queixo) */
     const hood = new THREE.Mesh(
-      new THREE.SphereGeometry(.44 * bulk, 18, 12, 0, TAU, 0, Math.PI / 2),
-      mkMat(skin.hood, .8)
+      new THREE.SphereGeometry(.46 * bulk, 22, 16, 0, TAU, 0, Math.PI / 2),
+      mkMat(skin.hood, .42)
     );
-    hood.position.set(0, 1.62, .30);
+    hood.position.set(0, 1.65, .31);
     hood.rotation.x = Math.PI + .5;
-    hood.scale.set(1, .85, 1.1);
+    hood.scale.set(1.03, .88, 1.12);
     g.add(hood);
 
+    /* Cabeça maior e mais baixa: leitura simpática mesmo nas miniaturas. */
     const head = new THREE.Mesh(
-      new THREE.SphereGeometry(.56, 26, 20),
+      new THREE.SphereGeometry(.63, 32, 24),
       new THREE.MeshStandardMaterial({
-        color: MA.shade(skin.skinTone, -12), roughness: .62,
+        color: MA.shade(skin.skinTone, -5), roughness: .38, metalness: .015,
         transparent: trans, opacity: trans ? .7 : 1
       })
     );
-    head.position.y = 2.18; head.castShadow = true; g.add(head);
+    head.position.y = 2.20; head.scale.set(1, 1.02, .96); head.castShadow = true; g.add(head);
 
-    /* rosto desenhado, virado pra frente (igual aos inimigos) */
+    /* rosto limpo, grande e legível; cada meme preserva sua expressão própria */
     const pFace = new THREE.Mesh(
-      new THREE.SphereGeometry(.568, 26, 20, -0.95, 1.9, 0.42, 2.3),
+      new THREE.SphereGeometry(.638, 32, 24, -0.95, 1.9, 0.42, 2.3),
       new THREE.MeshStandardMaterial({
         map: MA.Tex.face(Object.assign({}, skin, {
           id: 'skin:' + skin.id,
           color: skin.skinTone,
           ring: MA.shade(skin.skinTone, -55)
         })),
-        roughness: .5, transparent: true, opacity: trans ? .75 : 1
+        roughness: .30, metalness: .01, transparent: true, opacity: trans ? .75 : 1
       })
     );
     pFace.rotation.y = -Math.PI / 2;
@@ -197,12 +204,15 @@
     /* chapéu / acessório de cabeça */
     const hc = skin.hatColor !== undefined ? skin.hatColor : 0xffffff;
     if (skin.hat === 'cap') {
-      const cap = new THREE.Mesh(new THREE.CylinderGeometry(.59, .59, .2, 22),
-        new THREE.MeshStandardMaterial({ color: hc, emissive: hc, emissiveIntensity: .3, roughness: .5 }));
-      cap.position.y = 2.58; g.add(cap);
-      const brim = new THREE.Mesh(new THREE.BoxGeometry(.9, .07, .55),
-        new THREE.MeshStandardMaterial({ color: hc, roughness: .5 }));
-      brim.position.set(0, 2.5, -.5); /* aba na testa (frente = -Z) */ g.add(brim);
+      const cap = new THREE.Mesh(
+        new THREE.SphereGeometry(.655, 28, 14, 0, TAU, 0, 1.03),
+        new THREE.MeshStandardMaterial({ color: hc, emissive: hc, emissiveIntensity: .08, roughness: .28, metalness: .035 })
+      );
+      cap.position.y = 2.20; cap.scale.z = .97; g.add(cap);
+      /* aba oval, sem cantos de caixa */
+      const brim = new THREE.Mesh(new THREE.SphereGeometry(.48, 22, 12),
+        new THREE.MeshStandardMaterial({ color: hc, roughness: .30, metalness: .035 }));
+      brim.position.set(0, 2.57, -.49); brim.scale.set(1, .12, .66); g.add(brim);
     } else if (skin.hat === 'crown') {
       const base = new THREE.Mesh(new THREE.CylinderGeometry(.56, .56, .18, 20),
         new THREE.MeshStandardMaterial({ color: hc, metalness: .95, roughness: .18 }));
@@ -295,40 +305,40 @@
     }
 
     const armMat = mkMat(skin.arms);
-    const armL = new THREE.Mesh(new THREE.CapsuleGeometry(.18 * bulk, .58, 4, 12), armMat);
-    armL.position.set(-.74 * bulk, 1.32, 0); armL.castShadow = true; g.add(armL);
-    const armR = new THREE.Mesh(new THREE.CapsuleGeometry(.18 * bulk, .58, 4, 12), armMat);
-    armR.position.set(.74 * bulk, 1.32, 0); armR.castShadow = true; g.add(armR);
+    const armL = new THREE.Mesh(new THREE.CapsuleGeometry(.225 * bulk, .47, 7, 18), armMat);
+    armL.position.set(-.76 * bulk, 1.32, 0); armL.castShadow = true; g.add(armL);
+    const armR = new THREE.Mesh(new THREE.CapsuleGeometry(.225 * bulk, .47, 7, 18), armMat);
+    armR.position.set(.76 * bulk, 1.32, 0); armR.castShadow = true; g.add(armR);
 
-    /* mãos (seguem o balanço do braço) */
-    const handMat = mkMat(MA.shade(skin.skinTone, -6), .55);
+    /* luvas/mãos grandes: leitura clara e amigável à distância */
+    const handMat = mkMat(MA.shade(skin.skinTone, 2), .34);
     [armL, armR].forEach(arm => {
-      const hand = new THREE.Mesh(new THREE.SphereGeometry(.21 * bulk, 12, 10), handMat);
-      hand.position.y = -.42; hand.castShadow = true; arm.add(hand);
+      const hand = new THREE.Mesh(new THREE.SphereGeometry(.25 * bulk, 18, 14), handMat);
+      hand.position.y = -.40; hand.scale.set(1.02, .94, 1); hand.castShadow = true; arm.add(hand);
     });
-    /* ombros arredondados: tiram o ar de "cápsula" */
     [-1, 1].forEach(sg => {
-      const sh = new THREE.Mesh(new THREE.SphereGeometry(.26 * bulk, 14, 10), mkMat(skin.arms));
-      sh.position.set(sg * .62 * bulk, 1.62, 0); sh.castShadow = true; g.add(sh);
+      const sh = new THREE.Mesh(new THREE.SphereGeometry(.31 * bulk, 20, 14), mkMat(skin.arms));
+      sh.position.set(sg * .61 * bulk, 1.60, 0); sh.scale.set(1, .94, .95); sh.castShadow = true; g.add(sh);
     });
-    /* cintura */
-    const hips = new THREE.Mesh(new THREE.CylinderGeometry(.5 * bulk, .44 * bulk, .3, 16), mkMat(skin.legs, .8));
-    hips.position.y = .82; g.add(hips);
 
-    const legMat = mkMat(skin.legs, .82);
-    const legL = new THREE.Mesh(new THREE.CapsuleGeometry(.21 * bulk, .56, 4, 12), legMat);
-    legL.position.set(-.27 * bulk, .46, 0); legL.castShadow = true; g.add(legL);
-    const legR = new THREE.Mesh(new THREE.CapsuleGeometry(.21 * bulk, .56, 4, 12), legMat);
-    legR.position.set(.27 * bulk, .46, 0); legR.castShadow = true; g.add(legR);
+    /* quadril arredondado e pernas curtas, sem a aparência de boneco palito */
+    const hips = new THREE.Mesh(new THREE.SphereGeometry(.51 * bulk, 22, 14), mkMat(skin.legs, .42));
+    hips.position.y = .77; hips.scale.set(1, .58, .88); g.add(hips);
 
-    /* tênis (filhos das pernas, então acompanham a passada) */
-    const shoeMat = mkMat(MA.shade(skin.legs, -45), .7);
-    const soleMat = mkMat(0xf2f2f2, .6);
+    const legMat = mkMat(skin.legs, .40);
+    const legL = new THREE.Mesh(new THREE.CapsuleGeometry(.24 * bulk, .38, 7, 18), legMat);
+    legL.position.set(-.29 * bulk, .43, 0); legL.castShadow = true; g.add(legL);
+    const legR = new THREE.Mesh(new THREE.CapsuleGeometry(.24 * bulk, .38, 7, 18), legMat);
+    legR.position.set(.29 * bulk, .43, 0); legR.castShadow = true; g.add(legR);
+
+    /* tênis totalmente arredondados e com sola macia */
+    const shoeMat = mkMat(MA.shade(skin.legs, -38), .32);
+    const soleMat = new THREE.MeshStandardMaterial({ color: 0xf5f6ff, roughness: .30, metalness: .02 });
     [legL, legR].forEach(leg => {
-      const shoe = new THREE.Mesh(new THREE.BoxGeometry(.3 * bulk, .17, .52), shoeMat);
-      shoe.position.set(0, -.42, -.1); shoe.castShadow = true; leg.add(shoe);
-      const sole = new THREE.Mesh(new THREE.BoxGeometry(.32 * bulk, .07, .54), soleMat);
-      sole.position.set(0, -.5, -.1); leg.add(sole);
+      const shoe = new THREE.Mesh(new THREE.SphereGeometry(.29 * bulk, 20, 14), shoeMat);
+      shoe.position.set(0, -.38, -.11); shoe.scale.set(.94, .60, 1.32); shoe.castShadow = true; leg.add(shoe);
+      const sole = new THREE.Mesh(new THREE.SphereGeometry(.27 * bulk, 18, 10), soleMat);
+      sole.position.set(0, -.47, -.12); sole.scale.set(1, .22, 1.38); leg.add(sole);
     });
 
     /* Armas com silhuetas próprias. Todos os cinco modelos ficam no suporte,

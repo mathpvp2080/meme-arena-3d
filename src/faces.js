@@ -725,26 +725,36 @@
       x.globalAlpha = 1;
     },
 
-    /* Temporada 67 — visor de piloto com glifos geométricos próprios. */
+    /* Temporada 67 — rosto aberto, simpático e legível em miniatura. */
     sixtyseven(x, S) {
-      const g = x.createLinearGradient(0, 0, S, S);
-      g.addColorStop(0, '#101827'); g.addColorStop(.55, '#07131e'); g.addColorStop(1, '#18343a');
-      x.fillStyle = g; x.fillRect(0, 0, S, S);
-      /* reflexo ciano do visor */
-      x.fillStyle = 'rgba(0,234,255,.22)';
-      x.beginPath(); x.moveTo(0, S * .18); x.lineTo(S, S * .08); x.lineTo(S, S * .48); x.lineTo(0, S * .62); x.closePath(); x.fill();
-      line(x, 0, S * .61, S, S * .47, '#d8f8ff', 5);
-      /* 6: aro e haste */
-      x.strokeStyle = '#baff32'; x.lineWidth = S * .055; x.lineCap = 'round';
-      x.beginPath(); x.arc(S * .34, S * .49, S * .15, 0, TAU); x.stroke();
-      line(x, S * .23, S * .45, S * .31, S * .23, '#baff32', S * .055);
-      /* 7: topo e diagonal */
-      line(x, S * .55, S * .29, S * .80, S * .29, '#ff6b1a', S * .06);
-      line(x, S * .78, S * .31, S * .61, S * .67, '#ff6b1a', S * .06);
-      /* pequenos pontos de leitura do capacete */
-      circ(x, S * .12, S * .79, S * .025, '#baff32');
-      circ(x, S * .20, S * .79, S * .025, '#00eaff');
-      circ(x, S * .28, S * .79, S * .025, '#ff6b1a');
+      skinBase(x, S, '#f3c8ab');
+      /* sombras suaves nas laterais dão volume sem poluir a expressão */
+      const shade = x.createLinearGradient(0, 0, S, 0);
+      shade.addColorStop(0, 'rgba(101,114,255,.18)');
+      shade.addColorStop(.24, 'rgba(255,255,255,0)');
+      shade.addColorStop(.76, 'rgba(255,255,255,0)');
+      shade.addColorStop(1, 'rgba(255,79,189,.16)');
+      x.fillStyle = shade; x.fillRect(0, 0, S, S);
+      /* olhos grandes, sobrancelhas leves e brilhos ciano */
+      [-1, 1].forEach(s => {
+        const cx = S / 2 + s * S * .18;
+        ell(x, cx, S * .45, S * .115, S * .10, '#ffffff'); stroke(x, '#3f3165', 4);
+        ell(x, cx + s * S * .012, S * .47, S * .052, S * .064, '#342653');
+        circ(x, cx - S * .020, S * .445, S * .019, '#c8f8ff');
+      });
+      line(x, S * .21, S * .32, S * .42, S * .34, '#62507e', S * .032);
+      line(x, S * .58, S * .34, S * .79, S * .32, '#62507e', S * .032);
+      /* nariz e sorriso confiante */
+      x.beginPath(); x.moveTo(S * .50, S * .47); x.quadraticCurveTo(S * .46, S * .59, S * .52, S * .60); stroke(x, '#bd7f7d', 5);
+      smile(x, S, S * .64, S * .16, S * .10, '#7b345d', 7);
+      circ(x, S * .27, S * .64, S * .065, 'rgba(255,107,180,.20)');
+      circ(x, S * .73, S * .64, S * .065, 'rgba(255,107,180,.20)');
+      /* microglifos 6 e 7, como pintura facial autoral */
+      x.strokeStyle = '#2de2ff'; x.lineWidth = S * .020; x.lineCap = 'round';
+      x.beginPath(); x.arc(S * .25, S * .72, S * .034, 0, TAU); x.stroke();
+      line(x, S * .23, S * .70, S * .25, S * .65, '#2de2ff', S * .020);
+      line(x, S * .72, S * .67, S * .79, S * .67, '#ff4fbd', S * .022);
+      line(x, S * .78, S * .68, S * .73, S * .76, '#ff4fbd', S * .022);
     },
 
     /* 👑 Rei do Brainrot */

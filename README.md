@@ -23,7 +23,7 @@ Você é o **Chill Guy**, o último com dopamina suficiente pra resistir. Segure
 ### Temporada 1 · 67
 
 - **Período:** 03/10/2026 a 28/11/2026; a próxima temporada começa em 29/11/2026.
-- Identidade visual própria em lima, laranja, ciano e grafite, com a **Arena 67**.
+- Identidade visual própria em azul elétrico, rosa-magenta, ciano e violeta, com a **Arena 67**.
 - **Caixa 67** e **Cofre 67**, comprados somente com moedas virtuais. As chances ficam
   visíveis na loja e a 7ª abertura sem equipamento garante um item sazonal.
 - Conteúdo exclusivo: skin **Corredor 67**, armadura **Protocolo 6·7** e arma

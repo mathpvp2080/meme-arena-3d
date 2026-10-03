@@ -17,15 +17,36 @@
     o = o || {};
     return new THREE.MeshStandardMaterial({
       color: color,
-      roughness: o.rough !== undefined ? o.rough : .65,
-      metalness: o.metal !== undefined ? o.metal : .15,
+      roughness: o.rough !== undefined ? o.rough : .38,
+      metalness: o.metal !== undefined ? o.metal : .07,
       emissive: o.emissive !== undefined ? o.emissive : 0x000000,
       emissiveIntensity: o.ei !== undefined ? o.ei : .6,
       transparent: !!o.opacity, opacity: o.opacity !== undefined ? o.opacity : 1,
       side: o.side || THREE.FrontSide
     });
   }
-  const B = (w, h, d, m) => new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+  /* Caixa com cantos suavemente chanfrados. É usada por todas as skins para
+     bolsos, óculos e detalhes sem voltar ao visual rígido de blocos puros. */
+  function roundedBox(w, h, d) {
+    const r = Math.max(.003, Math.min(w, h) * .10);
+    const sh = new THREE.Shape();
+    const x = -w / 2, y = -h / 2;
+    sh.moveTo(x + r, y);
+    sh.lineTo(x + w - r, y); sh.quadraticCurveTo(x + w, y, x + w, y + r);
+    sh.lineTo(x + w, y + h - r); sh.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    sh.lineTo(x + r, y + h); sh.quadraticCurveTo(x, y + h, x, y + h - r);
+    sh.lineTo(x, y + r); sh.quadraticCurveTo(x, y, x + r, y);
+    const bevel = Math.min(r * .42, d * .18);
+    const geo = new THREE.ExtrudeGeometry(sh, {
+      depth: Math.max(.002, d - bevel * 2), steps: 1,
+      bevelEnabled: true, bevelSegments: 2,
+      bevelSize: bevel, bevelThickness: bevel, curveSegments: 4
+    });
+    geo.translate(0, 0, -d / 2 + bevel);
+    geo.computeVertexNormals();
+    return geo;
+  }
+  const B = (w, h, d, m) => new THREE.Mesh(roundedBox(w, h, d), m);
   const C = (rt, rb, h, m, s) => new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, s || 14), m);
   const S = (r, m, s) => new THREE.Mesh(new THREE.SphereGeometry(r, s || 16, s || 12), m);
   const Cone = (r, h, m, s) => new THREE.Mesh(new THREE.ConeGeometry(r, h, s || 10), m);
@@ -33,7 +54,7 @@
   const Tor = (r, t, m, seg) => new THREE.Mesh(new THREE.TorusGeometry(r, t, 8, seg || 22), m);
 
   /* alturas de referência do boneco base */
-  const HEAD_Y = 2.18, BODY_Y = 1.16;
+  const HEAD_Y = 2.20, BODY_Y = 1.18;
 
   const PBUILDS = {
 
@@ -50,9 +71,9 @@
         const ear = Cone(.15, .34, fur, 5);
         ear.position.set(s * .38, 2.55, .08); ear.rotation.z = s * .28; c.add(ear);
       });
-      /* bolso canguru na frente */
-      const pocket = B(.72, .34, .18, hood);
-      pocket.position.set(0, 1.0, -.46); c.add(pocket);
+      /* bolso canguru convexo, acompanhando o corpo arredondado */
+      const pocket = S(.38, hood, 20);
+      pocket.scale.set(1.02, .52, .24); pocket.position.set(0, 1.02, -.54); c.add(pocket);
       /* cordões do capuz */
       [-1, 1].forEach(s => {
         const str = C(.035, .035, .42, M(0xf3f3f3, { rough: .8 }), 6);
@@ -62,17 +83,17 @@
       });
       /* calça bege */
       [c.legL, c.legR].forEach(l => { l.material = M(0xc9a87c, { rough: .9 }); });
-      /* chinelos */
+      /* chinelos com cantos macios */
       [-1, 1].forEach(s => {
-        const foot = B(.34, .08, .5, M(0x6b4f2a, { rough: .9 }));
-        foot.position.set(s * .27, .06, -.06); c.add(foot);
+        const foot = S(.28, M(0x6b4f2a, { rough: .62 }), 16);
+        foot.scale.set(.76, .20, 1.30); foot.position.set(s * .29, .08, -.14); c.add(foot);
       });
       /* punhos e barra dão volume real ao moletom */
       [-1, 1].forEach(s => {
-        const cuff = C(.205, .205, .12, M(0x22305e, { rough: .9 }), 12);
-        cuff.position.set(s * .74, .91, 0); c.add(cuff);
+        const cuff = C(.225, .225, .12, M(0x4351aa, { rough: .48 }), 16);
+        cuff.position.set(s * .76, .92, 0); c.add(cuff);
       });
-      const hem = C(.52, .52, .10, M(0x22305e, { rough: .9 }), 18);
+      const hem = C(.54, .54, .10, M(0x4351aa, { rough: .48 }), 22);
       hem.position.y = .70; c.add(hem);
       /* mão no bolso: braço esquerdo encostado */
       c.armL.rotation.x = .35; c.armL.position.z = -.12;
@@ -406,59 +427,78 @@
       c.anim(t => { orb.rotation.y = t; scepter.rotation.x = Math.sin(t * 2) * .08; });
     },
 
-    /* 67 — personagem inteiramente original da temporada numérica. */
+    /* 67 — corredor party-game inteiramente original, fofo e arredondado. */
     sixtyseven(c) {
       c.hood.visible = false;
-      const ink = M(0x0d1423, { rough: .26, metal: .82 });
-      const steel = M(0xd4e1e9, { rough: .17, metal: .93 });
-      const lime = M(0xbaff32, { rough: .10, metal: .42, emissive: 0x5f9300, ei: 1.55 });
-      const orange = M(0xff6b1a, { rough: .12, metal: .48, emissive: 0x912600, ei: 1.35 });
-      const visor = M(0x08131f, { rough: .06, metal: .88, emissive: 0x00cde8, ei: .65 });
+      const navy = M(0x151a43, { rough: .24, metal: .18 });
+      const blue = M(0x6572ff, { rough: .16, metal: .14, emissive: 0x252d8f, ei: .34 });
+      const pink = M(0xff4fbd, { rough: .15, metal: .12, emissive: 0x8a174f, ei: .32 });
+      const cyan = M(0x2de2ff, { rough: .12, metal: .20, emissive: 0x08768e, ei: .72 });
+      const pearl = M(0xf5f7ff, { rough: .19, metal: .20 });
 
-      /* capacete de corrida, com visor contínuo e coroa aerodinâmica */
+      /* Touca espacial aberta: enquadra o rosto em vez de escondê-lo. */
       const helmet = new THREE.Mesh(
-        new THREE.SphereGeometry(.64, 22, 15, 0, TAU, 0, Math.PI * .70), ink);
-      helmet.position.set(0, 2.22, .02); helmet.rotation.x = -.15; c.add(helmet);
-      const glass = B(1.0, .27, .10, visor);
-      glass.position.set(0, 2.27, -.54); glass.rotation.x = -.06; c.add(glass);
-      const crest = B(.16, .25, .76, lime);
-      crest.position.set(-.13, 2.68, .08); crest.rotation.x = -.12; c.add(crest);
-      const crest2 = B(.13, .19, .62, orange);
-      crest2.position.set(.14, 2.66, .10); crest2.rotation.x = -.12; c.add(crest2);
-
-      /* emblema frontal: 6 em aro e 7 angular, ambos geométricos */
-      const six = Tor(.14, .035, lime, 18);
-      six.position.set(-.22, 2.25, -.615); c.add(six);
-      const sixStem = B(.045, .22, .045, lime);
-      sixStem.position.set(-.30, 2.36, -.62); sixStem.rotation.z = -.25; c.add(sixStem);
-      const sevenTop = B(.28, .045, .045, orange);
-      sevenTop.position.set(.22, 2.35, -.62); c.add(sevenTop);
-      const sevenLeg = B(.045, .25, .045, orange);
-      sevenLeg.position.set(.24, 2.23, -.62); sevenLeg.rotation.z = -.38; c.add(sevenLeg);
-
-      /* jaqueta esportiva assimétrica e cinto metálico */
+        new THREE.SphereGeometry(.685, 28, 18, 0, TAU, 0, Math.PI * .37), blue);
+      helmet.position.set(0, 2.20, .025); helmet.scale.z = .98; c.add(helmet);
+      const faceRim = Tor(.515, .045, cyan, 32);
+      faceRim.position.set(0, 2.19, -.555); faceRim.scale.set(1.03, .96, 1); c.add(faceRim);
       [-1, 1].forEach(s => {
-        const stripe = B(.20, .92, .07, s < 0 ? lime : orange);
-        stripe.position.set(s * .28, 1.28, -.55); stripe.rotation.z = s * .10; c.add(stripe);
-        const cuff = Tor(.205, .045, s < 0 ? lime : orange, 18);
-        cuff.position.set(s * .74, .92, 0); cuff.rotation.x = Math.PI / 2; c.add(cuff);
-        const shoe = B(.34, .15, .58, s < 0 ? lime : orange);
-        shoe.position.set(s * .27, .10, -.12); c.add(shoe);
+        const pod = S(.145, s < 0 ? pink : cyan, 18);
+        pod.position.set(s * .635, 2.19, -.015); pod.scale.set(.72, 1, .72); c.add(pod);
+        const dot = S(.052, pearl, 12);
+        dot.position.set(s * .655, 2.19, -.13); c.add(dot);
       });
-      const belt = B(.93, .13, .18, steel);
-      belt.position.set(0, .78, -.22); c.add(belt);
-      const buckle = new THREE.Mesh(new THREE.OctahedronGeometry(.12, 0), lime);
-      buckle.position.set(0, .79, -.43); c.add(buckle);
 
-      /* duas aletas traseiras criam o rastro visual sem copiar personagem. */
-      const fins = [];
+      /* Macacão esportivo com alças-cápsula, placa peitoral e identidade 67. */
       [-1, 1].forEach(s => {
-        const fin = B(.16, .72, .10, s < 0 ? lime : orange);
-        fin.position.set(s * .32, 1.38, .48); fin.rotation.z = s * .14; c.add(fin); fins.push(fin);
+        const strap = Cap(.06, .55, s < 0 ? cyan : pink);
+        strap.position.set(s * .23, 1.42, -.535); strap.rotation.z = s * .15; c.add(strap);
+        const cuff = Tor(.215, .047, s < 0 ? cyan : pink, 22);
+        cuff.rotation.x = Math.PI / 2; cuff.position.y = -.34;
+        (s < 0 ? c.armL : c.armR).add(cuff);
+      });
+      const chest = S(.33, navy, 22);
+      chest.position.set(0, 1.33, -.53); chest.scale.set(1.18, .78, .22); c.add(chest);
+      const six = Tor(.105, .030, cyan, 22);
+      six.position.set(-.115, 1.34, -.605); c.add(six);
+      const sixStem = Cap(.027, .11, cyan);
+      sixStem.position.set(-.17, 1.41, -.605); sixStem.rotation.z = -.30; c.add(sixStem);
+      const sevenTop = Cap(.027, .14, pink);
+      sevenTop.position.set(.115, 1.41, -.605); sevenTop.rotation.z = Math.PI / 2; c.add(sevenTop);
+      const sevenLeg = Cap(.027, .13, pink);
+      sevenLeg.position.set(.135, 1.31, -.605); sevenLeg.rotation.z = -.34; c.add(sevenLeg);
+
+      const belt = Tor(.50, .055, pearl, 28);
+      belt.position.set(0, .80, 0); belt.rotation.x = Math.PI / 2; belt.scale.z = .90; c.add(belt);
+      const buckle = S(.12, pink, 16);
+      buckle.position.set(0, .80, -.49); buckle.scale.set(1.18, .82, .42); c.add(buckle);
+      const buckleDot = S(.045, cyan, 10);
+      buckleDot.position.set(0, .80, -.545); c.add(buckleDot);
+
+      /* Tênis acolchoados bicolores, acompanhando a base arredondada. */
+      [-1, 1].forEach(s => {
+        const shoe = S(.30, s < 0 ? cyan : pink, 18);
+        shoe.scale.set(.90, .52, 1.30); shoe.position.set(s * .29, .09, -.17); c.add(shoe);
+        const lace = Tor(.105, .026, pearl, 18);
+        lace.position.set(s * .29, .16, -.42); lace.scale.set(1, .52, 1); c.add(lace);
+      });
+
+      /* Mini propulsores arredondados dão energia sem uma armadura pesada. */
+      const boosters = [];
+      [-1, 1].forEach(s => {
+        const booster = Cap(.115, .46, s < 0 ? pink : blue);
+        booster.position.set(s * .34, 1.34, .50); booster.rotation.z = s * .11; c.add(booster);
+        const glow = S(.085, cyan, 12);
+        glow.position.set(s * .39, 1.03, .52); c.add(glow);
+        boosters.push({ booster, glow, phase: s });
       });
       c.anim(t => {
-        buckle.rotation.y = t * 1.7;
-        fins.forEach((f, i) => { f.rotation.x = Math.sin(t * 3.4 + i) * .08; });
+        buckle.rotation.z = Math.sin(t * 2.4) * .08;
+        boosters.forEach((b, i) => {
+          const pulse = 1 + Math.sin(t * 5.2 + i * Math.PI) * .10;
+          b.glow.scale.setScalar(pulse);
+          b.booster.rotation.x = Math.sin(t * 2.8 + b.phase) * .05;
+        });
       });
     }
   };

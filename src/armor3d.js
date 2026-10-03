@@ -27,6 +27,7 @@
   const C = (rt, rb, h, m, seg) => new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg || 16), m);
   const S = (r, m, seg) => new THREE.Mesh(new THREE.SphereGeometry(r, seg || 16, seg || 12), m);
   const Cone = (r, h, m, seg) => new THREE.Mesh(new THREE.ConeGeometry(r, h, seg || 8), m);
+  const Cap = (r, h, m) => new THREE.Mesh(new THREE.CapsuleGeometry(r, h, 6, 16), m);
   const Tor = (r, t, m, seg) => new THREE.Mesh(new THREE.TorusGeometry(r, t, 8, seg || 24), m);
 
   function attach(parent, mesh, pos, rot, scale) {
@@ -198,43 +199,47 @@
       add(c, B(.32, .065, .055, cyan), [0, 1.23, -.73], [0, 0, -.30]);
     },
 
-    /* Temporada 67: placas assimétricas 6|7 com amortecedores de impacto. */
+    /* Temporada 67: placas arredondadas 6|7 com amortecedores de impacto. */
     protocol67(c) {
-      const ink = M(0x0d1423, { rough: .24, metal: .92 });
-      const steel = M(0xc7d7e3, { rough: .16, metal: .96 });
-      const lime = M(0xbaff32, { rough: .08, metal: .48, emissive: 0x609900, ei: 1.55 });
-      const orange = M(0xff6b1a, { rough: .10, metal: .55, emissive: 0x8d2500, ei: 1.40 });
+      const navy = M(0x151a43, { rough: .20, metal: .78 });
+      const pearl = M(0xf0f3ff, { rough: .15, metal: .72 });
+      const blue = M(0x6572ff, { rough: .09, metal: .42, emissive: 0x2630a0, ei: .82 });
+      const pink = M(0xff4fbd, { rough: .10, metal: .38, emissive: 0x8e185a, ei: .78 });
+      const cyan = M(0x2de2ff, { rough: .07, metal: .34, emissive: 0x08788f, ei: 1.25 });
 
-      /* peito em duas metades: aro circular e faixa angular */
+      /* Duas placas convexas acompanham o corpo-feijão em vez de formar caixa. */
       paired(s => {
-        const plate = B(.54 * c.bulk, .91, .20, ink);
-        add(c, plate, [s * .28 * c.bulk, 1.31, -.57], [0, 0, s * .045]);
+        const plate = S(.55, navy, 24);
+        add(c, plate, [s * .27 * c.bulk, 1.34, -.52], [0, 0, s * .05], [.96, 1.06, .28]);
+        const edge = Tor(.24, .032, s < 0 ? blue : pink, 24);
+        add(c, edge, [s * .27, 1.38, -.685]);
       });
-      const six = Tor(.25, .065, lime, 24);
-      add(c, six, [-.26, 1.39, -.72]);
-      add(c, B(.075, .42, .06, lime), [-.39, 1.56, -.73], [0, 0, -.34]);
-      add(c, B(.43, .075, .06, orange), [.25, 1.61, -.73]);
-      add(c, B(.075, .51, .06, orange), [.29, 1.34, -.73], [0, 0, -.38]);
-      add(c, B(.78, .13, .22, steel), [0, .79, -.47]);
+      const six = Tor(.20, .050, blue, 24);
+      add(c, six, [-.27, 1.39, -.72]);
+      add(c, Cap(.044, .24, blue), [-.37, 1.52, -.72], [0, 0, -.34]);
+      add(c, Cap(.044, .26, pink), [.25, 1.58, -.72], [0, 0, PI / 2]);
+      add(c, Cap(.044, .31, pink), [.28, 1.34, -.72], [0, 0, -.38]);
+      const waist = Tor(.48 * c.bulk, .062, pearl, 28);
+      add(c, waist, [0, .80, 0], [PI / 2, 0, 0], [1, 1, .90]);
 
       paired(s => {
-        const color = s < 0 ? lime : orange;
-        const shoulder = S(.38, ink, 16);
-        add(c, shoulder, [s * .82 * c.bulk, 1.67, 0], null, [1.28, .66, 1.05]);
-        const bumper = Tor(.285, .055, color, 20);
-        add(c, bumper, [s * .83 * c.bulk, 1.68, -.08], [PI / 2, 0, 0]);
+        const color = s < 0 ? blue : pink;
+        const shoulder = S(.39, navy, 20);
+        add(c, shoulder, [s * .82 * c.bulk, 1.66, 0], null, [1.28, .68, 1.05]);
+        const bumper = Tor(.29, .052, color, 24);
+        add(c, bumper, [s * .83 * c.bulk, 1.67, -.08], [PI / 2, 0, 0]);
         const arm = s < 0 ? c.armL : c.armR;
-        attach(arm, C(.255, .21, .50, ink, 14), [0, -.15, 0]);
-        attach(arm, B(.09, .42, .13, color), [0, -.15, -.23]);
+        attach(arm, C(.265, .22, .48, navy, 18), [0, -.14, 0]);
+        attach(arm, Cap(.045, .25, color), [0, -.14, -.245]);
         const leg = s < 0 ? c.legL : c.legR;
-        attach(leg, B(.32, .48, .38, ink), [0, -.15, -.04]);
-        attach(leg, B(.11, .35, .10, color), [0, -.14, -.24]);
+        attach(leg, S(.26, navy, 18), [0, -.14, -.03], null, [1.05, 1.20, .76]);
+        attach(leg, Cap(.046, .20, color), [0, -.14, -.245]);
       });
 
-      const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.14, 1), steel);
-      add(c, core, [0, 1.18, -.75]);
-      const orbit = Tor(.23, .035, lime, 24);
-      add(c, orbit, [0, 1.18, -.73]);
+      const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.14, 1), pearl);
+      add(c, core, [0, 1.17, -.73]);
+      const orbit = Tor(.23, .035, cyan, 28);
+      add(c, orbit, [0, 1.17, -.71]);
       c.anim(t => {
         core.rotation.x = t * .8; core.rotation.y = t * 1.5;
         orbit.rotation.z = -t * 1.1;

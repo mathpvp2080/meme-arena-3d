@@ -250,7 +250,7 @@
     },
 
     showLootResults(opened) {
-      const colors = { common: '#9fb3c8', rare: '#00eaff', epic: '#b46cff', legendary: '#ff9b43', mythic: '#baff32' };
+      const colors = { common: '#9fb3c8', rare: '#2de2ff', epic: '#9b65ff', legendary: '#ffd166', mythic: '#ff4fbd' };
       $('lootTitle').textContent = opened.box.name + ' ABERTO';
       $('lootResults').innerHTML = opened.results.map(r =>
         '<div class="loot-result ' + (r.guaranteed ? 'guaranteed' : '') + '" style="--rc:' + (colors[r.rarity] || colors.common) + '">' +

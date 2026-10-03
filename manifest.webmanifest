@@ -10,8 +10,8 @@
   "display": "fullscreen",
   "display_override": ["window-controls-overlay", "fullscreen", "standalone"],
   "orientation": "landscape",
-  "background_color": "#08101d",
-  "theme_color": "#101827",
+  "background_color": "#090b25",
+  "theme_color": "#151a43",
   "categories": ["games", "entertainment"],
   "icons": [
     { "src": "assets/icon-48.png",  "sizes": "48x48",   "type": "image/png", "purpose": "any" },

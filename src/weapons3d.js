@@ -216,11 +216,12 @@
      O anel representa o 6 e os trilhos angulares formam o gesto gráfico do 7. */
   function pulse67(def) {
     const g = new THREE.Group();
-    const ink = mat(0x0d1423, { rough: .20, metal: .96 });
-    const steel = mat(0xc8d8e5, { rough: .15, metal: .98 });
-    const lime = mat(0xbaff32, { rough: .08, metal: .46, emissive: 0x78b900, ei: 1.65 });
-    const orange = mat(0xff6b1a, { rough: .10, metal: .52, emissive: 0x9a2800, ei: 1.45 });
-    const glass = basic(0xdffff5, .76);
+    const ink = mat(0x151a43, { rough: .18, metal: .94 });
+    const steel = mat(0xe7ecff, { rough: .13, metal: .92 });
+    const blue = mat(0x6572ff, { rough: .07, metal: .44, emissive: 0x2833a6, ei: 1.10 });
+    const pink = mat(0xff4fbd, { rough: .08, metal: .46, emissive: 0x921b60, ei: 1.08 });
+    const cyan = mat(0x2de2ff, { rough: .06, metal: .36, emissive: 0x087c94, ei: 1.55 });
+    const glass = basic(0xd8faff, .76);
 
     box(g, [.44, .42, 1.08], ink, [0, 0, -.34]);
     box(g, [.54, .12, .88], steel, [0, .24, -.45]);
@@ -230,23 +231,23 @@
     /* núcleo "6" */
     const six = new THREE.Group();
     six.position.set(-.26, .02, -.55); g.add(six);
-    const sixRing = ring(six, .18, .052, lime, 0, 22);
-    tube(six, .052, .52, lime, [-.13, .16, -.12], 10).rotation.set(0, 0, -.42);
+    const sixRing = ring(six, .18, .052, blue, 0, 22);
+    tube(six, .052, .52, blue, [-.13, .16, -.12], 10).rotation.set(0, 0, -.42);
     g.userData.energy = sixRing;
 
     /* trilhos em "7", mantidos como detalhe abstrato e legível */
-    box(g, [.42, .07, .10], orange, [.23, .20, -.60]);
-    box(g, [.07, .43, .10], orange, [.27, .01, -.68], [0, 0, -.42]);
+    box(g, [.42, .07, .10], pink, [.23, .20, -.60]);
+    box(g, [.07, .43, .10], pink, [.27, .01, -.68], [0, 0, -.42]);
 
     [-1, 1].forEach(s => {
-      box(g, [.105, .15, 1.25], s < 0 ? lime : orange, [s * .24, .01, -1.10]);
+      box(g, [.105, .15, 1.25], s < 0 ? blue : pink, [s * .24, .01, -1.10]);
       box(g, [.06, .07, 1.18], glass, [s * .24, .02, -1.12]);
-      bolt(g, s * .24, .17, -.97, s < 0 ? lime : orange, .055);
+      bolt(g, s * .24, .17, -.97, s < 0 ? blue : pink, .055);
     });
     [ -.62, -.98, -1.34, -1.66 ].forEach((z, i) =>
-      ring(g, .31 - i * .018, .025, i % 2 ? orange : lime, z, 24));
-    tube(g, .075, 1.42, lime, [0, .01, -1.05], 12);
-    box(g, [.40, .07, .28], orange, [0, -.24, .22]);
+      ring(g, .31 - i * .018, .025, i % 2 ? pink : blue, z, 24));
+    tube(g, .075, 1.42, cyan, [0, .01, -1.05], 12);
+    box(g, [.40, .07, .28], pink, [0, -.24, .22]);
 
     return finish(g, def.color, [0, .01, -1.88]);
   }

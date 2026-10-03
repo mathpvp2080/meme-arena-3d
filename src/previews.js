@@ -29,7 +29,7 @@
         this.renderer.setSize(320, 196, false);
         this.renderer.outputEncoding = THREE.sRGBEncoding;
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.18;
+        this.renderer.toneMappingExposure = 1.28;
         this.renderer.setClearColor(0x000000, 0);
 
         this.scene = new THREE.Scene();
@@ -37,13 +37,15 @@
         this.stage = new THREE.Group();
         this.scene.add(this.stage);
 
-        this.scene.add(new THREE.HemisphereLight(0xccecff, 0x16082e, 1.6));
-        const key = new THREE.DirectionalLight(0xffffff, 2.25);
+        this.scene.add(new THREE.HemisphereLight(0xdaf8ff, 0x21143f, 1.72));
+        const key = new THREE.DirectionalLight(0xfffbff, 2.35);
         key.position.set(-4, 6, -5); this.scene.add(key);
-        const rim = new THREE.DirectionalLight(0xff2dd1, 1.5);
+        const rim = new THREE.DirectionalLight(0xff4fbd, 1.62);
         rim.position.set(5, 3, 4); this.scene.add(rim);
-        const fill = new THREE.PointLight(0x00ffd5, 1.2, 12);
+        const fill = new THREE.PointLight(0x2de2ff, 1.35, 12);
         fill.position.set(-3, 2, -3); this.scene.add(fill);
+        const violet = new THREE.PointLight(0x6572ff, .85, 10);
+        violet.position.set(2.6, 1.2, -2.2); this.scene.add(violet);
         return true;
       } catch (err) {
         console.warn('[MemeArena] miniaturas 3D indisponíveis:', err);
@@ -124,6 +126,33 @@
       this.renderer.setSize(width, height, false);
       this.camera.aspect = width / height;
       this.camera.updateProjectionMatrix();
+
+      /* Base de exposição real: formas macias, aro luminoso e halo 67.
+         O fundo em raios continua no CSS, então a miniatura permanece leve. */
+      const floorTop = type === 'weapon' ? -.47 : (portrait ? -.30 : -.23);
+      const floorRadius = type === 'weapon' ? 1.58 : (portrait ? 1.30 : 1.15);
+      const floor = new THREE.Mesh(
+        new THREE.CylinderGeometry(floorRadius, floorRadius * 1.10, .15, 40),
+        new THREE.MeshStandardMaterial({ color: 0x20265f, roughness: .25, metalness: .28 })
+      );
+      floor.position.y = floorTop - .075; stage.add(floor);
+      const floorRing = new THREE.Mesh(
+        new THREE.TorusGeometry(floorRadius * .83, .035, 8, 40),
+        new THREE.MeshBasicMaterial({ color: type === 'weapon' ? 0xff4fbd : 0x2de2ff, transparent: true, opacity: .78 })
+      );
+      floorRing.rotation.x = Math.PI / 2; floorRing.position.y = floorTop + .006; stage.add(floorRing);
+      if (type !== 'weapon') {
+        const halo = new THREE.Mesh(
+          new THREE.TorusGeometry(portrait ? 1.28 : 1.18, .022, 8, 48),
+          new THREE.MeshBasicMaterial({ color: 0x6572ff, transparent: true, opacity: .34, depthWrite: false })
+        );
+        halo.position.set(0, 1.38, .47); stage.add(halo);
+        const haloAccent = new THREE.Mesh(
+          new THREE.TorusGeometry(portrait ? 1.16 : 1.06, .014, 8, 48),
+          new THREE.MeshBasicMaterial({ color: 0xff4fbd, transparent: true, opacity: .26, depthWrite: false })
+        );
+        haloAccent.position.set(0, 1.38, .48); stage.add(haloAccent);
+      }
 
       if (type === 'weapon') {
         const weapon = MA.findItem('weapon', id) || MA.WEAPONS[0];

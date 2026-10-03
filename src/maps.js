@@ -10,19 +10,19 @@
   MA.MAPS = [
     {
       id: 'arena', name: 'Arena 67', icon: '6⁷', level: 1,
-      desc: 'O palco oficial da Temporada 1: lima, laranja e protocolo 6·7.',
-      bg: 0x071019, fog: 0x102019, fogD: 0.0125,
-      ground: { base: '#0a1620', grid: 'rgba(186,255,50,.78)', fine: 'rgba(0,234,255,.22)', speck: true, repeat: 14 },
-      sky: { stops: ['#040911', '#0a1724', '#15291e', '#354018', '#55230d', '#0a111b'], stars: 500, sun: ['rgba(235,255,160,1)', 'rgba(186,255,50,.78)', 'rgba(255,107,26,.25)'] },
-      ring: 0xbaff32, wall: 0x087f96, wallEmissive: 0x00586c,
-      ambient: [0x193c38, .34], hemi: [0x70a872, 0x071019, .32], sun3d: [0xeaffc0, 1.15],
-      neon: [0xbaff32, 0x00eaff, 0xff6b1a, 0x6757ff, 0xffffff],
-      obstacle: { style: 'neonbox', palette: [0xbaff32, 0x00eaff, 0xff6b1a, 0x6757ff, 0xc8d8e5, 0x74ba18], count: 20 },
+      desc: 'O palco oficial da Temporada 1: azul elétrico, magenta e energia ciano.',
+      bg: 0x090b25, fog: 0x17163d, fogD: 0.0125,
+      ground: { base: '#111638', grid: 'rgba(101,114,255,.78)', fine: 'rgba(45,226,255,.25)', speck: true, repeat: 14 },
+      sky: { stops: ['#07091f', '#101743', '#27256a', '#543174', '#661c62', '#121331'], stars: 560, sun: ['rgba(244,250,255,1)', 'rgba(45,226,255,.75)', 'rgba(255,79,189,.26)'] },
+      ring: 0x6572ff, wall: 0x4c3ab2, wallEmissive: 0x281b78,
+      ambient: [0x34377d, .38], hemi: [0x69dff2, 0x120d2d, .38], sun3d: [0xeaf8ff, 1.22],
+      neon: [0x6572ff, 0x2de2ff, 0xff4fbd, 0x9b65ff, 0xffffff],
+      obstacle: { style: 'neonbox', palette: [0x6572ff, 0x2de2ff, 0xff4fbd, 0x9b65ff, 0xe7ecff, 0x424fc9], count: 20 },
       monument: 'likes',
-      signs: [['TEMPORADA\n67', '#baff32'], ['PROTOCOLO\n6·7 ATIVO', '#ff6b1a'],
-              ['7ª CAIXA\nGARANTIDA', '#00eaff'], ['SEIS PARTES\nCORAGEM', '#baff32'],
-              ['SETE PARTES\nCAOS', '#ff6b1a'], ['PULSO 67\nCARREGADO', '#ffffff'],
-              ['03 OUT\n28 NOV', '#c8d8e5'], ['ARTE E ÁUDIO\nORIGINAIS', '#00eaff']]
+      signs: [['TEMPORADA\n67', '#6572ff'], ['PROTOCOLO\n6·7 ATIVO', '#ff4fbd'],
+              ['7ª CAIXA\nGARANTIDA', '#2de2ff'], ['SEIS PARTES\nCORAGEM', '#6572ff'],
+              ['SETE PARTES\nCAOS', '#ff4fbd'], ['PULSO 67\nCARREGADO', '#ffffff'],
+              ['03 OUT\n28 NOV', '#e7ecff'], ['ARTE E ÁUDIO\nORIGINAIS', '#2de2ff']]
     },
 
     {

@@ -1,126 +1,135 @@
-/* TEMPORADA 1 · 67 — identidade própria em lima, laranja, ciano e grafite */
+/* TEMPORADA 1 · 67 — identidade própria em azul elétrico, magenta, ciano e violeta */
 .season-eyebrow{margin:0 0 8px;color:var(--yellow);font-size:9px;font-weight:1000;letter-spacing:.28em;text-transform:uppercase}
-::-webkit-scrollbar-thumb{background:linear-gradient(#baff32,#ff6b1a)}
+::-webkit-scrollbar-thumb{background:linear-gradient(#6572ff,#ff4fbd)}
 .screen{background:
-  radial-gradient(ellipse at 50% 24%,rgba(186,255,50,.12) 0%,rgba(9,31,39,.88) 48%,rgba(4,9,16,.97) 100%),
-  linear-gradient(145deg,#08101d,#17230f)}
-.screen:before{background:repeating-linear-gradient(0deg,rgba(186,255,50,.025) 0 1px,transparent 1px 3px)}
-.sheet{border-color:rgba(186,255,50,.38);background:rgba(7,15,25,.82);box-shadow:0 0 60px rgba(186,255,50,.12),inset 0 0 40px rgba(0,234,255,.035)}
-.title{background:linear-gradient(90deg,#baff32,#00eaff,#ff6b1a,#baff32);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 0 18px rgba(186,255,50,.35))}
-.subtitle{color:#baff32;text-shadow:0 0 14px rgba(186,255,50,.48)}
-.btn{background:linear-gradient(90deg,#baff32,#ff6b1a);box-shadow:0 0 26px rgba(186,255,50,.28)}
-.btn.sec{background:linear-gradient(90deg,#00eaff,#6757ff);box-shadow:0 0 18px rgba(0,234,255,.28)}
-.panel{border-color:rgba(186,255,50,.34);box-shadow:0 0 24px rgba(186,255,50,.15),inset 0 0 20px rgba(0,234,255,.05)}
+  radial-gradient(ellipse at 50% 24%,rgba(101,114,255,.12) 0%,rgba(9,31,39,.88) 48%,rgba(4,9,16,.97) 100%),
+  linear-gradient(145deg,#08101d,#15152c)}
+.screen:before{background:repeating-linear-gradient(0deg,rgba(101,114,255,.025) 0 1px,transparent 1px 3px)}
+.sheet{border-color:rgba(101,114,255,.38);background:rgba(7,15,25,.82);box-shadow:0 0 60px rgba(101,114,255,.12),inset 0 0 40px rgba(45,226,255,.035)}
+.title{background:linear-gradient(90deg,#6572ff,#2de2ff,#ff4fbd,#6572ff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 18px rgba(101,114,255,.35))}
+.subtitle{color:#6572ff;text-shadow:0 0 14px rgba(101,114,255,.48)}
+.btn{background:linear-gradient(90deg,#6572ff,#ff4fbd);box-shadow:0 0 26px rgba(101,114,255,.28)}
+.btn.sec{background:linear-gradient(90deg,#2de2ff,#6572ff);box-shadow:0 0 18px rgba(45,226,255,.28)}
+.panel{border-color:rgba(101,114,255,.34);box-shadow:0 0 24px rgba(101,114,255,.15),inset 0 0 20px rgba(45,226,255,.05)}
 
 /* Entrada e autenticação */
 #loading{background:
-  radial-gradient(circle at 50% 32%,rgba(186,255,50,.30),transparent 31%),
-  radial-gradient(circle at 12% 78%,rgba(255,107,26,.30),transparent 35%),
-  radial-gradient(circle at 86% 73%,rgba(0,234,255,.21),transparent 32%),
-  linear-gradient(145deg,#070c16 0%,#111d2e 48%,#18230e 100%)}
-#loading:before{background:repeating-conic-gradient(from 0deg,rgba(186,255,50,.10) 0 6deg,transparent 6deg 17deg)}
-.splash-orb.one{background:linear-gradient(145deg,#baff32,#00eaff);box-shadow:0 0 70px rgba(186,255,50,.34)}
-.splash-orb.two{background:linear-gradient(145deg,#ff6b1a,#baff32)}
+  radial-gradient(circle at 50% 32%,rgba(101,114,255,.30),transparent 31%),
+  radial-gradient(circle at 12% 78%,rgba(255,79,189,.30),transparent 35%),
+  radial-gradient(circle at 86% 73%,rgba(45,226,255,.21),transparent 32%),
+  linear-gradient(145deg,#070c16 0%,#111d2e 48%,#19142f 100%)}
+#loading:before{background:repeating-conic-gradient(from 0deg,rgba(101,114,255,.10) 0 6deg,transparent 6deg 17deg)}
+.splash-orb.one{background:linear-gradient(145deg,#6572ff,#2de2ff);box-shadow:0 0 70px rgba(101,114,255,.34)}
+.splash-orb.two{background:linear-gradient(145deg,#ff4fbd,#6572ff)}
 .season67-logo>span{display:flex!important;align-items:center;gap:.01em;font-style:italic;font-weight:1000;line-height:.72;letter-spacing:-.15em;
   animation:splashbob 1.8s ease-in-out infinite alternate!important;filter:drop-shadow(0 8px 0 #050a11)}
 .season67-logo>span i{font-style:normal;font-size:clamp(78px,14vw,142px);-webkit-text-stroke:2px #fff;paint-order:stroke fill}
-.season67-logo>span i:first-child{color:#baff32;transform:rotate(-5deg)}
-.season67-logo>span i:last-child{color:#ff6b1a;transform:translateY(9px) rotate(5deg)}
-.season67-logo.splash-logo b{color:#dce9f1}.season67-logo.splash-logo strong{color:#ff6b1a}
-.season67-logo.splash-logo em{color:#baff32;letter-spacing:.23em}
-.splash-loader i{background:linear-gradient(90deg,#baff32,#00eaff,#ff6b1a,#baff32);background-size:220% 100%;box-shadow:0 0 16px #baff32}
+.season67-logo>span i:first-child{color:#6572ff;transform:rotate(-5deg)}
+.season67-logo>span i:last-child{color:#ff4fbd;transform:translateY(9px) rotate(5deg)}
+.season67-logo.splash-logo b{color:#dce9f1}.season67-logo.splash-logo strong{color:#ff4fbd}
+.season67-logo.splash-logo em{color:#6572ff;letter-spacing:.23em}
+.splash-loader i{background:linear-gradient(90deg,#6572ff,#2de2ff,#ff4fbd,#6572ff);background-size:220% 100%;box-shadow:0 0 16px #6572ff}
 #auth{background:
-  radial-gradient(circle at 14% 18%,rgba(186,255,50,.17),transparent 28%),
-  radial-gradient(circle at 88% 78%,rgba(255,107,26,.20),transparent 30%),
+  radial-gradient(circle at 14% 18%,rgba(101,114,255,.17),transparent 28%),
+  radial-gradient(circle at 88% 78%,rgba(255,79,189,.20),transparent 30%),
   linear-gradient(145deg,rgba(5,13,24,.97),rgba(17,30,40,.96))}
-#auth .sheet{border-color:rgba(186,255,50,.46);background:linear-gradient(160deg,rgba(17,30,43,.94),rgba(7,14,25,.96));
-  box-shadow:0 24px 80px rgba(0,0,0,.48),0 0 48px rgba(186,255,50,.12)}
-#auth .subtitle{color:#baff32;text-shadow:0 0 15px rgba(186,255,50,.55)}
+#auth .sheet{border-color:rgba(101,114,255,.46);background:linear-gradient(160deg,rgba(17,30,43,.94),rgba(7,14,25,.96));
+  box-shadow:0 24px 80px rgba(0,0,0,.48),0 0 48px rgba(101,114,255,.12)}
+#auth .subtitle{color:#6572ff;text-shadow:0 0 15px rgba(101,114,255,.55)}
 
 /* Lobby 67 */
 #hub{background:
-  radial-gradient(ellipse at 50% 48%,rgba(186,255,50,.12) 0%,rgba(10,50,65,.34) 44%,rgba(5,10,20,.86) 100%),
-  linear-gradient(145deg,rgba(0,155,180,.35),rgba(112,48,8,.38))}
+  radial-gradient(ellipse at 50% 48%,rgba(101,114,255,.12) 0%,rgba(10,50,65,.34) 44%,rgba(5,10,20,.86) 100%),
+  linear-gradient(145deg,rgba(0,155,180,.35),rgba(112,35,126,.38))}
 #hub:before{background:
-  radial-gradient(ellipse at 13% 14%,rgba(186,255,50,.24) 0 4%,transparent 4.4%),
-  radial-gradient(ellipse at 87% 24%,rgba(255,107,26,.25) 0 5%,transparent 5.4%),
-  linear-gradient(180deg,rgba(0,234,255,.13),transparent 46%)}
-.lobby-rays{background:repeating-conic-gradient(from -5deg,rgba(186,255,50,.80) 0 5deg,transparent 5deg 16deg)}
+  radial-gradient(ellipse at 13% 14%,rgba(101,114,255,.24) 0 4%,transparent 4.4%),
+  radial-gradient(ellipse at 87% 24%,rgba(255,79,189,.25) 0 5%,transparent 5.4%),
+  linear-gradient(180deg,rgba(45,226,255,.13),transparent 46%)}
+.lobby-rays{background:repeating-conic-gradient(from -5deg,rgba(101,114,255,.80) 0 5deg,transparent 5deg 16deg)}
 .lobby-confetti i{height:31px;font:1000 15px/31px var(--font);text-align:center;color:#08101d;overflow:visible}
 .lobby-confetti i:nth-child(odd):after{content:'6'}.lobby-confetti i:nth-child(even):after{content:'7'}
-.lobby-confetti i:nth-child(1),.lobby-confetti i:nth-child(6){background:#baff32}
-.lobby-confetti i:nth-child(2),.lobby-confetti i:nth-child(4){background:#ff6b1a}
-.lobby-confetti i:nth-child(3){background:#00eaff}
-.lobby-profile{background:linear-gradient(145deg,rgba(12,50,65,.94),rgba(18,25,42,.94));border-color:rgba(186,255,50,.46)}
-.lobby-avatar{background:linear-gradient(145deg,#baff32,#00bfd1);color:#07111d}
-.level-pill{background:#baff32}.lobby-rank{color:#baff32}
-.xpfill{background:linear-gradient(90deg,#baff32,#00eaff,#ff6b1a)}
+.lobby-confetti i:nth-child(1),.lobby-confetti i:nth-child(6){background:#6572ff}
+.lobby-confetti i:nth-child(2),.lobby-confetti i:nth-child(4){background:#ff4fbd}
+.lobby-confetti i:nth-child(3){background:#2de2ff}
+.lobby-profile{background:linear-gradient(145deg,rgba(12,50,65,.94),rgba(18,25,42,.94));border-color:rgba(101,114,255,.46)}
+.lobby-avatar{background:linear-gradient(145deg,#6572ff,#00bfd1);color:#07111d}
+.level-pill{background:#6572ff}.lobby-rank{color:#6572ff}
+.xpfill{background:linear-gradient(90deg,#6572ff,#2de2ff,#ff4fbd)}
 .season-hub-badge{display:grid;justify-items:center;line-height:.8;transform:skew(-4deg);filter:drop-shadow(0 5px 0 rgba(0,0,0,.36))}
 .season-hub-badge>span{font-size:8px;letter-spacing:.30em;color:#dcebf2;font-weight:1000}
 .season-hub-badge>b{display:flex;align-items:center;letter-spacing:-.17em;margin:2px 0}
 .season-hub-badge>b i{font-style:normal;font-size:clamp(34px,4vw,54px);font-weight:1000;-webkit-text-stroke:1px #fff;paint-order:stroke fill}
-.season-hub-badge>b i:first-child{color:#baff32;transform:rotate(-4deg)}
-.season-hub-badge>b i:last-child{color:#ff6b1a;transform:translateY(3px) rotate(4deg)}
+.season-hub-badge>b i:first-child{color:#6572ff;transform:rotate(-4deg)}
+.season-hub-badge>b i:last-child{color:#ff4fbd;transform:translateY(3px) rotate(4deg)}
 .season-hub-badge>small{font-size:7px;letter-spacing:.12em;color:#aeeeff;font-weight:900}
-.lobby-tile.acid{background:linear-gradient(145deg,#caff3f,#74ba18);color:#111a20}
-.lobby-tile.acid>span{font-size:18px;font-weight:1000;color:#baff32;background:#101827;border:1px solid rgba(255,255,255,.7)}
-.lobby-tile.pink{background:linear-gradient(145deg,#ff8a32,#df4f0f)}
+.lobby-tile.acid{background:linear-gradient(145deg,#7c89ff,#4050d8);color:#111a20}
+.lobby-tile.acid>span{font-size:18px;font-weight:1000;color:#6572ff;background:#101827;border:1px solid rgba(255,255,255,.7)}
+.lobby-tile.pink{background:linear-gradient(145deg,#ff69c9,#c43198)}
 .lobby-tile.cyan{background:linear-gradient(145deg,#22dce7,#087fa4)}
 .lobby-tile.violet{background:linear-gradient(145deg,#7669ff,#4336bc)}
-.mode-card{background:linear-gradient(160deg,#147c94,#213b78);border-color:rgba(186,255,50,.65);box-shadow:0 8px 0 #10243b,0 15px 30px rgba(0,0,0,.28)}
-.mode-card-head i{background:#baff32}.lobby-multi{background:linear-gradient(#786bff,#4436bc)}
-.lobby-play{background:linear-gradient(160deg,#d0ff49,#8bd21f);box-shadow:0 9px 0 #4d8310,0 15px 30px rgba(0,0,0,.34)}
-.lobby-play>span{color:#74a714}.character-platform{background:radial-gradient(ellipse,#efffc7 0 10%,#baff32 25%,#087f96 58%,transparent 64%)}
-.character-platform i{box-shadow:0 0 24px #baff32}.character-spark.s1{color:#baff32}.character-spark.s2{color:#ff6b1a}
+.mode-card{background:linear-gradient(160deg,#147c94,#213b78);border-color:rgba(101,114,255,.65);box-shadow:0 8px 0 #10243b,0 15px 30px rgba(0,0,0,.28)}
+.mode-card-head i{background:#6572ff}.lobby-multi{background:linear-gradient(#786bff,#4436bc)}
+.lobby-play{background:linear-gradient(160deg,#2de2ff,#5263eb);box-shadow:0 9px 0 #3140bd,0 15px 30px rgba(0,0,0,.34)}
+.lobby-play>span{color:#293575}.character-platform{background:radial-gradient(ellipse,#e8f8ff 0 10%,#6572ff 25%,#087f96 58%,transparent 64%)}
+.character-platform i{box-shadow:0 0 24px #6572ff}.character-spark.s1{color:#6572ff}.character-spark.s2{color:#ff4fbd}
 .season-wallet{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
-.season-wallet>span{padding:5px 8px;border:1px solid rgba(186,255,50,.35);border-radius:8px;background:rgba(7,19,29,.75);
+.season-wallet>span{padding:5px 8px;border:1px solid rgba(101,114,255,.35);border-radius:8px;background:rgba(7,19,29,.75);
   color:#a9c0ce;font-size:7px;letter-spacing:.08em;white-space:nowrap}
-.season-wallet b{color:#baff32;font-size:10px}
+.season-wallet b{color:#6572ff;font-size:10px}
 
 /* Loja sazonal */
 .season-shop-strip{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:15px;margin:4px 0 10px;padding:10px 14px;
-  border:1px solid rgba(186,255,50,.38);border-radius:15px;text-align:left;background:
-  radial-gradient(circle at 12% 50%,rgba(186,255,50,.16),transparent 24%),linear-gradient(120deg,rgba(12,25,37,.95),rgba(34,22,15,.90))}
+  border:1px solid rgba(101,114,255,.38);border-radius:15px;text-align:left;background:
+  radial-gradient(circle at 12% 50%,rgba(101,114,255,.16),transparent 24%),linear-gradient(120deg,rgba(14,20,54,.95),rgba(47,18,65,.92))}
 .season-shop-strip>div:first-child{display:grid;justify-items:center}.season-shop-strip>div:first-child>span{font-size:7px;letter-spacing:.18em;color:#a9c9d5;font-weight:900}
-.season-shop-strip>div:first-child>b{font-size:34px;line-height:.9;color:#baff32;font-style:italic;letter-spacing:-.16em;-webkit-text-stroke:1px #fff;paint-order:stroke fill}
-.season-shop-strip>div:first-child>b span{color:#ff6b1a}.season-shop-strip p{font-size:9px;line-height:1.5;color:#a9bdc9;letter-spacing:.04em}
-.season-shop-strip p strong{color:#baff32;letter-spacing:.12em}.season-shop-stats{display:flex;gap:7px;flex-wrap:wrap;justify-content:end}
-.season-shop-stats span{padding:6px 9px;border-radius:9px;background:rgba(255,255,255,.07);font-size:10px}.season-shop-stats b{color:#baff32}
-.tab.season-tab{border-color:rgba(186,255,50,.45);color:#d7ff82}.tab.season-tab.sel{background:linear-gradient(90deg,#baff32,#ff6b1a);color:#0b111b}
-.icard.seasonal{background:linear-gradient(180deg,rgba(186,255,50,.10),rgba(255,107,26,.045));box-shadow:inset 0 0 30px rgba(186,255,50,.035)}
-.season-chip{position:absolute;left:8px;top:7px;z-index:2;padding:3px 7px;border-radius:999px;background:#baff32;color:#101827;
-  font-size:7px;font-weight:1000;letter-spacing:.08em;box-shadow:0 0 12px rgba(186,255,50,.45)}
-.ibtn.boxonly{background:linear-gradient(90deg,#baff32,#ff6b1a);color:#101827}
+.season-shop-strip>div:first-child>b{font-size:34px;line-height:.9;color:#6572ff;font-style:italic;letter-spacing:-.16em;-webkit-text-stroke:1px #fff;paint-order:stroke fill}
+.season-shop-strip>div:first-child>b span{color:#ff4fbd}.season-shop-strip p{font-size:9px;line-height:1.5;color:#a9bdc9;letter-spacing:.04em}
+.season-shop-strip p strong{color:#6572ff;letter-spacing:.12em}.season-shop-stats{display:flex;gap:7px;flex-wrap:wrap;justify-content:end}
+.season-shop-stats span{padding:6px 9px;border-radius:9px;background:rgba(255,255,255,.07);font-size:10px}.season-shop-stats b{color:#6572ff}
+.tab.season-tab{border-color:rgba(101,114,255,.45);color:#bfc8ff}.tab.season-tab.sel{background:linear-gradient(90deg,#6572ff,#ff4fbd);color:#0b111b}
+.icard{background:linear-gradient(180deg,rgba(28,34,81,.92),rgba(12,15,39,.96));border-color:color-mix(in srgb,var(--rc) 76%,#6572ff)}
+.icard.seasonal{background:linear-gradient(180deg,rgba(101,114,255,.18),rgba(255,79,189,.07));box-shadow:inset 0 0 34px rgba(101,114,255,.06)}
+.itempreview{border:1px solid rgba(148,158,255,.20);background:
+  radial-gradient(ellipse at 50% 83%,color-mix(in srgb,var(--rc) 38%,transparent),transparent 42%),
+  radial-gradient(circle at 18% 15%,rgba(45,226,255,.22),transparent 21%),
+  repeating-conic-gradient(from -10deg at 50% 88%,rgba(101,114,255,.18) 0 6deg,rgba(255,79,189,.045) 6deg 14deg),
+  linear-gradient(155deg,#222965,#21133f 62%,#0d102b)}
+.itempreview:after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,rgba(255,255,255,.09),transparent 24% 74%,rgba(45,226,255,.08));pointer-events:none}
+.icard:hover .itempreview{border-color:rgba(45,226,255,.42)}
+.ibtn.buy{background:linear-gradient(90deg,#6572ff,#ff4fbd);color:#fff}.ibtn.sell{color:#9cf4ff;border-color:rgba(45,226,255,.42)}
+.season-chip{position:absolute;left:8px;top:7px;z-index:2;padding:3px 7px;border-radius:999px;background:#6572ff;color:#101827;
+  font-size:7px;font-weight:1000;letter-spacing:.08em;box-shadow:0 0 12px rgba(101,114,255,.45)}
+.ibtn.boxonly{background:linear-gradient(90deg,#6572ff,#ff4fbd);color:#101827}
 
 .box-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(230px,1fr));gap:14px}
 .loot-card{position:relative;overflow:hidden;display:grid;grid-template-columns:130px 1fr;align-items:center;gap:14px;padding:18px;
-  border:2px solid rgba(186,255,50,.55);border-radius:20px;text-align:left;background:
-  radial-gradient(circle at 18% 48%,rgba(186,255,50,.20),transparent 30%),linear-gradient(145deg,#142333,#111621 60%,#2e1b0e);box-shadow:0 12px 30px rgba(0,0,0,.30)}
-.loot-card.vault{border-color:rgba(255,107,26,.70);background:radial-gradient(circle at 18% 48%,rgba(255,107,26,.23),transparent 31%),linear-gradient(145deg,#172333,#13141d 60%,#35200e)}
+  border:2px solid rgba(101,114,255,.55);border-radius:20px;text-align:left;background:
+  radial-gradient(circle at 18% 48%,rgba(101,114,255,.20),transparent 30%),linear-gradient(145deg,#142333,#111621 60%,#201333);box-shadow:0 12px 30px rgba(0,0,0,.30)}
+.loot-card.vault{border-color:rgba(255,79,189,.70);background:radial-gradient(circle at 18% 48%,rgba(255,79,189,.23),transparent 31%),linear-gradient(145deg,#172333,#13141d 60%,#28132d)}
 .loot-card:before{content:'67';position:absolute;right:-12px;bottom:-28px;font-size:110px;font-weight:1000;font-style:italic;color:rgba(255,255,255,.035)}
-.loot-box-art{position:relative;display:grid;place-items:center;width:118px;height:118px;border-radius:25px;background:linear-gradient(145deg,#baff32,#4d8c13);color:#101827;
-  border:3px solid #fff;box-shadow:0 9px 0 #2f5e0a,0 0 28px rgba(186,255,50,.35);font-size:38px;font-weight:1000;font-style:italic;transform:rotate(-4deg)}
-.loot-card.vault .loot-box-art{background:linear-gradient(145deg,#ff9b43,#e34c0d);box-shadow:0 9px 0 #8b2b08,0 0 28px rgba(255,107,26,.38)}
+.loot-box-art{position:relative;display:grid;place-items:center;width:118px;height:118px;border-radius:25px;background:linear-gradient(145deg,#6572ff,#4050d8);color:#101827;
+  border:3px solid #fff;box-shadow:0 9px 0 #29379b,0 0 28px rgba(101,114,255,.35);font-size:38px;font-weight:1000;font-style:italic;transform:rotate(-4deg)}
+.loot-card.vault .loot-box-art{background:linear-gradient(145deg,#ff79cc,#c72d93);box-shadow:0 9px 0 #761760,0 0 28px rgba(255,79,189,.38)}
 .loot-card h3{font-size:19px;letter-spacing:.08em;color:#fff}.loot-card p{font-size:11px;line-height:1.45;color:#aebdca;margin:5px 0}
-.loot-odds{font-size:9px;line-height:1.5;color:#84a0ae}.loot-odds b{color:#d9efb0}.loot-pity{margin:8px 0;padding:6px 8px;border-radius:8px;background:rgba(186,255,50,.08);color:#cdec8e;font-size:9px}
+.loot-odds{font-size:9px;line-height:1.5;color:#84a0ae}.loot-odds b{color:#c8d0ff}.loot-pity{margin:8px 0;padding:6px 8px;border-radius:8px;background:rgba(101,114,255,.08);color:#bec7ff;font-size:9px}
 .loot-buy{display:flex;align-items:center;gap:8px;margin-top:8px}.loot-buy .ibtn{max-width:180px}.loot-buy small{font-size:8px;color:#8298a6}
-.forge-card{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:12px 15px;border:1px dashed rgba(0,234,255,.45);border-radius:14px;background:rgba(0,234,255,.05);text-align:left}
+.forge-card{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:12px 15px;border:1px dashed rgba(45,226,255,.45);border-radius:14px;background:rgba(45,226,255,.05);text-align:left}
 .forge-card>span{font-size:28px}.forge-card>div{flex:1}.forge-card b{font-size:12px;color:#c8f9ff}.forge-card p{font-size:9px;color:#86a8b4;margin-top:2px}
 
 /* Revelação */
-#lootbox{background:radial-gradient(circle at 50% 42%,rgba(186,255,50,.24),transparent 36%),rgba(4,9,15,.94)}
-.season-reveal{max-width:720px;border:2px solid rgba(186,255,50,.62);background:linear-gradient(160deg,rgba(18,32,42,.97),rgba(12,15,22,.98));overflow:hidden}
-.season-reveal:before{content:'';position:absolute;inset:-80%;z-index:-1;background:repeating-conic-gradient(rgba(186,255,50,.13) 0 5deg,transparent 5deg 15deg);animation:splashspin 28s linear infinite}
+#lootbox{background:radial-gradient(circle at 50% 42%,rgba(101,114,255,.24),transparent 36%),rgba(4,9,15,.94)}
+.season-reveal{max-width:720px;border:2px solid rgba(101,114,255,.62);background:linear-gradient(160deg,rgba(18,32,42,.97),rgba(12,15,22,.98));overflow:hidden}
+.season-reveal:before{content:'';position:absolute;inset:-80%;z-index:-1;background:repeating-conic-gradient(rgba(101,114,255,.13) 0 5deg,transparent 5deg 15deg);animation:splashspin 28s linear infinite}
 .loot-emblem{display:flex;align-items:center;justify-content:center;letter-spacing:-.18em;margin:0 auto 3px;filter:drop-shadow(0 9px 0 rgba(0,0,0,.35))}
-.loot-emblem i{font-style:normal;font-size:82px;font-weight:1000;-webkit-text-stroke:2px #fff;paint-order:stroke fill}.loot-emblem i:first-child{color:#baff32;transform:rotate(-5deg)}
-.loot-emblem i:last-child{color:#ff6b1a;transform:translateY(6px) rotate(5deg)}
+.loot-emblem i{font-style:normal;font-size:82px;font-weight:1000;-webkit-text-stroke:2px #fff;paint-order:stroke fill}.loot-emblem i:first-child{color:#6572ff;transform:rotate(-5deg)}
+.loot-emblem i:last-child{color:#ff4fbd;transform:translateY(6px) rotate(5deg)}
 .loot-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:15px 0}
 .loot-result{position:relative;padding:14px 10px;border:1px solid var(--rc);border-radius:15px;background:rgba(7,14,22,.88);animation:lootpop .45s cubic-bezier(.2,1.5,.4,1) backwards}
 .loot-result:nth-child(2){animation-delay:.12s}.loot-result:nth-child(3){animation-delay:.24s}
 .loot-result .lrico{font-size:34px;min-height:44px;display:grid;place-items:center;color:var(--rc);font-weight:1000}.loot-result b{display:block;font-size:12px;margin:5px 0;color:#fff}.loot-result small{display:block;font-size:8px;line-height:1.4;color:#91a7b4;letter-spacing:.05em}
-.loot-result.guaranteed:after{content:'7ª GARANTIDA';position:absolute;left:50%;top:-8px;transform:translateX(-50%);padding:3px 7px;border-radius:999px;background:#ff6b1a;color:#fff;font-size:7px;font-weight:1000;white-space:nowrap}
-.loot-progress{font-size:10px;line-height:1.6;color:#99afba}.loot-progress b{color:#baff32}
+.loot-result.guaranteed:after{content:'7ª GARANTIDA';position:absolute;left:50%;top:-8px;transform:translateX(-50%);padding:3px 7px;border-radius:999px;background:#ff4fbd;color:#fff;font-size:7px;font-weight:1000;white-space:nowrap}
+.loot-progress{font-size:10px;line-height:1.6;color:#99afba}.loot-progress b{color:#6572ff}
 @keyframes lootpop{from{opacity:0;transform:translateY(25px) scale(.75) rotate(-4deg)}}
 
 @media(max-width:960px){.season-hub-badge{display:none}.season-wallet>span:last-child{display:none}}

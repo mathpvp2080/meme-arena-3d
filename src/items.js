@@ -4,10 +4,10 @@
 
   MA.ITEM_RARITY = {
     common:    { name: 'COMUM',     color: '#9fb3c8' },
-    rare:      { name: 'RARO',      color: '#00ffd5' },
-    epic:      { name: 'ÉPICO',     color: '#ff00c8' },
-    legendary: { name: 'LENDÁRIO',  color: '#ffc42e' },
-    mythic:    { name: 'MÍTICO',    color: '#ff2d6f' }
+    rare:      { name: 'RARO',      color: '#2de2ff' },
+    epic:      { name: 'ÉPICO',     color: '#9b65ff' },
+    legendary: { name: 'LENDÁRIO',  color: '#ffd166' },
+    mythic:    { name: 'MÍTICO',    color: '#ff4fbd' }
   };
 
   /* ------------------------------------------------------------- SKINS --
@@ -17,8 +17,8 @@
   MA.SKINS = [
     { id:'chill', name:'Chill Guy', rarity:'common', price:0, level:1, starter:true,
       desc:'O clássico. Moletom azul, boné rosa e zero preocupações.',
-      face:'😎', skinTone:'#e8b07a', body:0x3f5190, hood:0x2c3a6e, arms:0x4f63a8, legs:0x232f5e,
-      hat:'cap', hatColor:0xff2d6f, aura:0x00ffd5, extra:'none' },
+      face:'😎', skinTone:'#efba88', body:0x6273dc, hood:0x4858b3, arms:0x7587e8, legs:0x393b72,
+      hat:'cap', hatColor:0xff5bbf, aura:0x2de2ff, extra:'none' },
 
     { id:'hacker', name:'Hacker Anônimo', rarity:'rare', price:1800, level:3,
       desc:'Moletom preto, código verde escorrendo. "Estou dentro."',
@@ -69,7 +69,7 @@
   /* --------------------------------------------------------- ARMADURAS -- */
   MA.ARMORS = [
     { id:'hoodie', name:'Moletom Básico', rarity:'common', price:0, level:1, starter:true,
-      desc:'É só um moletom. Mas é confortável.', hp:0, dr:0, color:0x3f5190 },
+      desc:'É só um moletom. Mas é confortável.', hp:0, dr:0, color:0x6273dc },
     { id:'cardboard', name:'Colete de Papelão', rarity:'common', price:900, level:2,
       desc:'Surpreendentemente eficaz contra memes de baixa resolução.', hp:25, dr:.04, color:0xb98a4a },
     { id:'pixel', name:'Armadura de Pixel', rarity:'rare', price:2600, level:5,

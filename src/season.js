@@ -35,10 +35,10 @@
   if (!MA.SKINS.some(s => s.id === 'sixtyseven')) {
     MA.SKINS.push({
       id: 'sixtyseven', name: 'Corredor 67', rarity: 'mythic', price: 6700, level: 1,
-      desc: 'Capacete original 6|7, jaqueta assimétrica e rastro de energia da Temporada 1.',
-      face: '67', skinTone: '#dce8ef', body: 0x101827, hood: 0xbaff32,
-      arms: 0xff6b1a, legs: 0x17233b, hat: 'none', hatColor: 0xbaff32,
-      aura: 0xbaff32, extra: 'none', seasonal: true, season: '67', boxOnly: true,
+      desc: 'Herói party-game com touca espacial, traje azul-magenta e energia ciano.',
+      face: '67', skinTone: '#f3c8ab', body: 0x6572ff, hood: 0xff4fbd,
+      arms: 0x2de2ff, legs: 0x343066, hat: 'none', hatColor: 0xff4fbd,
+      aura: 0xff4fbd, extra: 'none', seasonal: true, season: '67', boxOnly: true,
       marketMin: 1670, marketMax: 26700
     });
   }
@@ -47,7 +47,7 @@
     MA.ARMORS.push({
       id: 'protocol67', name: 'Protocolo 6·7', rarity: 'legendary', price: 8670, level: 1,
       desc: 'Placas duplas de impacto: +67 HP e 17% de redução de dano.',
-      hp: 67, dr: .17, color: 0xbaff32,
+      hp: 67, dr: .17, color: 0x6572ff,
       seasonal: true, season: '67', boxOnly: true,
       marketMin: 2670, marketMax: 46700
     });
@@ -57,7 +57,7 @@
     MA.WEAPONS.push({
       id: 'pulse67', name: 'Pulso Seis-Sete', icon: '6⁷', kind: 'rail',
       dmg: 67, rate: .67, speed: 67, spread: .006, count: 1,
-      color: 0xbaff32, size: .25, life: 1.67, pierce: 6, unlock: 1,
+      color: 0x2de2ff, size: .25, life: 1.67, pierce: 6, unlock: 1,
       desc: 'Disparo de 67 de dano que atravessa até 6 alvos. Cadência de 0,67 s.'
     });
   }
