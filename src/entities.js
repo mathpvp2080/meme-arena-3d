@@ -348,24 +348,19 @@
       sole.position.set(0, -.5, -.1); leg.add(sole);
     });
 
-    /* arma */
+    /* Armas com silhuetas próprias. Todos os cinco modelos ficam no suporte,
+       mas só o selecionado é visível; trocar de arma deixa de ser apenas uma
+       mudança de nome/cor e passa a mudar o objeto nas mãos do jogador. */
     const gun = new THREE.Group();
-    const barrel = new THREE.Mesh(
-      new THREE.BoxGeometry(.22, .22, 1.4),
-      new THREE.MeshStandardMaterial({ color: 0x14142a, metalness: .92, roughness: .22 })
-    );
-    barrel.position.z = -.58; gun.add(barrel);
-    const tip = new THREE.Mesh(new THREE.SphereGeometry(.17, 14, 10),
-      new THREE.MeshBasicMaterial({ color: 0xffe600 }));
-    tip.position.z = -1.26; gun.add(tip);
-    const muzzle = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: MA.Tex.glow('#ffffff'), color: 0xffe600, transparent: true,
-      blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0
-    }));
-    muzzle.scale.setScalar(2.4); muzzle.position.z = -1.4; gun.add(muzzle);
-    const mag = new THREE.Mesh(new THREE.BoxGeometry(.2, .36, .32),
-      new THREE.MeshStandardMaterial({ color: skin.aura, emissive: skin.aura, emissiveIntensity: .6 }));
-    mag.position.set(0, -.26, -.18); gun.add(mag);
+    const weaponVisuals = MA.WEAPONS.map(w => {
+      const visual = MA.createWeaponModel(w);
+      visual.group.visible = false;
+      gun.add(visual.group);
+      return visual;
+    });
+    weaponVisuals[0].group.visible = true;
+    const tip = weaponVisuals[0].tip;
+    const muzzle = weaponVisuals[0].muzzle;
     gun.position.set(1.02 * bulk, 1.22, -.2);
     gun.scale.setScalar(.86);
     g.add(gun);
@@ -407,8 +402,9 @@
     const bonusHp = (armorDef && armorDef.hp) || 0;
     const dr = (armorDef && armorDef.dr) || 0;
 
-    return {
-      obj: g, head, gun, tip, muzzle, aura, ultAura, shieldMesh, armL, armR, legL, legR, body,
+    const result = {
+      obj: g, head, gun, tip, muzzle, weaponVisuals,
+      aura, ultAura, shieldMesh, armL, armR, legL, legR, body,
       skin, armorDef,
       pos: new THREE.Vector3(0, 0, 26), vel: V3(),
       y: 0, vy: 0, onGround: true,
@@ -424,6 +420,8 @@
       brainGain: 1, dropRate: 1, knock: 1, armor: 1 - dr, thorns: 0, bounce: 0,
       allowedWeapons: null
     };
+    MA.syncWeaponModel(result);
+    return result;
   }
 
     /* ============================================================ INIMIGOS */

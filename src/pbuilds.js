@@ -98,8 +98,10 @@
 
     /* 🐕 DOGE — orelhas, focinho e rabo de shiba */
     doge(c) {
-      const fur = M(c.skin.skinTone, { rough: .9 });
-      const cream = M(0xf6e3bb, { rough: .9 });
+      /* esta skin é pelo, não moletom: remove o capuz genérico */
+      c.hood.visible = false;
+      const fur = M(c.skin.skinTone, { rough: .82 });
+      const cream = M(0xf6e3bb, { rough: .88 });
       const snout = Cap(.17, .14, cream);
       snout.rotation.x = Math.PI / 2;
       snout.position.set(0, 2.1, -.52); c.add(snout);
@@ -109,6 +111,9 @@
         const ear = Cone(.19, .46, fur, 4);
         ear.position.set(s * .36, 2.62, .04);
         ear.rotation.set(.1, Math.PI / 4, s * .28); c.add(ear);
+        const inner = Cone(.105, .30, M(0xd68a72, { rough: .9 }), 4);
+        inner.position.set(s * .36, 2.61, -.055);
+        inner.rotation.set(.1, Math.PI / 4, s * .28); c.add(inner);
       });
       const chest = S(.38, cream);
       chest.scale.set(.9, 1.1, .5);
@@ -170,7 +175,8 @@
 
     /* 🗿 SIGMA — terno, gravata e cara fechada */
     sigma(c) {
-      const suit = M(0x1b1f27, { rough: .6 });
+      c.hood.visible = false;
+      const suit = M(0x1b1f27, { rough: .52, metal: .22 });
       const jacket = C(.63, .66, 1.12, suit, 18);
       jacket.position.y = 1.18; c.add(jacket);
       const shirt = B(.34, .8, .14, M(0xf2f4f7, { rough: .6 }));
@@ -190,7 +196,8 @@
     /* 👻 GHOST — lençol ondulado em vez de pernas */
     ghost(c) {
       c.legL.visible = c.legR.visible = false;
-      c.body.visible = false;
+      c.armL.visible = c.armR.visible = false;
+      c.body.visible = c.hood.visible = c.neck.visible = false;
       const sheet = M(0xdfe6f2, { rough: .9, opacity: .72 });
       const cloak = C(.52, 1.05, 1.5, sheet, 22);
       cloak.position.y = .95; c.add(cloak);
@@ -243,8 +250,8 @@
 
     /* 💪 GIGACHAD — ombros e peitoral enormes, queixo quadrado */
     gigachad(c) {
-      const skinM = M(c.skin.skinTone, { rough: .5 });
-      c.body.visible = false;
+      const skinM = M(c.skin.skinTone, { rough: .42, metal: .12 });
+      c.body.visible = c.hood.visible = false;
       /* tronco em V */
       const torso = C(.95, .6, 1.25, skinM, 20);
       torso.position.y = 1.3; torso.castShadow = true; c.add(torso);

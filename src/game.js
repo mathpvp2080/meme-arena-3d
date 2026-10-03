@@ -105,6 +105,9 @@
     if (!player || G.running) return;
     scene.remove(player.obj); MA.disposeObject(player.obj);
     player = MA.createPlayer(scene, currentSkin(), currentArmor());
+    const equipped = currentWeapons();
+    player.weapon = equipped.length ? equipped[0] : 0;
+    MA.syncWeaponModel(player);
     player.obj.position.set(0, 0, 26);
   }
   MA._rebuildLook = rebuildPlayerLook;
@@ -867,6 +870,7 @@
     player.recoil = MA.damp(player.recoil, 0, 16, dt);
     player.gun.position.z = (firstPerson ? -2.05 : -.22) + player.recoil * (firstPerson ? .2 : .36);
     player.muzzle.material.opacity = Math.max(0, player.muzzle.material.opacity - dt * 9);
+    MA.animateWeaponModel(player, dt, mouseDown || touchFire);
     player.aura.rotation.z += dt * 1.6;
 
     /* acessórios de skin */
@@ -1346,6 +1350,7 @@
     player = MA.createPlayer(scene, currentSkin(), currentArmor());
     player.allowedWeapons = currentWeapons();
     player.weapon = player.allowedWeapons.length ? player.allowedWeapons[0] : 0;
+    MA.syncWeaponModel(player);
     Object.assign(G, {
       score: 0, wave: 0, combo: 1, comboT: 0, kills: 0, waveKills: 0, waveTarget: 0,
       spawnQueue: 0, spawnT: 0, interWave: 0, brainrot: 0, ult: 0, bossAlive: null,
@@ -1591,13 +1596,16 @@
     if (!avail.length) return;
     const cur = avail.indexOf(player.weapon);
     player.weapon = avail[(cur + dir + avail.length) % avail.length];
+    MA.syncWeaponModel(player);
     MA.Audio.switchW();
     MA.UI.updateWeaponList(player, G);
   }
   function selectWeapon(i) {
     if (i < 0 || i >= MA.WEAPONS.length) return;
     if (player.allowedWeapons ? player.allowedWeapons.indexOf(i) < 0 : G.wave < MA.WEAPONS[i].unlock) { MA.Audio.deny(); return; }
-    player.weapon = i; MA.Audio.switchW(); MA.UI.updateWeaponList(player, G);
+    player.weapon = i;
+    MA.syncWeaponModel(player);
+    MA.Audio.switchW(); MA.UI.updateWeaponList(player, G);
   }
 
   function setupTouch() {

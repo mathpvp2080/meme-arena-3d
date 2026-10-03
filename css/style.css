@@ -219,6 +219,9 @@ body:not(.touch) #touch{display:none}
 .boardlist .sc{color:var(--yellow);font-weight:bold}
 
 /* opções */
+/* A tela de opções vem antes da pausa no HTML. Sem um nível próprio, a
+   pausa era desenhada por cima e parecia que as opções abriam "atrás". */
+#settings{z-index:35}
 .opt{display:grid;grid-template-columns:1fr 160px 56px;align-items:center;gap:10px;
   padding:9px 2px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;text-align:left}
 .opt span{font-size:11px;color:var(--cyan);text-align:right}
@@ -352,15 +355,30 @@ body:not(.touch) #touch{display:none}
 .btn.needweapon{animation:pulseneed 1.6s infinite}
 @keyframes pulseneed{50%{box-shadow:0 0 0 4px rgba(255,200,87,.2)}}
 
-.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(164px,1fr));gap:11px;margin:4px 0 14px}
-.icard{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
-  border:1px solid var(--rc);border-radius:13px;padding:12px 10px;text-align:center;
-  display:flex;flex-direction:column;gap:5px;position:relative;overflow:hidden}
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin:4px 0 14px}
+.icard{background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.018));
+  border:1px solid var(--rc);border-radius:15px;padding:12px 10px;text-align:center;
+  display:flex;flex-direction:column;gap:5px;position:relative;overflow:hidden;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.icard:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.34),0 0 18px color-mix(in srgb,var(--rc) 22%,transparent)}
 .icard::before{content:'';position:absolute;inset:-40% -40% auto auto;width:120px;height:120px;
   background:radial-gradient(circle,var(--rc),transparent 70%);opacity:.18;pointer-events:none}
 .icard.isequipped{box-shadow:0 0 0 2px var(--rc),0 0 22px -4px var(--rc)}
 .irar{font-size:9px;letter-spacing:.16em;font-weight:700}
 .iico{font-size:38px;line-height:1.1}
+.itempreview{height:112px;margin:0 -5px 2px;position:relative;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;border-radius:11px;background:
+  radial-gradient(ellipse at 50% 70%,color-mix(in srgb,var(--rc) 25%,transparent),transparent 64%),
+  linear-gradient(180deg,rgba(255,255,255,.025),rgba(0,0,0,.18));isolation:isolate}
+.itempreview:before{content:'';position:absolute;left:13%;right:13%;bottom:9px;height:12px;border-radius:50%;
+  background:var(--rc);filter:blur(9px);opacity:.28;z-index:-1}
+.itempreview span{font-size:38px;opacity:.68;filter:drop-shadow(0 0 12px var(--rc))}
+.itempreview>i{position:absolute;width:22px;height:22px;border:2px solid rgba(255,255,255,.12);
+  border-top-color:var(--rc);border-radius:50%;animation:spin .8s linear infinite;bottom:8px;right:8px}
+.itempreview img{width:100%;height:100%;display:block;object-fit:contain;transform:scale(1.08);
+  filter:drop-shadow(0 8px 8px rgba(0,0,0,.65)) drop-shadow(0 0 7px color-mix(in srgb,var(--rc) 32%,transparent));
+  transition:transform .22s ease,filter .22s ease}
+.icard:hover .itempreview img{transform:scale(1.15) translateY(-2px);filter:drop-shadow(0 10px 9px rgba(0,0,0,.7)) drop-shadow(0 0 11px var(--rc))}
 .iname{font-size:13.5px;font-weight:700}
 .idesc{font-size:11px;color:#9a93c2;line-height:1.3;min-height:28px}
 .istats{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;font-size:10.5px;color:#cfc9ef}
@@ -382,8 +400,9 @@ body:not(.touch) #touch{display:none}
   border-radius:9px;padding:9px 12px;font-size:13px;animation:pulseneed 1.2s infinite}
 
 @media(max-width:560px){
-  .igrid{grid-template-columns:repeat(auto-fill,minmax(136px,1fr))}
+  .igrid{grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:8px}
   .iico{font-size:30px}
+  .itempreview{height:88px}
   .hubname{font-size:18px}
 }
 

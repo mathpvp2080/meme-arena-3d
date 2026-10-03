@@ -33,7 +33,7 @@
     { id:'rizzler', name:'Rizzler', rarity:'epic', price:4500, level:7,
       desc:'Carisma em nível industrial. Sobrancelha permanentemente erguida.',
       face:'😏', skinTone:'#e8b07a', body:0x5a3fd6, hood:0x3d2a9e, arms:0x6f55e8, legs:0x2b1d6e,
-      hat:'cap', hatColor:0x7a5bff, aura:0x7a5bff, extra:'cape', extraColor:0x4a2fc0 },
+      hat:'none', hatColor:0x7a5bff, aura:0x7a5bff, extra:'cape', extraColor:0x4a2fc0 },
 
     { id:'sigma', name:'Sigma Grindset', rarity:'epic', price:5200, level:9,
       desc:'Acorda às 4h59. Banho gelado. Não fala com NPCs.',

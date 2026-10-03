@@ -355,6 +355,12 @@
           p.obj.obj.rotation.y += d * Math.min(1, dt * 12);
         }
         p.obj.obj.visible = !p.dead;
+        /* mantém nas mãos o mesmo modelo de arma que o outro jogador usa */
+        if (Number.isFinite(p.wpn) && p.obj.weapon !== p.wpn) {
+          p.obj.weapon = p.wpn;
+          MA.syncWeaponModel(p.obj);
+        }
+        MA.animateWeaponModel(p.obj, dt, false);
         /* pernas balançando quando anda */
         const moving = p.tPos && p.pos.distanceToSquared(p.tPos) > .004;
         p.bob = (p.bob || 0) + dt * (moving ? 11 : 3);

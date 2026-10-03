@@ -162,6 +162,7 @@
 
       $('shopGrid').innerHTML = items.map(i => this.card(i, 'shop')).join('');
       this.bindCards('shop');
+      if (MA.Previews) MA.Previews.hydrate($('shopGrid'));
     },
 
     /* ======================================================== INVENTÁRIO */
@@ -186,6 +187,7 @@
         ? items.map(i => this.card(i, 'inv')).join('')
         : '<p class="dim" style="grid-column:1/-1;padding:24px">Nada aqui ainda. Vá até a loja!</p>';
       this.bindCards('inv');
+      if (MA.Previews) MA.Previews.hydrate($('invGrid'));
     },
 
     /* --------------------------------------------------------- card HTML */
@@ -232,7 +234,8 @@
 
       return '<div class="icard ' + item.rarity + (eq ? ' isequipped' : '') + '" style="--rc:' + r.color + '">' +
         '<div class="irar" style="color:' + r.color + '">' + r.name + '</div>' +
-        '<div class="iico">' + icon + '</div>' +
+        '<div class="iico itempreview" data-preview-type="' + item.type + '" data-preview-id="' + item.id + '">' +
+          '<span>' + icon + '</span><i></i></div>' +
         '<div class="iname">' + item.name + '</div>' +
         '<div class="idesc">' + (item.desc || '') + '</div>' +
         stats + action + '</div>';
@@ -255,7 +258,7 @@
             const r = MA.Profile.equip(type, id);
             if (r.error) { this.toast('❌ ' + r.error, 'bad'); MA.Audio.deny(); return; }
             MA.Profile.save();
-            if ((type === 'skin' || type === 'armor') && MA._rebuildLook) MA._rebuildLook();
+            if ((type === 'skin' || type === 'armor' || type === 'weapon') && MA._rebuildLook) MA._rebuildLook();
             this.toast(r.equipped ? '✅ Equipado: <b>' + item.name + '</b>' : 'Desequipado: ' + item.name);
             this.renderInventory();
           } else if (act === 'sell') {
