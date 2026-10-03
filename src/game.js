@@ -550,6 +550,29 @@
   }
 
   /* ------------------------------------------- abatido e renascimento */
+
+  /* No co-op você renasce enquanto AINDA houver gente de pé. Se o grupo
+     inteiro cai, a partida acaba — antes disso ela era eterna, porque
+     o renascimento não tinha condição nenhuma de parada. */
+  function coopGrupoCaido() {
+    if (!mpOn() || mpPvP()) return false;
+    if (downT <= 0) return false;                 // eu ainda estou de pé
+    const outros = MA.Multi.peerList;
+    for (let i = 0; i < outros.length; i++) {
+      if (!outros[i].dead) return false;          // alguém aguenta firme
+    }
+    return true;
+  }
+
+  function fimDoCoop(avisarRede) {
+    if (G.over) return;
+    if (avisarRede) mpSend({ t: 'over', wipe: true });
+    downT = 0;
+    player.obj.visible = true;
+    MA.UI.banner('O GRUPO CAIU', 'Ninguém sobrou de pé…', 3000, 'boss');
+    setTimeout(() => gameOver(), 900);
+  }
+
   let downT = 0;
   function mpDown(source) {
     if (G.over || downT > 0) return;
@@ -564,10 +587,14 @@
       mpSend({ t: 'pvp', frag: true, by: lastAttacker, name: MA.Multi.me.name });
       lastAttacker = null;
     }
+    /* eu era o último de pé? então foi o grupo inteiro */
+    if (coopGrupoCaido()) fimDoCoop(true);
   }
 
   function mpRespawnTick(dt) {
     if (downT <= 0) return;
+    /* o último companheiro pode ter caído DEPOIS de mim */
+    if (coopGrupoCaido()) { fimDoCoop(true); return; }
     downT -= dt;
     if (downT > 0) return;
     downT = 0;
@@ -614,6 +641,14 @@
     /* o anfitrião caiu e eu assumi: herdo o comando dos inimigos */
     m.on('hostchange', () => { if (G.running && mpOn()) assumirComandoDosInimigos(); });
     m.on('over', d => {
+      if (d && d.wipe) {                       /* derrota coletiva no co-op */
+        if (G.over) return;
+        downT = 0;
+        player.obj.visible = true;
+        MA.UI.banner('O GRUPO CAIU', 'Ninguém sobrou de pé…', 3000, 'boss');
+        setTimeout(() => gameOver(), 900);
+        return;
+      }
       MA.UI.banner('FIM', (d.winner || '') + ' venceu!', 3200, 'boss');
       setTimeout(() => { if (G.running) toMenu(); }, 3400);
     });
@@ -1768,7 +1803,8 @@
       god() { player.maxhp = 99999; player.hp = 99999; },
       perk(id) { const p = MA.PERKS.find(x => x.id === id); if (p) takePerk(p); },
       nuke: () => memeNuke(),
-      kill: () => gameOver()
+      kill: () => gameOver(),
+      down: () => mpDown(null)      /* teste: cair no multiplayer */
     }
   };
   window.MEMEARENA = MA.Game.debug;
