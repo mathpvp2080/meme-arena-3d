@@ -3,6 +3,7 @@
   'use strict';
   const $ = MA.$, clamp = MA.clamp, rand = MA.rand, pick = MA.pick, TAU = MA.TAU;
   const V3 = () => new THREE.Vector3();
+  const BOOT_STARTED = performance.now();
 
   let scene, camera, renderer, clock;
   let player = null;
@@ -65,7 +66,7 @@
     MA.FX.init(scene);
     MA.UI.init();
     player = MA.createPlayer(scene, currentSkin(), currentArmor());
-    player.obj.position.set(0, 0, 26);
+    player.obj.position.set(0, 0, 0);
 
     camera.position.set(0, 12, 46);
     camera.lookAt(0, 5, 0);
@@ -78,7 +79,14 @@
     MA.Audio.setMusicVolume(S.music);
 
     G.booted = true;
-    $('loading').classList.add('hid');
+    /* A entrada permanece tempo suficiente para a marca e a classificação
+       Livre serem vistas, mesmo quando os arquivos carregam instantaneamente. */
+    const splash = $('loading');
+    const wait = Math.max(0, 1900 - (performance.now() - BOOT_STARTED));
+    setTimeout(() => {
+      splash.classList.add('leave');
+      setTimeout(() => splash.classList.add('hid'), 460);
+    }, wait);
     animate();
     initMeta();
   }
@@ -108,7 +116,7 @@
     const equipped = currentWeapons();
     player.weapon = equipped.length ? equipped[0] : 0;
     MA.syncWeaponModel(player);
-    player.obj.position.set(0, 0, 26);
+    player.obj.position.set(0, 0, 0);
   }
   MA._rebuildLook = rebuildPlayerLook;
   setTimeout(() => { if (MA._bindMulti) MA._bindMulti(); }, 0);
@@ -1788,10 +1796,29 @@
       MA.FX.update(dt);
       MA.World.update(dt, (G.time += dt * .3));
       if (!G.running) {
-        menuT += dt * .12;
-        const r = 52;
-        camera.position.set(Math.cos(menuT) * r, 16 + Math.sin(menuT * 2) * 5, Math.sin(menuT) * r);
-        camera.lookAt(0, 6, 0);
+        const hubOpen = !$('hub').classList.contains('hid');
+        if (hubOpen && player) {
+          /* Lobby: personagem central, câmera frontal e idle suave. O centro
+             fica livre entre os botões como nos menus de party games. */
+          menuT += dt;
+          player.obj.position.set(0, Math.sin(menuT * 2.1) * .025, 0);
+          player.obj.rotation.y = Math.sin(menuT * .72) * .13;
+          player.legL.rotation.x = Math.sin(menuT * 2.1) * .025;
+          player.legR.rotation.x = -player.legL.rotation.x;
+          player.armL.rotation.z = -.04 + Math.sin(menuT * 1.7) * .025;
+          player.aura.rotation.z += dt * .75;
+          player.aura.material.opacity = .26 + Math.sin(menuT * 2.8) * .08;
+          MA.animateWeaponModel(player, dt, false);
+          const ud = player.obj.userData;
+          if (ud.panim) ud.panim.forEach(fn => { try { fn(G.time, dt); } catch (e) { /* ignora */ } });
+          camera.position.set(0, 2.65, -7.7);
+          camera.lookAt(0, 1.35, 0);
+        } else {
+          menuT += dt * .12;
+          const r = 52;
+          camera.position.set(Math.cos(menuT) * r, 16 + Math.sin(menuT * 2) * 5, Math.sin(menuT) * r);
+          camera.lookAt(0, 6, 0);
+        }
       }
     }
 

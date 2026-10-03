@@ -120,6 +120,11 @@
       $('hubCoins').textContent = MA.fmt(p.coins);
       $('hubSkin').textContent = skin.face + ' ' + skin.name;
       $('hubArmor').textContent = '🛡️ ' + armor.name;
+      const rank = MA.rankFor((p.stats && p.stats.bestScore) || 0);
+      if ($('hubRank')) $('hubRank').textContent = rank.icon + ' ' + rank.name;
+      const map = MA.mapById(MA.store.get('map', 'arena'));
+      if ($('hubMapIcon')) $('hubMapIcon').textContent = map.icon;
+      if ($('hubMapName')) $('hubMapName').textContent = map.name;
 
       const wIdx = MA.Profile.equippedWeapons();
       $('hubWeapons').innerHTML = wIdx.length
