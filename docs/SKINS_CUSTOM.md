@@ -21,10 +21,52 @@ no Blender para `.glb`.
 
 ---
 
+## 1.5. Atalho: comece de um modelo meio pronto
+
+Não precisa começar do zero. Três caminhos, do mais fácil ao mais livre:
+
+### a) O boneco do próprio jogo (recomendado)
+
+`assets/skins/base-boneco.glb` já está no projeto: é o boneco padrão do Meme Arena
+exportado em 3D, **com as proporções exatas** (altura 2,74 com os pés, cabeça em
+y≈2,13, braços, mãos, pernas e tênis separados e nomeados).
+
+1. No Blender: `File → Import → glTF 2.0` e escolha `assets/skins/base-boneco.glb`.
+2. Edite à vontade: mude o formato da cabeça, ponha chapéu, capa, mochila, troque as cores.
+3. Exporte como `.glb` com outro nome e registre (passo 4).
+
+Para gerar o arquivo de novo (se mudar o boneco do jogo):
+
+```bash
+npm install          # só na primeira vez (baixa o three para o script)
+npm run export:base
+```
+
+### b) Bibliotecas de personagens grátis (CC0, pode usar comercialmente)
+
+| Site | O que tem |
+|---|---|
+| https://quaternius.com | pacotes de personagens low-poly prontos (.glb/.blend), CC0 |
+| https://kenney.nl/assets | bonecos estilizados e acessórios, CC0 |
+| https://poly.pizza | busca de modelos low-poly, maioria CC0/CC-BY |
+| https://www.mixamo.com | personagens **com rig e animações** prontos (grátis, conta Adobe) |
+| https://sketchfab.com/search?features=downloadable&licenses=... | filtre por licença CC0 antes de baixar |
+
+Importe no Blender, ajuste o estilo pra combinar com o jogo e exporte `.glb`.
+**Atenção:** confira a licença de cada modelo — evite personagens de marcas/jogos
+alheios, que travam a publicação na loja (veja `docs/IP_REVIEW.md`).
+
+### c) Começar do zero
+
+Só seguir a especificação abaixo.
+
+---
+
 ## 2. Especificação do modelo (importante)
 
-- **Altura**: o boneco do jogo tem ~1,95 unidades (1 unidade ≈ 1 metro). Não precisa
-  acertar na mosca: o jogo redimensiona automaticamente para a altura alvo (`height`).
+- **Altura**: o boneco do jogo tem **~2,6 unidades** de altura (cabeça em y≈2,13,
+  topo em y≈2,61, pés em y≈0). Não precisa acertar na mosca: o jogo redimensiona
+  automaticamente para a altura alvo (`height`, padrão 2.62).
 - **Origem (pivot)**: entre os **pés**, no centro. O jogo também corrige isso sozinho
   (apoia no chão e centraliza em X/Z), mas modelar certo evita surpresas.
 - **Frente**: o personagem olha para **−Z** no jogo. No Blender, modele olhando para
@@ -65,7 +107,7 @@ MA.SKIN_MODELS = {
   'chill': {
     url: 'assets/skins/meu-boneco.glb',
     mode: 'full',
-    height: 1.95,   // altura final no jogo
+    height: 2.62,   // altura final no jogo
     rotY: 0,        // Math.PI se nascer de costas
     y: 0,           // ajuste fino de altura
     clip: 'idle'    // animação do arquivo (se houver)
@@ -95,7 +137,7 @@ MA.SKIN_MODELS = {
 | `url` | — | caminho do `.glb` dentro do projeto (obrigatório) |
 | `mode` | `'full'` | `'full'` substitui o boneco, `'part'` encaixa uma peça |
 | `anchor` | `'head'` | ponto de encaixe no modo `part` |
-| `height` | `1.95` | altura final (modo `full`) |
+| `height` | `2.62` | altura final (modo `full`) |
 | `size` | maior dimensão | tamanho final da peça (modo `part`) |
 | `scale` | `1` | multiplicador extra depois do ajuste automático |
 | `fit` | `true` | `false` usa a escala original do arquivo |

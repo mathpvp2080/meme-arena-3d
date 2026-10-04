@@ -28,7 +28,7 @@
      'chill': {
        url: 'assets/skins/chill.glb',  // caminho dentro do projeto
        mode: 'full',                   // 'full' (boneco inteiro) ou 'part'
-       height: 1.95,                   // altura final em unidades do jogo
+       height: 2.62,                   // altura final em unidades do jogo
        rotY: 0,                        // gire se o modelo nascer de costas
        y: 0,                           // ajuste fino de altura
        clip: 'idle'                    // animação do .glb (se houver)
@@ -70,7 +70,7 @@
       mode,
       anchor,
       /* 'full': altura total do boneco. 'part': maior dimensão da peça. */
-      height: typeof spec.height === 'number' ? spec.height : (mode === 'full' ? 1.95 : 0),
+      height: typeof spec.height === 'number' ? spec.height : (mode === 'full' ? 2.62 : 0),
       size: typeof spec.size === 'number' ? spec.size : 0,
       scale: typeof spec.scale === 'number' ? spec.scale : 1,
       fit: spec.fit !== false,
