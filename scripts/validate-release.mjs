@@ -88,7 +88,13 @@ check('todos os assets locais do HTML existem', () => {
 });
 check('service worker e manifesto incluem somente assets existentes', () => {
   const sw = read('sw.js');
-  assert.match(sw, /meme-arena-3d-v35/);
+  const swVersion = sw.match(/meme-arena-3d-v(\d+)/);
+  assert.ok(swVersion, 'service worker sem versão de cache');
+  /* o ?v= dos scripts do index precisa acompanhar a versão do cache,
+     senão o navegador serve arquivo velho depois de um deploy */
+  const indexVersions = new Set([...read('index.html').matchAll(/\?v=(\d+)/g)].map(m => m[1]));
+  assert.equal(indexVersions.size, 1, `index.html mistura versões de cache: ${[...indexVersions].join(', ')}`);
+  assert.equal([...indexVersions][0], swVersion[1], 'index.html e service worker em versões diferentes');
   for (const rel of ['termos.html', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
   for (const [, asset] of sw.matchAll(/'\.\/([^']*)'/g)) assert.ok(fs.existsSync(path.join(root, asset || '.')), `cache aponta para arquivo ausente: ${asset}`);
   const manifest = JSON.parse(read('manifest.webmanifest'));
