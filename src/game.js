@@ -24,7 +24,8 @@
 
   const S = {
     sens: 1.0, volume: .6, music: .45, quality: 'high',
-    fov: 74, shake: 1, mute: false, invertY: false
+    fov: 74, shake: 1, mute: false, invertY: false,
+    shoulder: 1.35          // deslocamento lateral da câmera em 3ª pessoa (negativo = ombro esquerdo)
   };
 
   /* ====================================================== PERFIL / META */
@@ -52,6 +53,8 @@
   /* ================================================================ BOOT */
   function boot() {
     Object.assign(S, MA.store.get('settings', {}));
+    /* quem já jogava antes não tem 'shoulder' salvo — cai no padrão do ombro */
+    if (typeof S.shoulder !== 'number' || !isFinite(S.shoulder)) S.shoulder = 1.35;
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(S.fov, innerWidth / innerHeight, .1, 650);
@@ -306,6 +309,29 @@
   }
 
   /* ============================================================= COMBATE */
+  /* Direção do disparo. Em 3ª pessoa a câmera fica no ombro, então a arma
+     não está na linha da mira: se o tiro saísse paralelo ao olhar ele passaria
+     sempre ao lado do alvo. Aqui a bala converge no ponto que a mira do centro
+     da tela está apontando — no inimigo sob a mira, ou num ponto distante. */
+  const aimFwd = V3(), aimRel = V3(), aimPoint = V3();
+  function aimDir(origin) {
+    aimFwd.set(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+    if (firstPerson) return aimFwd.clone();
+    let hit = 150;
+    for (let i = 0; i < enemies.length; i++) {
+      const e = enemies[i];
+      if (!e || e.dead || !e.obj) continue;
+      aimRel.copy(e.obj.position); aimRel.y += 1.25;
+      aimRel.sub(camera.position);
+      const t = aimRel.dot(aimFwd);
+      if (t <= 1.5 || t >= hit) continue;
+      const r = e.isBoss ? 4.4 : e.elite ? 1.9 : 1.45;
+      if (aimRel.lengthSq() - t * t <= r * r) hit = t;
+    }
+    aimPoint.copy(camera.position).addScaledVector(aimFwd, hit);
+    return aimPoint.clone().sub(origin).normalize();
+  }
+
   function fire() {
     const w = MA.WEAPONS[player.weapon];
     if (player.cooldown > 0) return;
@@ -316,7 +342,7 @@
     player.muzzle.material.opacity = 1;
 
     const origin = V3(); player.tip.getWorldPosition(origin);
-    const dir = V3().set(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+    const dir = aimDir(origin);
 
     const n = w.count + player.extraShots;
     const dmgBase = w.dmg * player.mDmg * (player.bDmg > 0 ? 2 : 1) *
@@ -1056,18 +1082,22 @@
         V3().set(-Math.sin(yaw), Math.tan(pitch) * 1.2, -Math.cos(yaw)).multiplyScalar(9));
       camera.lookAt(look);
     } else {
-      const target = V3().set(player.pos.x, player.y + 2.2, player.pos.z);
-      let dist = 9.0;
+      /* 3ª pessoa estilo shooter: a câmera senta no ombro e o boneco fica
+         deslocado pro lado, deixando a mira do centro da tela sempre livre */
+      const right = V3().set(Math.cos(yaw), 0, -Math.sin(yaw));
+      const pivot = V3().set(player.pos.x, player.y + 2.38, player.pos.z)
+        .addScaledVector(right, S.shoulder);
+      const dist = 7.6;
       const off = V3().set(
         Math.sin(yaw) * Math.cos(pitch),
-        -Math.sin(pitch) + .26,
+        -Math.sin(pitch) + .2,
         Math.cos(yaw) * Math.cos(pitch)
       ).multiplyScalar(dist);
-      const desired = target.clone().add(off);
+      const desired = pivot.clone().add(off);
       desired.y = Math.max(1.3, desired.y);
       camera.position.lerp(desired, 1 - Math.exp(-15 * dt));
       camPos.copy(camera.position);
-      const look = target.clone().add(V3().set(-Math.sin(yaw), Math.tan(pitch) * 1.2, -Math.cos(yaw)).multiplyScalar(9));
+      const look = pivot.clone().add(V3().set(-Math.sin(yaw), Math.tan(pitch) * 1.2, -Math.cos(yaw)).multiplyScalar(9));
       camera.lookAt(look);
     }
 
@@ -1900,6 +1930,9 @@
     bindRange('sSens', 'sSensV', S.sens, v => { S.sens = v; }, v => v.toFixed(2) + 'x');
     bindRange('sVol', 'sVolV', S.volume, v => { S.volume = v; MA.Audio.setVolume(v); }, v => Math.round(v * 100) + '%');
     bindRange('sMus', 'sMusV', S.music, v => { S.music = v; MA.Audio.setMusicVolume(v); }, v => Math.round(v * 100) + '%');
+    bindRange('sShoulder', 'sShoulderV', S.shoulder, v => { S.shoulder = v; },
+      v => Math.abs(v) < .08 ? 'CENTRALIZADO'
+        : (v > 0 ? 'DIREITO ' : 'ESQUERDO ') + Math.abs(v).toFixed(2).replace('.', ','));
     bindRange('sFov', 'sFovV', S.fov, v => { S.fov = v; camera.fov = v; camera.updateProjectionMatrix(); }, v => Math.round(v) + '°');
     bindRange('sShake', 'sShakeV', S.shake, v => { S.shake = v; }, v => Math.round(v * 100) + '%');
 
