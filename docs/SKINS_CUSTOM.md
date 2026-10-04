@@ -56,7 +56,35 @@ Importe no Blender, ajuste o estilo pra combinar com o jogo e exporte `.glb`.
 **Atenção:** confira a licença de cada modelo — evite personagens de marcas/jogos
 alheios, que travam a publicação na loja (veja `docs/IP_REVIEW.md`).
 
-### c) Começar do zero
+### c) Acessórios prontos (boné, coroa, chifres)
+
+Já estão no projeto, com as medidas do jogo:
+
+| Arquivo | O que é |
+|---|---|
+| `assets/skins/acessorio-bone.glb` | boné (casco + aba + botão), origem no centro da cabeça |
+| `assets/skins/acessorio-coroa.glb` | coroa de 7 pontas |
+| `assets/skins/acessorio-chifres.glb` | par de chifres |
+
+**No Blender** (colocar na cabeça do seu boneco): `File → Import → glTF 2.0`, escolha o
+acessório, `G` + `Z` para subir até a cabeça, `S` para ajustar o tamanho, `R` para girar.
+Depois selecione o boneco e o acessório e exporte tudo junto como um `.glb`.
+
+**Ou direto no jogo**, sem Blender nenhum:
+
+```js
+MA.SKIN_MODELS = {
+  'chill': {
+    url: 'assets/skins/acessorio-bone.glb',
+    mode: 'part', anchor: 'head',
+    fit: false, keepPivot: true   // já nasce encaixado na cabeça
+  }
+};
+```
+
+Regerar os acessórios: `npm install && npm run export:acessorios`.
+
+### d) Começar do zero
 
 Só seguir a especificação abaixo.
 
@@ -141,6 +169,7 @@ MA.SKIN_MODELS = {
 | `size` | maior dimensão | tamanho final da peça (modo `part`) |
 | `scale` | `1` | multiplicador extra depois do ajuste automático |
 | `fit` | `true` | `false` usa a escala original do arquivo |
+| `keepPivot` | `false` | `true` respeita a origem do arquivo (não recentraliza) — ideal para acessórios já posicionados |
 | `x` `y` `z` | `0` | deslocamento fino |
 | `rotX` `rotY` `rotZ` | `0` | rotação em radianos |
 | `hide` | `'all'` no `full` | partes procedurais a esconder: `'all'` ou `['head','body','armL',...]` |

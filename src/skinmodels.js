@@ -74,6 +74,7 @@
       size: typeof spec.size === 'number' ? spec.size : 0,
       scale: typeof spec.scale === 'number' ? spec.scale : 1,
       fit: spec.fit !== false,
+      keepPivot: !!spec.keepPivot,
       x: spec.x || 0, y: spec.y || 0, z: spec.z || 0,
       rotX: spec.rotX || 0, rotY: spec.rotY || 0, rotZ: spec.rotZ || 0,
       hide: spec.hide === undefined ? (mode === 'full' ? 'all' : []) : spec.hide,
@@ -181,9 +182,14 @@
 
     const holder = new THREE.Group();
     holder.add(root);
-    /* origem do grupo = pés do modelo, no eixo central */
-    root.position.set(-center.x * k, -box.min.y * k, -center.z * k);
-    if (sp.mode === 'part') root.position.y = -center.y * k; /* peças ficam centradas no encaixe */
+    if (sp.keepPivot) {
+      /* respeita a origem do arquivo (útil para acessórios já posicionados) */
+      root.position.set(0, 0, 0);
+    } else {
+      /* origem do grupo = pés do modelo, no eixo central */
+      root.position.set(-center.x * k, -box.min.y * k, -center.z * k);
+      if (sp.mode === 'part') root.position.y = -center.y * k; /* peças ficam centradas no encaixe */
+    }
     holder.rotation.set(sp.rotX, sp.rotY, sp.rotZ);
     holder.position.set(sp.x, sp.y, sp.z);
     return holder;
