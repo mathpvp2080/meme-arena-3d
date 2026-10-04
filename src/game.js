@@ -83,13 +83,26 @@
     MA.Audio.setMusicVolume(S.music);
 
     G.booted = true;
-    /* A entrada permanece tempo suficiente para a marca e a classificação
-       Livre serem vistas, mesmo quando os arquivos carregam instantaneamente. */
+    /* A entrada é uma etapa real: não desaparece sozinha. Assim a marca, a
+       classificação Livre e o comando para entrar continuam sempre visíveis. */
     const splash = $('loading');
-    const wait = Math.max(0, 1900 - (performance.now() - BOOT_STARTED));
-    setTimeout(() => {
+    const enterGame = $('enterGame');
+    const splashStatus = splash && splash.querySelector('.splash-loading');
+    const closeSplash = () => {
+      if (!splash || splash.classList.contains('leave')) return;
+      MA.Audio.init();
       splash.classList.add('leave');
       setTimeout(() => splash.classList.add('hid'), 460);
+    };
+    const wait = Math.max(0, 1500 - (performance.now() - BOOT_STARTED));
+    setTimeout(() => {
+      if (!splash) return;
+      splash.classList.add('ready');
+      if (splashStatus) splashStatus.textContent = 'PROTOCOLO PRONTO · TEMPORADA 67';
+      if (enterGame) {
+        enterGame.disabled = false;
+        enterGame.onclick = closeSplash;
+      }
     }, wait);
     animate();
     initMeta();

@@ -298,6 +298,14 @@ body:not(.touch) #touch{display:none}
 .splash-loader i{display:block;width:100%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#00ffd5,#ffe600,#ff00c8,#00ffd5);
   background-size:220% 100%;box-shadow:0 0 16px #00ffd5;animation:loadshine 1.25s linear infinite}
 .splash-loading{font-size:9px;letter-spacing:.32em;color:#b9dfff;font-weight:800}
+.splash-enter{min-width:min(330px,80vw);margin:22px auto 0;padding:13px 28px 11px;border:2px solid rgba(255,255,255,.9);border-radius:17px;
+  background:linear-gradient(100deg,#6572ff,#ff4fbd);color:#fff;font-family:var(--font);cursor:pointer;
+  box-shadow:0 7px 0 #392a8c,0 0 28px rgba(255,79,189,.38);opacity:0;translate:0 16px;pointer-events:none;
+  transition:opacity .3s ease,translate .3s ease,filter .15s ease,transform .15s ease}
+.splash-enter b{display:block;font-size:17px;line-height:1.1;letter-spacing:.09em}.splash-enter small{display:block;margin-top:4px;font-size:7px;letter-spacing:.25em;opacity:.78}
+#loading.ready .splash-enter{opacity:1;translate:0 0;pointer-events:auto}.splash-enter:hover{filter:brightness(1.13);transform:translateY(-2px)}
+.splash-enter:active{transform:translateY(4px);box-shadow:0 3px 0 #392a8c}.splash-enter:focus-visible{outline:3px solid #2de2ff;outline-offset:4px}
+#loading.ready .splash-loader i{animation-duration:3s}#loading.ready .splash-loading{color:#fff}
 .splash-rating{position:absolute;left:clamp(16px,4vw,54px);bottom:clamp(22px,5vh,48px);display:flex;align-items:center;gap:11px;
   padding:8px 14px 8px 8px;border-radius:13px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);
   box-shadow:0 8px 28px rgba(0,0,0,.35);z-index:3}

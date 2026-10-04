@@ -15,8 +15,8 @@
 <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="css/style.css?v=31">
-<link rel="stylesheet" href="css/season67.css?v=31">
+<link rel="stylesheet" href="css/style.css?v=32">
+<link rel="stylesheet" href="css/season67.css?v=32">
 </head>
 <body>
 <div id="app"></div>
@@ -568,7 +568,10 @@
     <div class="splash-logo season67-logo"><span><i>6</i><i>7</i></span><div><b>MEME</b><strong>ARENA</strong><em>TEMPORADA 67</em></div></div>
     <div class="splash-tagline">SEIS PARTES CORAGEM. SETE PARTES CAOS.</div>
     <div class="splash-loader"><i></i></div>
-    <div class="splash-loading">SINCRONIZANDO O PROTOCOLO 6·7…</div>
+    <div class="splash-loading" aria-live="polite">SINCRONIZANDO O PROTOCOLO 6·7…</div>
+    <button id="enterGame" class="splash-enter" type="button" disabled>
+      <b>ENTRAR NA ARENA</b><small>CLIQUE PARA COMEÇAR</small>
+    </button>
   </div>
   <div class="splash-rating" aria-label="Classificação indicativa Livre">
     <b>L</b><span>CLASSIFICAÇÃO<br><strong>LIVRE</strong></span>
@@ -576,36 +579,36 @@
   <div class="splash-foot">Arte e áudio originais · Violência fantasiosa · Interação entre usuários · Apenas moeda virtual</div>
 </div>
 
-<script src="lib/three.min.js?v=31"></script>
-<script src="src/utils.js?v=31"></script>
-<script src="src/config.js?v=31"></script>
-<script src="src/data.js?v=31"></script>
-<script src="src/maps.js?v=31"></script>
-<script src="src/items.js?v=31"></script>
-<script src="src/season.js?v=31"></script>
-<script src="src/audio.js?v=31"></script>
-<script src="src/faces.js?v=31"></script>
-<script src="src/textures.js?v=31"></script>
-<script src="src/world.js?v=31"></script>
-<script src="src/builds.js?v=31"></script>
-<script src="src/weapons3d.js?v=31"></script>
-<script src="src/armor3d.js?v=31"></script>
-<script src="src/entities.js?v=31"></script>
-<script src="src/net.js?v=31"></script>
-<script src="src/profile.js?v=31"></script>
-<script src="src/ui.js?v=31"></script>
-<script src="src/pbuilds.js?v=31"></script>
-<script src="src/previews.js?v=31"></script>
-<script src="src/goals.js?v=31"></script>
-<script src="src/market.js?v=31"></script>
-<script src="src/multi.js?v=31"></script>
-<script src="src/mod.js?v=31"></script>
-<script src="src/mpui.js?v=31"></script>
-<script src="src/metaui.js?v=31"></script>
-<script src="src/game.js?v=31"></script>
+<script src="lib/three.min.js?v=32"></script>
+<script src="src/utils.js?v=32"></script>
+<script src="src/config.js?v=32"></script>
+<script src="src/data.js?v=32"></script>
+<script src="src/maps.js?v=32"></script>
+<script src="src/items.js?v=32"></script>
+<script src="src/season.js?v=32"></script>
+<script src="src/audio.js?v=32"></script>
+<script src="src/faces.js?v=32"></script>
+<script src="src/textures.js?v=32"></script>
+<script src="src/world.js?v=32"></script>
+<script src="src/builds.js?v=32"></script>
+<script src="src/weapons3d.js?v=32"></script>
+<script src="src/armor3d.js?v=32"></script>
+<script src="src/entities.js?v=32"></script>
+<script src="src/net.js?v=32"></script>
+<script src="src/profile.js?v=32"></script>
+<script src="src/ui.js?v=32"></script>
+<script src="src/pbuilds.js?v=32"></script>
+<script src="src/previews.js?v=32"></script>
+<script src="src/goals.js?v=32"></script>
+<script src="src/market.js?v=32"></script>
+<script src="src/multi.js?v=32"></script>
+<script src="src/mod.js?v=32"></script>
+<script src="src/mpui.js?v=32"></script>
+<script src="src/metaui.js?v=32"></script>
+<script src="src/game.js?v=32"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=31').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=32').catch(() => {}));
   }
 </script>
 </body>

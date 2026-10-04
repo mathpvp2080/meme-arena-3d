@@ -141,144 +141,9 @@
 @media(max-width:460px){.loot-card{grid-template-columns:1fr;text-align:center}.loot-box-art{margin:auto}.loot-buy{justify-content:center}.forge-card{align-items:flex-start}.itempreview{height:100px}}
 
 /* =====================================================================
-   LOBBY 67 · composição clássica de party-game
-   Estrutura familiar (perfil, atalhos laterais, herói central e jogar),
-   com ícones, cores, textos e arte próprios do Meme Arena.
-   ===================================================================== */
-#hub{background:
-  radial-gradient(ellipse at 50% 58%,rgba(45,226,255,.48),transparent 36%),
-  linear-gradient(132deg,#20bfea 0%,#388de8 44%,#765ae7 76%,#af4cc7 100%)}
-#hub:before{inset:47px 0 0;background:
-  radial-gradient(ellipse at 12% 28%,rgba(255,255,255,.15) 0 10%,transparent 10.5%),
-  radial-gradient(ellipse at 86% 20%,rgba(255,255,255,.12) 0 12%,transparent 12.5%),
-  linear-gradient(153deg,transparent 0 30%,rgba(255,255,255,.055) 30.2% 43%,transparent 43.2% 100%);opacity:1}
-#hub .lobby-rays{inset:47px 0 0;width:auto;aspect-ratio:auto;left:0;top:0;transform:none;border-radius:0;opacity:.22;
-  background:linear-gradient(24deg,transparent 0 18%,rgba(25,67,174,.24) 18.2% 31%,transparent 31.2% 100%),
-             linear-gradient(154deg,transparent 0 67%,rgba(255,255,255,.15) 67.2% 79%,transparent 79.2% 100%);
-  -webkit-mask:none;mask:none;animation:none}
-#hub .lobby-confetti{display:none}
-#hub .lobby-shell{max-width:none;margin:0;padding:0;display:block}
-
-/* barra superior */
-#hub .lobby-topbar{position:absolute;z-index:12;inset:0 0 auto;height:48px;padding:5px 8px;display:grid;
-  grid-template-columns:minmax(190px,235px) 1fr auto;gap:8px;background:linear-gradient(180deg,#173a94,#101f67);
-  border-bottom:2px solid #0a164c;box-shadow:0 2px 0 rgba(255,255,255,.18),0 5px 12px rgba(5,12,59,.28)}
-#hub .lobby-profile{justify-self:stretch;min-width:0;width:100%;height:38px;padding:3px 7px 3px 4px;gap:7px;border:1px solid rgba(255,255,255,.78);
-  border-radius:3px;background:linear-gradient(180deg,#2494e9,#1765c3);box-shadow:0 2px 0 #092c82}
-#hub .lobby-avatar{width:32px;height:32px;min-width:32px;max-width:none;padding:0;display:grid;place-items:center;overflow:hidden;border-radius:50%;
-  border:2px solid #cbf8ff;background:linear-gradient(145deg,#2de2ff,#6572ff);font-size:16px;color:#fff;white-space:nowrap;text-indent:0}
-#hub .lobby-profile-main{min-width:0;display:grid;grid-template-columns:1fr auto;grid-template-rows:15px 8px 5px;column-gap:5px;align-items:center}
-#hub .lobby-name-line{grid-column:1/-1;display:flex;flex-wrap:nowrap;gap:5px;min-width:0}
-#hub .lobby-name-line .hubname{overflow:hidden;text-overflow:ellipsis;font-size:11px;line-height:1;color:#fff;text-shadow:0 1px 0 #06295f}
-#hub .level-pill{order:-1;padding:2px 5px;border-radius:999px;background:#2de2ff;color:#10164e;border:1px solid #fff;font-size:7px;white-space:nowrap}
-#hub .lobby-rank{grid-column:1;grid-row:2;margin:0;color:#ffe875;font-size:6px;line-height:1;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#hub .lobby-profile .xpbar{grid-column:1/-1;grid-row:3;height:4px;border:1px solid rgba(255,255,255,.72);border-radius:1px;background:#111b55}
-#hub .lobby-profile .xptxt{display:none}
-#hub .season-hub-badge{position:relative;align-self:center;justify-self:center;height:38px;min-width:112px;padding:4px 11px;border:1px solid rgba(255,255,255,.58);
-  border-radius:999px;background:linear-gradient(180deg,#6f58eb,#3f39ad);transform:none;filter:none}
-#hub .season-hub-badge>span{font-size:5px;letter-spacing:.18em;color:#dff8ff}
-#hub .season-hub-badge>b{position:absolute;left:8px;top:5px;margin:0}
-#hub .season-hub-badge>b i{font-size:21px;-webkit-text-stroke:1px #fff}
-#hub .season-hub-badge>small{display:block;margin-left:34px;font-size:5px;line-height:1.2;color:#fff;letter-spacing:.04em}
-#hub .lobby-top-actions{height:38px;gap:5px}
-#hub .hubwallet{height:30px;min-width:88px;padding:4px 9px;border:1px solid rgba(255,255,255,.58);border-radius:999px;
-  background:#11153e;box-shadow:0 2px 0 #070a28;font-size:10px;justify-content:center}
-#hub .hubwallet span{font-size:13px}#hub .hubwallet b{font-size:10px}
-#hub .lobby-round{width:32px;height:32px;border:1px solid rgba(255,255,255,.76);border-radius:50%;font-size:14px;box-shadow:0 2px 0 #07133e}
-#hub .lobby-round.purple{background:linear-gradient(#ff61cc,#b72d9d)}#hub .lobby-round.blue{background:linear-gradient(#39cfff,#2874de)}
-
-/* palco central */
-#hub .lobby-main{position:absolute;inset:48px 0 0;display:block}
-#hub .lobby-character{position:absolute;z-index:2;left:50%;top:4px;bottom:8px;width:min(48vw,470px);min-height:0;translate:-50% 0}
-#hub .character-nameplate,#hub .lobby-loadout,#hub .character-spark{display:none}
-#hub .lobby-avatar3d{top:0;bottom:20px;width:100%;filter:none}
-#hub .lobby-avatar3d img{filter:drop-shadow(0 10px 6px rgba(20,28,77,.35));animation:herofloat 2.2s ease-in-out infinite alternate}
-#hub .character-platform{bottom:17px;width:min(190px,55%);height:28px;opacity:.36;filter:blur(.2px);background:radial-gradient(ellipse,rgba(28,48,100,.72),rgba(28,48,100,.22) 50%,transparent 70%)}
-#hub .character-platform i{display:none}
-
-/* atalhos quadrados à esquerda */
-#hub .lobby-left{position:absolute;z-index:8;left:8px;top:9px;width:58px;display:flex;gap:7px;align-items:stretch}
-#hub .lobby-nav-label,#hub .lobby-exit{display:none}
-#hub .lobby-tile{width:58px;height:58px;min-height:58px;padding:4px 3px 3px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
-  border:2px solid #0c296f;border-radius:4px;color:#fff;text-align:center;box-shadow:0 3px 0 #071a55,0 5px 9px rgba(5,20,69,.22);overflow:visible}
-#hub .lobby-tile:before{background:linear-gradient(135deg,rgba(255,255,255,.35),transparent 48%)}
-#hub .lobby-tile>span{position:absolute;left:5px;right:5px;top:4px;width:auto;height:35px;translate:0;display:grid;place-items:center;
-  border:0;border-radius:3px;background:rgba(255,255,255,.24);font-size:23px;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.18)}
-#hub .lobby-tile b{position:relative;z-index:1;width:100%;font-size:6px;line-height:1;letter-spacing:0;text-align:center;text-shadow:0 1px 0 rgba(0,0,0,.45);white-space:nowrap}
-#hub .lobby-tile small{display:none}
-#hub .lobby-tile.acid{background:linear-gradient(180deg,#ffe66b,#ffbf2f);color:#18204c;border-color:#233d8e}
-#hub .lobby-tile.acid>span{color:#6572ff;background:linear-gradient(#fff,#dff8ff)}
-#hub .lobby-tile.pink{background:linear-gradient(180deg,#ff61c7,#c82f9c)}
-#hub .lobby-tile.cyan{background:linear-gradient(180deg,#42e4ff,#2284dd)}
-#hub .lobby-tile.violet{background:linear-gradient(180deg,#8b75ff,#5543c7)}
-/* Mercado vira atalho compacto na barra superior, preservando o acesso sem criar uma quarta coluna lateral. */
-#hub .lobby-left #mkBtn{position:fixed;z-index:14;left:auto;right:205px;top:8px;width:38px;height:31px;min-height:31px;padding:0;border-radius:999px;background:#11153e}
-#hub .lobby-left #mkBtn>span{inset:2px 5px;width:auto;height:auto;position:absolute;font-size:15px;background:transparent}
-#hub .lobby-left #mkBtn b,#hub .lobby-left #mkBtn small{display:none}
-
-/* atalhos à direita e botão principal */
-#hub .lobby-right{position:absolute;z-index:8;right:8px;top:74px;width:58px;display:flex;gap:9px;align-items:stretch}
-#hub .mode-card,#hub .lobby-multi{position:relative;width:58px;height:58px;min-height:58px;margin:0;padding:4px 3px 3px;border:2px solid #0b286c;border-radius:4px;
-  color:#fff;box-shadow:0 3px 0 #071a55,0 5px 9px rgba(5,20,69,.22);overflow:hidden;text-align:center}
-#hub .mode-card{background:linear-gradient(180deg,#ffe66b,#ffb82e)}
-#hub .mode-card-head{display:none}
-#hub .mode-map-art{height:35px;margin:0 2px 3px;border-radius:3px;background:linear-gradient(#fff8bf,#ffcb42)}
-#hub .mode-map-art:after{display:none}#hub .mode-map-art span{font-size:23px;filter:drop-shadow(0 2px 0 rgba(0,0,0,.18));animation:none}
-#hub .mode-shortcut-label{display:block;color:#18204c;font-size:6px;line-height:1;text-shadow:none}
-#hub .mode-card>small{display:none}
-#hub .lobby-multi{display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;background:linear-gradient(180deg,#47e2ff,#2877dc);
-  font-size:6px;line-height:1.05;letter-spacing:0;white-space:normal}
-#hub .lobby-multi:before{content:'👥';position:absolute;margin-bottom:13px;font-size:23px;filter:drop-shadow(0 2px 0 rgba(0,0,0,.2))}
-#hub .lobby-multi em{display:none}
-#hub .lobby-play{position:fixed;z-index:13;right:9px;bottom:9px;width:150px;height:56px;min-height:56px;padding:0;display:grid;place-items:center;
-  border:2px solid #fff;border-radius:4px;background:linear-gradient(180deg,#ffe66b,#ffae28);color:#172052;text-align:center;
-  box-shadow:0 4px 0 #bf6415,0 7px 12px rgba(51,34,92,.25)}
-#hub .lobby-play:before{background:linear-gradient(150deg,rgba(255,255,255,.55),transparent 50%)}
-#hub .lobby-play>span,#hub .lobby-play small{display:none}#hub .lobby-play b{font-size:18px;line-height:1;text-shadow:0 1px 0 #fff;z-index:1}
-
-/* passe no canto inferior esquerdo */
-#hub .lobby-footer{position:absolute;z-index:9;left:8px;bottom:8px;width:158px;height:56px;padding:5px 7px;display:block;
-  border:2px solid #172d78;border-radius:4px;background:linear-gradient(180deg,#f5fbff 0 54%,#ffcd43 55% 100%);color:#15245c;
-  box-shadow:0 3px 0 #071a55,0 6px 10px rgba(18,25,83,.24)}
-#hub .pass-callout{position:absolute;left:0;bottom:calc(100% + 4px);color:#fff066;font-size:6px;font-weight:1000;text-shadow:0 1px 0 #7f4d00;white-space:nowrap}
-#hub .pass-callout:after{content:'👉';position:absolute;left:100%;bottom:-1px;margin-left:3px;font-size:18px;transform:rotate(20deg)}
-#hub .pass-head{height:22px;display:flex;align-items:center;justify-content:space-between;gap:4px}
-#hub .pass-head strong{font-size:10px;font-style:italic;color:#263677}.pass-head span{padding:3px 4px;border-radius:2px;background:#ff4fbd;color:#fff;font-size:5px;font-weight:1000}
-#hub .season-wallet{height:23px;display:flex;gap:3px;align-items:center;justify-content:space-between}
-#hub .season-wallet>span{flex:1;padding:3px 2px;border:0;border-radius:2px;background:rgba(41,59,135,.92);color:#dff8ff;font-size:5px;text-align:center}
-#hub .season-wallet b{color:#fff066;font-size:6px}
-#hub .lobby-footer .hstats,#hub .mini-rating{display:none}
-
-@media(max-width:740px){
-  #hub .lobby-topbar{grid-template-columns:minmax(168px,210px) 1fr auto;padding-left:5px}
-  #hub .season-hub-badge{display:none}
-  #hub .lobby-top-actions{grid-column:3}
-  #hub .lobby-left{left:5px}.lobby-right{right:5px}
-  #hub .lobby-left #mkBtn{right:190px}
-  #hub .lobby-character{width:min(52vw,400px)}
-  #hub .lobby-play{right:6px;width:134px}
-  #hub .lobby-footer{left:6px;width:146px}
-}
-@media(max-height:450px){
-  #hub .lobby-topbar{height:40px;padding-top:3px;padding-bottom:3px}
-  #hub:before,#hub .lobby-rays{inset:40px 0 0}
-  #hub .lobby-profile{height:33px}#hub .lobby-avatar{width:28px;height:28px;min-width:28px}
-  #hub .lobby-profile-main{grid-template-rows:13px 7px 4px}
-  #hub .lobby-top-actions{height:33px}#hub .hubwallet{height:27px}#hub .lobby-round{width:28px;height:28px}
-  #hub .lobby-main{inset:40px 0 0}
-  #hub .lobby-left{top:7px;width:52px;gap:6px}
-  #hub .lobby-tile{width:52px;height:52px;min-height:52px}#hub .lobby-tile>span{height:31px;font-size:20px}
-  #hub .lobby-right{top:66px;width:52px;gap:7px}#hub .mode-card,#hub .lobby-multi{width:52px;height:52px;min-height:52px}
-  #hub .mode-map-art{height:31px}#hub .mode-map-art span{font-size:20px}
-  #hub .lobby-footer{height:50px;width:145px}.pass-head{height:19px}
-  #hub .lobby-play{height:48px;min-height:48px;width:132px}#hub .lobby-play b{font-size:16px}
-  #hub .lobby-left #mkBtn{top:5px;height:28px;min-height:28px}
-}
-
-/* =====================================================================
    LOBBY 67 · sincronizado com a interface de jogo
-   A composição compacta continua igual; só a superfície clara foi trocada
-   pelo vidro escuro, violeta, ciano e magenta usados no HUD da arena.
+   A composição ampla e legível usa o vidro escuro, violeta, ciano e magenta
+   do HUD da arena, sem miniaturizar os controles principais.
    ===================================================================== */
 #hub{background:
   radial-gradient(ellipse at 50% 56%,rgba(45,226,255,.14),transparent 34%),
@@ -319,16 +184,27 @@
 #hub .lobby-tile.violet{background:linear-gradient(180deg,#3e347f,#201b4f);border-color:rgba(155,101,255,.74)}
 #hub .mode-card{background:linear-gradient(180deg,#30296d,#171840);border-color:rgba(155,101,255,.72)}
 #hub .mode-map-art{background:linear-gradient(145deg,rgba(45,226,255,.22),rgba(101,114,255,.28));box-shadow:inset 0 0 14px rgba(45,226,255,.07)}
-#hub .mode-shortcut-label{color:#fff;text-shadow:0 1px 0 #050714}
+#hub .mode-shortcut-label{display:block;color:#fff;font-size:15px;line-height:1.2;text-shadow:0 1px 0 #050714}
 #hub .lobby-multi{background:linear-gradient(180deg,#155a73,#17295b);border-color:rgba(45,226,255,.70)}
 #hub .lobby-play{border-color:rgba(255,255,255,.90);background:linear-gradient(155deg,#ff4fbd 0%,#9b65ff 48%,#5263eb 100%);color:#fff;
   box-shadow:0 4px 0 #422779,0 0 24px rgba(255,79,189,.30),0 8px 18px rgba(0,0,0,.34)}
 #hub .lobby-play:before{background:linear-gradient(150deg,rgba(255,255,255,.30),transparent 52%)}
 #hub .lobby-play b{text-shadow:0 2px 0 rgba(29,13,72,.70)}
 
-#hub .lobby-footer{border-color:rgba(45,226,255,.52);background:linear-gradient(180deg,rgba(20,27,73,.97),rgba(11,14,43,.98));color:#fff;
+#hub .lobby-footer{position:relative;padding:10px 13px;border:1px solid rgba(45,226,255,.52);border-radius:16px;
+  background:linear-gradient(180deg,rgba(20,27,73,.97),rgba(11,14,43,.98));color:#fff;
   box-shadow:0 3px 0 #05071c,0 0 20px rgba(45,226,255,.10)}
-#hub .pass-callout{color:#2de2ff;text-shadow:0 0 9px rgba(45,226,255,.55)}
-#hub .pass-head strong{color:#dfe4ff}#hub .pass-head span{background:linear-gradient(90deg,#ff4fbd,#9b65ff)}
-#hub .season-wallet>span{background:rgba(101,114,255,.16);border:1px solid rgba(101,114,255,.28);color:#d9e7ff}
+#hub .pass-callout{position:absolute;left:14px;bottom:calc(100% + 5px);color:#2de2ff;font-size:8px;font-weight:1000;
+  letter-spacing:.12em;text-shadow:0 0 9px rgba(45,226,255,.55)}
+#hub .pass-head{display:grid;min-width:105px;gap:3px}#hub .pass-head strong{color:#dfe4ff;font-size:14px;font-style:italic}
+#hub .pass-head span{width:max-content;padding:3px 6px;border-radius:5px;background:linear-gradient(90deg,#ff4fbd,#9b65ff);font-size:7px;font-weight:1000}
+#hub .season-wallet{min-width:190px}#hub .season-wallet>span{background:rgba(101,114,255,.16);border:1px solid rgba(101,114,255,.28);color:#d9e7ff}
 #hub .season-wallet b{color:#2de2ff}
+@media(min-width:701px){
+  #hub .lobby-tile{min-height:84px}#hub .lobby-tile b{font-size:14px}#hub .lobby-tile small{font-size:9px}
+  #hub .lobby-play{min-height:86px}#hub .lobby-play b{font-size:25px}#hub .lobby-multi{font-size:11px}
+}
+@media(max-width:700px){
+  #hub .lobby-footer{padding:8px;gap:7px}#hub .pass-callout{display:none}#hub .pass-head{min-width:76px}
+  #hub .pass-head strong{font-size:11px}#hub .season-wallet{display:none}
+}
