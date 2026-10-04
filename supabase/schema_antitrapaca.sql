@@ -38,6 +38,29 @@ create policy "dono le o proprio log"
   using (auth.uid() = user_id);
 
 -- ------------------------------------------------------------------
+-- Todo perfil nasce com o mesmo estado. Isso fecha o atalho de criar a conta
+-- já com moedas, nível ou inventário forjados pela API REST.
+-- ------------------------------------------------------------------
+create or replace function public.normalize_profile_insert()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if coalesce(current_setting('app.trusted',true),'')='on' then return new; end if;
+  new.level := 1;
+  new.xp := 0;
+  new.coins := 600;
+  new.inventory := '["skin:chill","armor:hoodie"]'::jsonb;
+  new.equipped := '{"skin":"chill","armor":"hoodie","weapons":[],"ability":""}'::jsonb;
+  new.stats := '{}'::jsonb;
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_normalize_insert on public.profiles;
+create trigger profiles_normalize_insert before insert on public.profiles
+  for each row execute function public.normalize_profile_insert();
+revoke all on function public.normalize_profile_insert() from public,anon,authenticated;
+
+-- ------------------------------------------------------------------
 -- A trava principal
 -- ------------------------------------------------------------------
 create or replace function public.guard_profile_update()
@@ -198,7 +221,8 @@ begin
   end if;
 
   return new;
-end $$;
+end;
+$$;
 
 drop trigger if exists profiles_guard on public.profiles;
 create trigger profiles_guard before update on public.profiles
@@ -239,3 +263,14 @@ create view public.leaderboard as
    limit 100;
 
 grant select on public.leaderboard to anon, authenticated;
+
+-- ------------------------------------------------------------------
+-- Privacidade: o perfil completo é particular. O ranking acima expõe
+-- exclusivamente username, nível, XP, pontuação e abates.
+-- ------------------------------------------------------------------
+drop policy if exists "leitura publica" on public.profiles;
+drop policy if exists "dono le" on public.profiles;
+create policy "dono le" on public.profiles for select
+  using (auth.uid() = id);
+
+revoke all on function public.guard_profile_update() from public, anon, authenticated;

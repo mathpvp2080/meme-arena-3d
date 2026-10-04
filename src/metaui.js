@@ -20,7 +20,7 @@
     },
 
     screen(id) {
-      ['auth', 'hub', 'shop', 'inventory', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
+      ['auth', 'hub', 'shop', 'lootbox', 'inventory', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
         .forEach(s => { const e = $(s); if (e) e.classList.add('hid'); });
       if (id) $(id).classList.remove('hid');
     },
@@ -34,6 +34,7 @@
         const reg = t.dataset.tab === 'register';
         $('authAction').textContent = reg ? 'CRIAR CONTA' : 'ENTRAR';
         $('authConfirmRow').classList.toggle('hid', !reg);
+        $('authPass').autocomplete = reg ? 'new-password' : 'current-password';
         $('authMode').value = reg ? 'register' : 'login';
         this.authError('');
       });
@@ -57,7 +58,7 @@
           if (r.error) { this.authError(r.error); return; }
           MA.Profile.set(r.profile);
           MA.Profile.save(true);
-          this.toast('👋 Bem-vindo, <b>' + r.profile.username + '</b>!');
+          this.toast('👋 Bem-vindo, <b>' + MA.esc(r.profile.username) + '</b>!');
           this.openHub();
         } catch (e) {
           this.authError('Falha de conexão: ' + e.message);
@@ -68,13 +69,21 @@
       };
 
       $('authGuest').onclick = async () => {
-        const name = 'Convidado' + Math.floor(Math.random() * 9000 + 1000);
-        const r = await MA.Net.signUp(name, 'convidado123');
-        if (r.error) return this.authError(r.error);
-        MA.Profile.set(r.profile);
-        MA.Profile.save(true);
-        this.toast('Jogando como <b>' + name + '</b>. O progresso fica salvo neste navegador.');
-        this.openHub();
+        if (this.busy) return;
+        this.busy = true;
+        this.authError('');
+        try {
+          const r = await MA.Net.startGuest();
+          if (r.error) return this.authError(r.error);
+          MA.Profile.set(r.profile);
+          await MA.Profile.save(true);
+          this.toast('Modo <b>Convidado</b>: nada é enviado ao Supabase e o progresso termina com esta sessão.');
+          this.openHub();
+        } catch (e) {
+          this.authError('Não foi possível iniciar o modo Convidado: ' + e.message);
+        } finally {
+          this.busy = false;
+        }
       };
 
       $('modeBadge').textContent = MA.Net.online ? '🌐 ONLINE' : '💾 LOCAL';
@@ -94,13 +103,6 @@
     openHub() {
       if (MA._prepHub) MA._prepHub();
       this.renderHub();
-      const mp = $('mpBtn');
-      if (mp) {
-        const liberado = MA.Profile.canMultiplayer();
-        mp.classList.toggle('locked', !liberado);
-        mp.textContent = liberado ? '🌐 MULTIPLAYER'
-          : '🔒 MULTIPLAYER (nv ' + MA.CONFIG.MULTIPLAYER_LEVEL + ')';
-      }
       if (MA.Market) MA.Market.checarPresentes();
       this.refreshGoalDot();
       this.screen('hub');
@@ -118,13 +120,45 @@
       $('hubXpFill').style.width = (MA.Profile.xpProgress() * 100) + '%';
       $('hubXpTxt').textContent = MA.fmt(p.xp) + ' / ' + MA.fmt(need) + ' XP';
       $('hubCoins').textContent = MA.fmt(p.coins);
-      $('hubSkin').textContent = skin.face + ' ' + skin.name;
+      $('hubSkin').textContent = skin.face;
+      $('hubSkin').title = skin.name;
       $('hubArmor').textContent = '🛡️ ' + armor.name;
+      if (MA.Season) {
+        const season = MA.Season.progress();
+        if ($('seasonCountdown')) $('seasonCountdown').textContent = MA.Season.countdown();
+        if ($('seasonFragments')) $('seasonFragments').textContent = MA.fmt(season.fragments);
+        if ($('seasonBoosts')) $('seasonBoosts').textContent = season.boosts;
+        if ($('seasonPity')) $('seasonPity').textContent = Math.min(7, season.pity + 1) + '/7';
+      }
+      const rank = MA.rankFor((p.stats && p.stats.bestScore) || 0);
+      if ($('hubRank')) $('hubRank').textContent = MA.Net.isGuest
+        ? '◇ SESSÃO TEMPORÁRIA · SEM SUPABASE'
+        : rank.icon + ' ' + rank.name;
+      const map = MA.mapById(MA.store.get('map', 'arena'));
+      if ($('hubMapIcon')) $('hubMapIcon').textContent = map.icon;
+      if ($('hubMapName')) $('hubMapName').textContent = map.name;
 
       const wIdx = MA.Profile.equippedWeapons();
-      $('hubWeapons').innerHTML = wIdx.length
+      const ability = MA.Profile.equippedAbility();
+      $('hubWeapons').innerHTML = (wIdx.length
         ? wIdx.map(i => '<span class="chip">' + MA.WEAPONS[i].icon + ' ' + MA.WEAPONS[i].name + '</span>').join('')
-        : '<span class="chip warn">⚠️ nenhuma arma — compre na loja</span>';
+        : '<span class="chip warn">⚠️ nenhuma arma — compre na loja</span>') +
+        (ability ? '<span class="chip ability">✦ ' + ability.name + '</span>' : '');
+
+      /* Retrato 3D dedicado: não depende do canvas do mapa ficar visível por
+         trás do lobby e sempre reflete skin, armadura e primeira arma. */
+      const hero = $('hubCharacterPreview');
+      if (hero && MA.Previews) {
+        const weaponId = wIdx.length ? MA.WEAPONS[wIdx[0]].id : 'none';
+        const lookKey = skin.id + '|' + armor.id + '|' + weaponId;
+        if (hero.dataset.lookKey !== lookKey) {
+          hero.dataset.lookKey = lookKey;
+          hero.dataset.previewId = lookKey;
+          hero.dataset.previewReady = '';
+          hero.innerHTML = '<span>' + skin.face + '</span><i></i>';
+        }
+        MA.Previews.hydrate(hero.parentElement);
+      }
 
       const s = p.stats;
       $('hubStats').innerHTML =
@@ -137,8 +171,8 @@
       const btn = $('mpBtn');
       btn.classList.toggle('locked', !ok);
       btn.innerHTML = ok
-        ? '⚔️ MULTIPLAYER'
-        : '🔒 MULTIPLAYER <em>nível ' + MA.CONFIG.MULTIPLAYER_LEVEL + '</em>';
+        ? '<span class="multi-mark">◈</span> GRUPO'
+        : '<span class="multi-mark">◇</span> GRUPO <em>nível ' + MA.CONFIG.MULTIPLAYER_LEVEL + '</em>';
 
       $('playBtnHub').classList.toggle('needweapon', wIdx.length === 0);
     },
@@ -156,12 +190,101 @@
       document.querySelectorAll('#shop .tab').forEach(t =>
         t.classList.toggle('sel', t.dataset.tab === this.shopTab));
 
+      if (MA.Season) {
+        const sp = MA.Season.progress();
+        if ($('seasonShopCountdown')) $('seasonShopCountdown').textContent = MA.Season.countdown();
+        if ($('shopFragments')) $('shopFragments').textContent = MA.fmt(sp.fragments);
+        if ($('shopBoosts')) $('shopBoosts').textContent = sp.boosts;
+      }
+
+      if (this.shopTab === 'box') {
+        this.renderBoxes();
+        return;
+      }
+
       const items = MA.catalog()
         .filter(i => i.type === this.shopTab)
         .sort((a, b) => (a.price - b.price));
 
       $('shopGrid').innerHTML = items.map(i => this.card(i, 'shop')).join('');
       this.bindCards('shop');
+      if (MA.Previews) MA.Previews.hydrate($('shopGrid'));
+    },
+
+    renderBoxes() {
+      const grid = $('shopGrid');
+      if (!MA.Season) { grid.innerHTML = '<p class="dim">Temporada indisponível.</p>'; return; }
+      const sp = MA.Season.progress();
+      const boxes = MA.SEASON.boxes.map((box, index) => {
+        const can = MA.Profile.data.coins >= box.price;
+        return '<article class="loot-card' + (index ? ' vault' : '') + '">' +
+          '<div class="loot-box-art">' + box.icon + '</div>' +
+          '<div><h3>' + box.name + '</h3><p>' + box.desc + '</p>' +
+          '<div class="loot-odds"><b>CHANCES POR ABERTURA</b><br>' +
+          '42% moedas · 23% XP · 17% Impulso 67 · 18% item sazonal<br>' +
+          '<b>5% skin · 4% armadura · 5% arma · 4% habilidade</b></div>' +
+          '<div class="loot-pity">GARANTIA: próxima abertura ' + Math.min(7, sp.pity + 1) + '/7 · item na 7ª sem drop</div>' +
+          '<div class="loot-buy"><button class="ibtn buy' + (can ? '' : ' poor') + '" data-box="' + box.id + '">' +
+          '🪙 ' + MA.fmt(box.price) + '</button><small>somente moeda virtual</small></div></div></article>';
+      }).join('');
+      const missing = MA.SEASON.itemKeys.some(key => {
+        const parts = key.split(':'); return !MA.Profile.owns(parts[0], parts[1]);
+      });
+      const forgeDisabled = sp.fragments < 67 || !missing;
+      grid.innerHTML = '<div class="box-grid">' + boxes +
+        '<div class="forge-card"><span>⬡</span><div><b>CAIXA GARANTIDA · ' + MA.fmt(sp.fragments) + '/67 FRAGMENTOS</b>' +
+        '<p>Itens repetidos e chefes rendem fragmentos. Use 67 para abrir uma Caixa 67 com um item que ainda falta.</p></div>' +
+        '<button class="btn mini sec" id="forge67"' + (forgeDisabled ? ' disabled' : '') + '>ABRIR CAIXA</button></div></div>';
+      grid.querySelectorAll('[data-box]').forEach(btn => {
+        btn.onclick = () => this.openSeasonBox(btn.dataset.box);
+      });
+      const forge = $('forge67');
+      if (forge) forge.onclick = async () => {
+        if (forge.disabled) return;
+        forge.disabled = true; forge.textContent = 'ABRINDO…';
+        let r;
+        try { r = await MA.Season.forge(); }
+        catch (e) { r = { error: 'Falha na Caixa Garantida: ' + e.message }; }
+        if (r.error) { MA.Audio.deny(); this.toast('❌ ' + r.error, 'bad'); this.renderBoxes(); return; }
+        MA.Audio.pickup();
+        this.toast('📦 Caixa garantida: <b>' + r.item.name + '</b>');
+        this.renderShop();
+      };
+    },
+
+    async openSeasonBox(id) {
+      const btn = document.querySelector('[data-box="' + id + '"]');
+      if (btn && btn.disabled) return;
+      if (btn) { btn.disabled = true; btn.textContent = 'ABRINDO…'; }
+      let r;
+      try { r = await MA.Season.openBox(id); }
+      catch (e) { r = { error: 'Falha ao abrir a caixa: ' + e.message }; }
+      if (r.error) {
+        MA.Audio.deny(); this.toast('❌ ' + r.error, 'bad');
+        if (!$('shop').classList.contains('hid')) this.renderBoxes();
+        return;
+      }
+      MA.Audio.pickup();
+      this._lastBox = id;
+      this.showLootResults(r);
+    },
+
+    showLootResults(opened) {
+      const colors = { common: '#9fb3c8', rare: '#2de2ff', epic: '#9b65ff', legendary: '#ffd166', mythic: '#ff4fbd' };
+      $('lootTitle').textContent = opened.box.name + ' ABERTO';
+      $('lootResults').innerHTML = opened.results.map(r =>
+        '<div class="loot-result ' + (r.guaranteed ? 'guaranteed' : '') + '" style="--rc:' + (colors[r.rarity] || colors.common) + '">' +
+        '<div class="lrico">' + r.icon + '</div><b>' + r.name + '</b><small>' +
+        (r.desc || (r.type === 'coins' ? 'SALDO ADICIONADO' : r.type === 'xp' ? 'EXPERIÊNCIA ADICIONADA' : 'RECOMPENSA 67')) +
+        '</small></div>').join('');
+      const sp = opened.progress;
+      $('lootProgress').innerHTML = 'Caixas abertas: <b>' + MA.fmt(sp.boxesOpened) + '</b> · ' +
+        'próxima garantia: <b>' + Math.min(7, sp.pity + 1) + '/7</b> · ' +
+        'fragmentos: <b>' + MA.fmt(sp.fragments) + '</b> · Impulsos: <b>' + sp.boosts + '</b>';
+      const again = $('lootAgain');
+      again.textContent = 'ABRIR OUTRA · 🪙 ' + MA.fmt(opened.box.price);
+      again.disabled = MA.Profile.data.coins < opened.box.price;
+      this.screen('lootbox');
     },
 
     /* ======================================================== INVENTÁRIO */
@@ -186,6 +309,7 @@
         ? items.map(i => this.card(i, 'inv')).join('')
         : '<p class="dim" style="grid-column:1/-1;padding:24px">Nada aqui ainda. Vá até a loja!</p>';
       this.bindCards('inv');
+      if (MA.Previews) MA.Previews.hydrate($('invGrid'));
     },
 
     /* --------------------------------------------------------- card HTML */
@@ -199,6 +323,7 @@
 
       const icon = item.type === 'skin' ? item.face
                  : item.type === 'armor' ? '🛡️'
+                 : item.type === 'ability' ? (item.icon || '✦')
                  : item.icon || '🔫';
 
       let stats = '';
@@ -211,11 +336,14 @@
         const w = MA.WEAPONS.find(x => x.id === item.id);
         if (w) stats = '<div class="istats"><span>' + w.dmg + ' dano</span><span>' +
           (w.count > 1 ? w.count + ' projéteis' : (1 / w.rate).toFixed(1) + '/s') + '</span></div>';
+      } else if (item.type === 'ability') {
+        stats = '<div class="istats"><span>TECLA F</span><span>' + item.cooldown + 's recarga</span></div>';
       }
 
       let action;
       if (ctx === 'shop') {
         if (owned) action = '<button class="ibtn owned" disabled>✔ ADQUIRIDO</button>';
+        else if (item.boxOnly) action = '<button class="ibtn boxonly" data-act="boxes">📦 ABRIR CAIXAS 67</button>';
         else if (!canLv) action = '<button class="ibtn lock" disabled>🔒 NÍVEL ' + item.level + '</button>';
         else action = '<button class="ibtn buy' + (canCoin ? '' : ' poor') + '" data-type="' + item.type +
           '" data-id="' + item.id + '" data-act="buy">🪙 ' + MA.fmt(item.price) + '</button>';
@@ -226,13 +354,17 @@
             '" data-id="' + item.id + '" data-act="equip">' + (eq ? '✔ EQUIPADO' : 'EQUIPAR') + '</button>' +
           (item.starter ? '' :
             '<button class="ibtn sell" data-type="' + item.type + '" data-id="' + item.id +
-            '" data-act="sell" title="Vender por ' + sellv + '">💰 ' + MA.fmt(sellv) + '</button>') +
+            '" data-act="market" title="Revender por um valor definido por você">💱</button>' +
+            (item.boxOnly ? '' : '<button class="ibtn sell" data-type="' + item.type + '" data-id="' + item.id +
+            '" data-act="sell" title="Venda rápida por ' + sellv + '">🪙 ' + MA.fmt(sellv) + '</button>')) +
           '</div>';
       }
 
-      return '<div class="icard ' + item.rarity + (eq ? ' isequipped' : '') + '" style="--rc:' + r.color + '">' +
+      return '<div class="icard ' + item.rarity + (eq ? ' isequipped' : '') + (item.seasonal ? ' seasonal' : '') + '" style="--rc:' + r.color + '">' +
+        (item.seasonal ? '<div class="season-chip">TEMPORADA 67</div>' : '') +
         '<div class="irar" style="color:' + r.color + '">' + r.name + '</div>' +
-        '<div class="iico">' + icon + '</div>' +
+        '<div class="iico itempreview" data-preview-type="' + item.type + '" data-preview-id="' + item.id + '">' +
+          '<span>' + icon + '</span><i></i></div>' +
         '<div class="iname">' + item.name + '</div>' +
         '<div class="idesc">' + (item.desc || '') + '</div>' +
         stats + action + '</div>';
@@ -243,8 +375,9 @@
       root.querySelectorAll('button[data-act]').forEach(b => {
         b.onclick = () => {
           const type = b.dataset.type, id = b.dataset.id, act = b.dataset.act;
-          const item = Object.assign({ type }, MA.findItem(type, id));
           MA.Audio.ui();
+          if (act === 'boxes') { this.openShop('box'); return; }
+          const item = Object.assign({ type }, MA.findItem(type, id));
           if (act === 'buy') {
             const r = MA.Profile.buy(item);
             if (r.error) { this.toast('❌ ' + r.error, 'bad'); MA.Audio.deny(); return; }
@@ -255,15 +388,23 @@
             const r = MA.Profile.equip(type, id);
             if (r.error) { this.toast('❌ ' + r.error, 'bad'); MA.Audio.deny(); return; }
             MA.Profile.save();
-            if ((type === 'skin' || type === 'armor') && MA._rebuildLook) MA._rebuildLook();
+            if ((type === 'skin' || type === 'armor' || type === 'weapon' || type === 'ability') && MA._rebuildLook) MA._rebuildLook();
             this.toast(r.equipped ? '✅ Equipado: <b>' + item.name + '</b>' : 'Desequipado: ' + item.name);
             this.renderInventory();
+          } else if (act === 'market') {
+            if (MA.Profile.isEquipped(type, id)) {
+              this.toast('⚠️ Desequipe o item antes de anunciar.', 'bad'); MA.Audio.deny(); return;
+            }
+            if (!MA.Market.online()) {
+              this.toast('🌐 A revenda com preço próprio exige uma conta online.', 'bad'); MA.Audio.deny(); return;
+            }
+            MA.Market.abrir('vender');
           } else if (act === 'sell') {
-            if (!confirm('Vender "' + item.name + '" por ' +
-                MA.fmt(Math.round(item.price * MA.CONFIG.SELL_RATE)) + ' moedas?')) return;
+            if (!confirm('Fazer venda rápida de "' + item.name + '" por ' +
+                MA.fmt(Math.round(item.price * MA.CONFIG.SELL_RATE)) + ' moedas?\n\nNo Mercado você pode definir o seu próprio preço.')) return;
             const r = MA.Profile.sell(item);
             if (r.error) { this.toast('❌ ' + r.error, 'bad'); MA.Audio.deny(); return; }
-            this.toast('💰 Vendido por <b>' + MA.fmt(r.value) + '</b> moedas');
+            this.toast('💰 Venda rápida: <b>' + MA.fmt(r.value) + '</b> moedas');
             this.renderInventory();
           }
         };
@@ -387,6 +528,10 @@
       const box = $('rewardBox');
       let h = '<div class="rwline">🪙 <b>+' + MA.fmt(res.coins) + '</b> moedas</div>' +
               '<div class="rwline">✨ <b>+' + MA.fmt(res.xp) + '</b> XP</div>';
+      if (res.multiplier > 1) {
+        h += '<div class="rwlevel">⚡ IMPULSO 67 APLICADO · RECOMPENSAS +67% · ' +
+             res.boostsRemaining + ' restante' + (res.boostsRemaining === 1 ? '' : 's') + '</div>';
+      }
       if (res.levels > 0) {
         h += '<div class="rwlevel">🎉 SUBIU ' + res.levels + ' NÍVE' + (res.levels > 1 ? 'IS' : 'L') +
              '! Agora é nível <b>' + MA.Profile.data.level + '</b></div>';
@@ -407,7 +552,10 @@
         if (MA._renderMapList) MA._renderMapList();
         this.screen('start');
       });
+      on('seasonBtn', () => this.openShop('box'));
       on('shopBtn', () => this.openShop());
+      on('lootClose', () => this.openShop('box'));
+      on('lootAgain', () => { if (this._lastBox) this.openSeasonBox(this._lastBox); });
       on('invBtn', () => this.openInventory());
       on('mpBtn', () => MA.MPUI.open());
       on('mkBtn', () => { MA.Market.preencherGift(); MA.Market.abrir('comprar'); });
@@ -415,7 +563,10 @@
       on('glClose', () => this.openHub());
       document.querySelectorAll('#goals .tab').forEach(t =>
         t.onclick = () => { MA.Audio.ui(); this.openGoals(t.dataset.tab); });
-      on('hubSettings', () => $('settings').classList.remove('hid'));
+      on('hubSettings', () => {
+        $('settings').classList.remove('hid');
+        $('sDelete').textContent = MA.Net.isGuest ? '🗑 ENCERRAR SESSÃO DE CONVIDADO' : '🗑 APAGAR MINHA CONTA';
+      });
       /* exclusao de conta: exigencia das lojas e da politica de privacidade */
       let confirmando = false;
       on('sDelete', async () => {
@@ -423,26 +574,32 @@
         if (!confirmando) {
           confirmando = true;
           btn.textContent = '⚠️ CLIQUE DE NOVO PARA CONFIRMAR';
-          msg.innerHTML = 'Isso apaga <b>para sempre</b> sua conta, nível, moedas e todos os itens. ' +
-                          'Não tem como desfazer. Clique de novo em até 8 segundos para confirmar.';
+          msg.innerHTML = MA.Net.isGuest
+            ? 'Isso encerra a sessão temporária e apaga o progresso local do convidado. Clique novamente para confirmar.'
+            : 'Isso apaga <b>para sempre</b> sua conta, nível, moedas e todos os itens. ' +
+              'Não tem como desfazer. Clique de novo em até 8 segundos para confirmar.';
           MA.Audio.deny();
           setTimeout(() => {
             if (!confirmando) return;
-            confirmando = false; btn.textContent = '🗑 APAGAR MINHA CONTA'; msg.innerHTML = '';
+            confirmando = false;
+            btn.textContent = MA.Net.isGuest ? '🗑 ENCERRAR SESSÃO DE CONVIDADO' : '🗑 APAGAR MINHA CONTA';
+            msg.innerHTML = '';
           }, 8000);
           return;
         }
         confirmando = false;
-        btn.textContent = 'apagando…'; btn.disabled = true;
+        const wasGuest = MA.Net.isGuest;
+        btn.textContent = wasGuest ? 'encerrando…' : 'apagando…'; btn.disabled = true;
         const r = await MA.Net.deleteAccount();
-        btn.disabled = false; btn.textContent = '🗑 APAGAR MINHA CONTA';
+        btn.disabled = false;
+        btn.textContent = wasGuest ? '🗑 ENCERRAR SESSÃO DE CONVIDADO' : '🗑 APAGAR MINHA CONTA';
         if (r && r.error) { msg.innerHTML = r.error; return; }
         msg.innerHTML = '';
         try { localStorage.removeItem('memearena.session'); } catch (e) { /* ignora */ }
         MA.Profile.data = null;
         $('settings').classList.add('hid');
         this.screen('auth');
-        this.toast('Conta apagada. Até a próxima! 👋');
+        this.toast(wasGuest ? 'Sessão temporária encerrada. 👋' : 'Conta apagada. Até a próxima! 👋');
       });
 
       on('logoutBtn', async () => {
@@ -458,6 +615,14 @@
         t.onclick = () => { MA.Audio.ui(); this.openShop(t.dataset.tab); });
       document.querySelectorAll('#inventory .tab').forEach(t =>
         t.onclick = () => { MA.Audio.ui(); this.openInventory(t.dataset.tab); });
+
+      if (MA.Season && !this._seasonTimer) {
+        this._seasonTimer = setInterval(() => {
+          const txt = MA.Season.countdown();
+          if ($('seasonCountdown')) $('seasonCountdown').textContent = txt;
+          if ($('seasonShopCountdown')) $('seasonShopCountdown').textContent = txt;
+        }, 60000);
+      }
     }
   };
 

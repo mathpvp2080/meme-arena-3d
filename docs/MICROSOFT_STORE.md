@@ -1,4 +1,4 @@
-# Publicar o MEME ARENA: APOCALYPSE na Microsoft Store
+# Publicar o MEME ARENA 3D na Microsoft Store
 
 Guia passo a passo, do zero. Você **não** precisa instalar nada no PC nem usar
 o terminal: tudo é feito por sites.
@@ -47,16 +47,16 @@ individuais.
 2. Em **"Reserve your app's name"**, digite:
 
    ```
-   MEME ARENA: APOCALYPSE
+   MEME ARENA 3D
    ```
 
    Se estiver ocupado, tente nesta ordem:
-   - `MEME ARENA APOCALYPSE`
-   - `MEME ARENA: APOCALYPSE 3D`
-   - `Meme Arena Apocalypse - Brainrot`
+   - `MEME ARENA 67`
+   - `MEME ARENA 3D — TEMPORADA 67`
+   - `Arena 67 3D`
 
-   > 💡 Reservar nome é **grátis e sem limite**. Reserve os três de uma vez:
-   > você escolhe qual usar só na hora de publicar.
+   > Use sempre a identidade aprovada no Partner Center. O identificador interno
+   > antigo do pacote pode continuar igual para preservar atualizações.
 3. Clique em **Reserve product name**.
 
 ---
@@ -83,7 +83,7 @@ O jogo já está preparado (manifesto, ícones, capturas de tela e service worke
    | Package ID | o `Package/Identity/Name` da Parte 1 |
    | Publisher display name | o `PublisherDisplayName` da Parte 1 |
    | Publisher ID | o `Package/Identity/Publisher` (começa com `CN=`) |
-   | App name | `MEME ARENA: APOCALYPSE` |
+   | App name | `MEME ARENA 3D` |
    | App version | `1.0.1` |
    | Classic package version | `1.0.0` |
 
@@ -128,7 +128,7 @@ Responda o questionário da IARC. Para este jogo:
 - **Interação entre usuários: SIM** (tem chat no multiplayer) — isso é importante
   marcar, senão pode ser reprovado depois.
 
-A classificação deve sair em torno de **10+ / Livre**.
+A classificação final é determinada pela IARC/loja. Não anuncie o selo Livre como oficial antes da confirmação.
 
 ### 4.4 Packages
 Arraste o arquivo **`.msixbundle`** que você baixou na Parte 3.
@@ -147,7 +147,7 @@ Você recebe e-mail quando for aprovado (ou se precisar corrigir algo).
 **Nome do produto**
 
 ```
-MEMEPOCALYPSE
+MEME ARENA 3D
 ```
 
 **Descrição curta (até 100 caracteres)**
@@ -159,11 +159,11 @@ Sobreviva a ondas infinitas de memes da internet nesta arena 3D de ação.
 **Descrição completa**
 
 ```
-A internet colapsou e os memes ganharam corpo. Bem-vindo ao apocalipse.
+O protocolo 6·7 abriu a arena. Seis partes coragem, sete partes caos.
 
-MEME ARENA: APOCALYPSE é um jogo de ação em terceira pessoa (ou primeira, se preferir)
-onde você enfrenta ondas infinitas de criaturas inspiradas na cultura da
-internet. Cada onda vem mais rápida, mais forte e mais absurda que a anterior.
+MEME ARENA 3D é um jogo de ação em terceira pessoa (ou primeira, se preferir)
+onde você enfrenta ondas infinitas em uma cidade neon. Cada onda vem mais
+rápida, mais forte e mais absurda que a anterior.
 
 O QUE TEM NO JOGO
 
@@ -173,11 +173,12 @@ O QUE TEM NO JOGO
   versões de elite com coroa dourada.
 • 5 chefes com três fases cada, invocação de lacaios e ataques especiais.
 • 20 melhorias permanentes — a cada onda vencida você escolhe uma de três cartas.
-• Arsenal de armas, de pistola a lançador, cada uma com cadência e dano próprios.
-• Modo Brainrot: encha a barra matando memes e vire invencível por alguns
-  segundos, com dano quase dobrado.
+• 14 skins, 9 armaduras, 9 armas e 3 habilidades com modelos e mecânicas próprias.
+• Temporada 67 com caixas de moeda virtual, chances visíveis, garantia da 7ª
+  abertura, fragmentos de duplicata e recompensas aleatórias de chefe.
+• Modo Brainrot: encha a barra durante o combate e ative a ultimate.
 • Progressão de conta com nível, experiência, moedas e sete patentes.
-• Loja de skins e armaduras, inventário e mercado entre jogadores.
+• Loja, inventário, prévias 3D, presentes e mercado entre jogadores.
 • MULTIPLAYER ONLINE: co-op para até 4 pessoas contra as ondas, ou PvP todos
   contra todos — primeiro a 10 abates leva. Salas por código de 4 letras.
 • Chat rápido na sala e sistema de presentes entre jogadores.
@@ -191,8 +192,8 @@ pessoa. Também funciona com controles de toque.
 GRATUITO DE VERDADE
 
 Sem anúncios. Sem compras com dinheiro real. Toda a moeda do jogo é ganha
-jogando. Seu progresso fica salvo na sua conta e acompanha você em qualquer
-aparelho.
+jogando. A conta online sincroniza o progresso; o modo Convidado é temporário,
+fica somente na sessão do navegador e não cria cadastro no servidor.
 ```
 
 **Palavras-chave de busca** (até 7)
@@ -205,13 +206,15 @@ meme, brainrot, arena, ação 3d, sobrevivência, multiplayer, horda
 
 | Arquivo | Legenda sugerida |
 |---|---|
-| `01-arena.png` | A arena neon: ondas de memes vindo pra cima |
+| `00-season67.jpg` | Arte oficial da Temporada 67 |
+| `01-arena.png` | A arena neon: ondas vindo pra cima |
 | `02-ohio.png` | Planície de Ohio e seu milharal infinito |
 | `03-praia.png` | Praia do Tubarão |
 | `04-esgoto.png` | Esgoto Skibidi |
 | `05-servidor.png` | Núcleo do Servidor |
-| `06-hub.png` | Seu perfil: nível, moedas e patente |
-| `07-loja.png` | Loja de skins e armas |
+
+> As capturas antigas `06-hub.png` e `07-loja.png` não devem ser enviadas. Refaça
+> lobby e loja em um aparelho real depois da aprovação visual final.
 
 > Baixe-as em
 > <https://github.com/mathpvp2080/meme-arena-3d/tree/main/assets/screens>

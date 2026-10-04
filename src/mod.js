@@ -1,4 +1,4 @@
-/* MEME ARENA: APOCALYPSE — moderação do chat
+/* MEME ARENA 3D — moderação do chat
    Três recursos exigidos pela classificação etária:
      1. filtro de linguagem (aplicado no envio E no recebimento)
      2. bloquear jogador
@@ -135,7 +135,7 @@
       if (!nome || this.estaBloqueado(nome)) return;
       this.bloqueados().push(String(nome));
       MA.store.set('bloqueados', this._lista);
-      MA.MetaUI && MA.MetaUI.toast('🚫 <b>' + nome + '</b> bloqueado. Você não vê mais as mensagens dele.');
+      MA.MetaUI && MA.MetaUI.toast('🚫 <b>' + MA.esc(nome) + '</b> bloqueado. Você não vê mais as mensagens dele.');
       MA.MPUI && MA.MPUI.renderPlayers && MA.MPUI.renderPlayers();
     },
 
@@ -143,7 +143,7 @@
       const alvo = String(nome).toLowerCase();
       this._lista = this.bloqueados().filter(n => String(n).toLowerCase() !== alvo);
       MA.store.set('bloqueados', this._lista);
-      MA.MetaUI && MA.MetaUI.toast('✅ <b>' + nome + '</b> desbloqueado.');
+      MA.MetaUI && MA.MetaUI.toast('✅ <b>' + MA.esc(nome) + '</b> desbloqueado.');
       MA.MPUI && MA.MPUI.renderPlayers && MA.MPUI.renderPlayers();
     },
 
@@ -161,7 +161,8 @@
     async denunciar(nome, motivo) {
       if (!nome) return;
       const trecho = this._ultimas[String(nome).toLowerCase()] || '';
-      const sb = MA.Net && MA.Net.impl === 'supabase' && MA.Net.sb ? MA.Net.sb : null;
+      const sb = MA.Net && MA.Net.online && MA.Net.impl && MA.Net.impl.sb
+        ? MA.Net.impl.sb : null;
 
       if (sb) {
         try {
@@ -181,7 +182,7 @@
       }
 
       MA.MetaUI && MA.MetaUI.toast(
-        '🚩 Denúncia registrada contra <b>' + nome + '</b>.<br>' +
+        '🚩 Denúncia registrada contra <b>' + MA.esc(nome) + '</b>.<br>' +
         '<span class="dim">Quer parar de ver esse jogador agora? Use o 🚫 na lista.</span>'
       );
     },
@@ -213,8 +214,8 @@
       bg.className = 'modback';
       bg.innerHTML =
         '<div class="modbox">' +
-        '<div class="modtit">🚩 Denunciar <b>' + nome + '</b></div>' +
-        '<div class="moddim">Escolha o motivo. A denúncia é anônima.</div>' +
+        '<div class="modtit">🚩 Denunciar <b>' + MA.esc(nome) + '</b></div>' +
+        '<div class="moddim">Escolha o motivo. Seu nome não é mostrado ao jogador denunciado.</div>' +
         MOTIVOS.map(m => '<button class="btn sec modopt" data-m="' + m[0] + '">' + m[1] + '</button>').join('') +
         '<button class="btn tiny modcancel">cancelar</button>' +
         '</div>';

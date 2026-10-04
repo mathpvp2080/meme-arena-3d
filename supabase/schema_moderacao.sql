@@ -1,5 +1,5 @@
 -- ============================================================
---  MEME ARENA: APOCALYPSE — moderação do chat
+--  MEME ARENA 3D — moderação do chat
 --  Tabela de denúncias + função para registrar.
 --  Pode rodar quantas vezes quiser.
 -- ============================================================
@@ -28,12 +28,15 @@ create policy reports_sem_leitura on public.reports
 -- e uma denúncia por alvo a cada 10 minutos.
 -- ------------------------------------------------------------
 create or replace function public.report_player(p_nome text, p_motivo text, p_trecho text default null)
-returns json language plpgsql security definer as $$
+returns json language plpgsql security definer set search_path = public as $$
 declare me uuid := auth.uid(); n int;
 begin
   if me is null then return json_build_object('error','Sem sessão.'); end if;
-  if p_nome is null or length(trim(p_nome)) = 0 then
-    return json_build_object('error','Sem alvo.');
+  if p_nome is null or trim(p_nome) !~ '^[A-Za-z0-9_]{3,16}$' then
+    return json_build_object('error','Alvo inválido.');
+  end if;
+  if coalesce(p_motivo,'') not in ('linguagem','assedio','odio','trapaca','spam','outro') then
+    p_motivo := 'outro';
   end if;
 
   select count(*) into n from public.reports
@@ -50,8 +53,10 @@ begin
   values (me, left(p_nome, 40), left(coalesce(p_motivo,'outro'), 40), left(coalesce(p_trecho,''), 200));
 
   return json_build_object('ok', true);
-end $$;
+end;
+$$;
 
+revoke all on function public.report_player(text, text, text) from public, anon;
 grant execute on function public.report_player(text, text, text) to authenticated;
 
 -- ------------------------------------------------------------

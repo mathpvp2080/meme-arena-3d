@@ -49,7 +49,7 @@
       tipo: 'run', chave: 'wave', alvo: 20, coins: 1200, xp: 900, tier: 3 },
     { id: 'wave_30', icon: '👑', name: 'Lenda da Arena', desc: 'Chegue à onda 30 numa partida.',
       tipo: 'run', chave: 'wave', alvo: 30, coins: 4000, xp: 3500, tier: 4,
-      item: { type: 'armor', id: 'tank' } },
+      item: { type: 'armor', id: 'chadplate' } },
 
     /* --- habilidade --- */
     { id: 'combo_25', icon: '⚡', name: 'Sem Respirar', desc: 'Faça um combo de x25 numa partida.',
@@ -68,7 +68,7 @@
       tipo: 'count', chave: 'maps', alvo: 5, coins: 1000, xp: 800, tier: 3 },
     { id: 'all_bosses', icon: '🏆', name: 'Exterminador', desc: 'Derrote os 5 chefes diferentes.',
       tipo: 'count', chave: 'bosstypes', alvo: 5, coins: 2500, xp: 2000, tier: 4,
-      item: { type: 'weapon', id: 'bfg' } },
+      item: { type: 'weapon', id: 'rail' } },
     { id: 'collector', icon: '🎒', name: 'Colecionador', desc: 'Tenha 10 itens no inventário.',
       tipo: 'count', chave: 'inv', alvo: 10, coins: 800, xp: 600, tier: 2 },
 

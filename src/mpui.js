@@ -107,10 +107,10 @@
     addChat(nome, texto, eu) {
       const box = $('mpChat');
       if (!box) return;
-      const esc = String(texto).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+      const esc = MA.esc(texto);
       const d = document.createElement('div');
       d.className = 'mpmsg' + (eu ? ' eu' : '');
-      d.innerHTML = '<b>' + nome + ':</b> ' + esc;
+      d.innerHTML = '<b>' + MA.esc(nome) + ':</b> ' + esc;
       box.appendChild(d);
       while (box.children.length > 40) box.removeChild(box.firstChild);
       box.scrollTop = box.scrollHeight;
@@ -181,17 +181,19 @@
       box.innerHTML = todos.map(p => {
         const sk = MA.findItem('skin', p.skin) || MA.SKINS[0];
         const bloq = !p.eu && MA.Mod && MA.Mod.estaBloqueado(p.name);
+        const safeName = MA.esc(p.name);
+        const safeLevel = Math.max(1, Math.floor(Number(p.level) || 1));
         const acoes = p.eu ? '' :
           '<div class="mppacts">' +
             (bloq
-              ? '<button class="mppbtn" data-unblock="' + p.name + '" title="desbloquear">✅</button>'
-              : '<button class="mppbtn" data-block="' + p.name + '" title="bloquear">🚫</button>') +
-            '<button class="mppbtn" data-report="' + p.name + '" title="denunciar">🚩</button>' +
+              ? '<button class="mppbtn" data-unblock="' + safeName + '" title="desbloquear">✅</button>'
+              : '<button class="mppbtn" data-block="' + safeName + '" title="bloquear">🚫</button>') +
+            '<button class="mppbtn" data-report="' + safeName + '" title="denunciar">🚩</button>' +
           '</div>';
         return '<div class="mpp' + (bloq ? ' bloqueado' : '') + '">' +
-          '<div class="mppface">' + sk.face + '</div>' +
-          '<div class="mppinfo"><b>' + p.name + '</b>' + (p.eu ? ' <span class="dim">(você)</span>' : '') +
-          '<div class="dim">nível ' + (p.level || 1) + (p.host ? ' · 👑 anfitrião' : '') +
+          '<div class="mppface">' + MA.esc(sk.face) + '</div>' +
+          '<div class="mppinfo"><b>' + safeName + '</b>' + (p.eu ? ' <span class="dim">(você)</span>' : '') +
+          '<div class="dim">nível ' + safeLevel + (p.host ? ' · 👑 anfitrião' : '') +
             (bloq ? ' · 🚫 bloqueado' : '') + '</div></div>' +
           acoes +
           '</div>';
@@ -217,7 +219,7 @@
       const M = MA.Multi;
       this.msg('Criando sala…');
       const mapa = MA.store.get('map', 'arena');
-      const diff = MA.store.get('diff', 'normal');
+      const diff = MA.store.get('diff', 'norm');
       const r = await M.createRoom(this.mode, mapa, diff);
       if (r.error) { this.msg(r.error); MA.Audio.deny(); return; }
       MA.Audio.pickup();
@@ -255,12 +257,15 @@
         }
         box.innerHTML = data.map(r => {
           const mapa = MA.mapById(r.map);
-          return '<div class="mproom" data-code="' + r.code + '">' +
-            '<div class="mprcode">' + r.code + '</div>' +
-            '<div class="mprinfo"><b>' + r.host_name + '</b>' +
+          const safeCode = MA.esc(r.code);
+          const players = Math.max(0, Math.floor(Number(r.players) || 0));
+          const maxPlayers = Math.max(1, Math.min(8, Math.floor(Number(r.max_players) || 4)));
+          return '<div class="mproom" data-code="' + safeCode + '">' +
+            '<div class="mprcode">' + safeCode + '</div>' +
+            '<div class="mprinfo"><b>' + MA.esc(r.host_name) + '</b>' +
             '<div class="dim">' + (r.mode === 'pvp' ? '⚔️ PvP' : '🤝 Co-op') + ' · ' +
             mapa.icon + ' ' + mapa.name + '</div></div>' +
-            '<div class="mprn">' + r.players + '/' + r.max_players + '</div>' +
+            '<div class="mprn">' + players + '/' + maxPlayers + '</div>' +
             '</div>';
         }).join('');
         box.querySelectorAll('.mproom').forEach(el => {

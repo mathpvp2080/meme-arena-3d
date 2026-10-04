@@ -3,19 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#0a0320">
-<title>MEME ARENA: APOCALYPSE — Brainrot 3D</title>
-<meta name="description" content="Jogo 3D de arena no navegador: sobreviva a ondas infinitas de memes da internet, enfrente chefes e escolha perks. Feito com Three.js, sem instalar nada.">
+<meta name="theme-color" content="#151a43">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<title>MEME ARENA 3D — Temporada 67</title>
+<meta name="description" content="Temporada 67 do jogo de arena 3D: sobreviva às hordas, abra Caixas 67, derrote chefes e conquiste equipamento sazonal com arte original.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="MEME ARENA: APOCALYPSE">
-<meta property="og:description" content="Sobreviva a ondas infinitas de memes 3D. 16 inimigos, 5 chefes, 5 armas, 20 perks. Jogue direto no navegador.">
-<meta property="og:image" content="assets/og.jpg">
+<meta property="og:title" content="MEME ARENA 3D — Temporada 67">
+<meta property="og:description" content="A Temporada 1 chegou: identidade 67, caixas com garantia, equipamento sazonal e arena 3D.">
+<meta property="og:image" content="assets/splash-season67.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="css/style.css">
+<link rel="preload" as="image" href="assets/splash-season67.jpg" fetchpriority="high">
+<link rel="stylesheet" href="css/style.css?v=35">
+<link rel="stylesheet" href="css/season67.css?v=35">
 </head>
 <body>
 <div id="app"></div>
@@ -24,7 +28,7 @@
 <!-- ========================================================= HUD ==== -->
 <div id="hud" class="hid">
   <div id="topleft" class="panel">
-    <div class="phead">😎 <span>CHILL GUY</span></div>
+    <div class="phead">67 <span>TEMPORADA 1</span></div>
     <div class="barwrap">
       <div class="barlabel"><span>VIDA</span><span id="hpt">100</span></div>
       <div class="bar"><i id="hpf"></i></div>
@@ -43,7 +47,7 @@
   </div>
 
   <div id="topright" class="panel">
-    <div class="lbl">PONTOS</div>
+    <div class="lbl">67 · PONTOS</div>
     <div id="score">0</div>
     <div id="waveTxt">ONDA 1</div>
     <div id="combo">x1</div>
@@ -59,6 +63,7 @@
   <div id="bottomleft" class="panel">
     <div class="wrow"><span id="wicon">✨</span><b id="wname">Laser de Doge</b></div>
     <div id="wdesc" class="dim"></div>
+    <div id="abilitySlot" class="ability-slot hid"></div>
     <div id="weaponList"></div>
   </div>
 
@@ -80,6 +85,7 @@
   <div id="stick"><div id="nub"></div></div>
   <div class="tbtns">
     <button id="tUlt"  class="tb small">🧠</button>
+    <button id="tAbility" class="tb small">✦</button>
     <button id="tSwap" class="tb small">🔄</button>
     <button id="tView" class="tb small">👁️</button>
     <button id="tDash" class="tb small">💨</button>
@@ -95,9 +101,10 @@
 <!-- ================================================= LOGIN / CONTA === -->
 <div id="auth" class="screen">
   <div class="sheet">
+    <div class="season-eyebrow">TEMPORADA 1 · 03 OUT — 28 NOV</div>
     <h1 class="title">MEME <span>ARENA</span></h1>
-    <div class="subtitle">APOCALYPSE</div>
-    <div class="subtitle2">entre pra começar a farmar</div>
+    <div class="subtitle">TEMPORADA 67</div>
+    <div class="subtitle2">seis partes coragem · sete partes caos</div>
     <div class="modeline"><span id="modeBadge" class="modebadge off">💾 LOCAL</span>
       <span id="modeHint" class="dim"></span></div>
 
@@ -106,14 +113,14 @@
       <button class="tab" data-tab="register">CRIAR CONTA</button>
     </div>
 
-    <form id="authForm" autocomplete="off">
+    <form id="authForm">
       <input type="hidden" id="authMode" value="login">
       <label class="field"><span>NOME DE JOGADOR</span>
-        <input id="authUser" type="text" maxlength="16" required placeholder="ex.: ChillGuy99"></label>
+        <input id="authUser" type="text" maxlength="16" required autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex.: ChillGuy99"></label>
       <label class="field"><span>SENHA</span>
-        <input id="authPass" type="password" minlength="6" required placeholder="mínimo 6 caracteres"></label>
+        <input id="authPass" type="password" minlength="6" required autocomplete="current-password" placeholder="mínimo 6 caracteres"></label>
       <label class="field hid" id="authConfirmRow"><span>REPETIR SENHA</span>
-        <input id="authPass2" type="password" minlength="6" placeholder="digite de novo"></label>
+        <input id="authPass2" type="password" minlength="6" autocomplete="new-password" placeholder="digite de novo"></label>
       <div id="authError" class="autherr hid"></div>
       <button id="authAction" type="submit" class="btn wide">ENTRAR</button>
     </form>
@@ -121,44 +128,96 @@
     <div class="btnrow">
       <button id="authGuest" class="btn sec">JOGAR COMO CONVIDADO</button>
     </div>
-    <div class="foot">Todo jogador começa com a mesma skin e <b>600 moedas</b> — o bastante
-      pra comprar a primeira arma.</div>
+    <div class="foot">Todo jogador começa com a mesma skin e <b>600 moedas</b>.<br>
+      <b>Conta:</b> guarde sua senha; não há recuperação por e-mail. <b>Convidado:</b> sessão temporária, nunca enviada ao Supabase.</div>
+    <div class="auth-rating"><b>L</b><span>CLASSIFICAÇÃO LIVRE<br><small>violência fantasiosa</small></span></div>
   </div>
 </div>
 
 <!-- ============================================================ HUB === -->
 <div id="hub" class="screen hid">
-  <div class="sheet wide">
-    <div class="hubtop">
-      <div class="hubid">
-        <div class="hubavatar" id="hubSkin">😎 Chill Guy</div>
-        <div>
-          <div class="hubname" id="hubName">—</div>
-          <div class="hubsub">NÍVEL <b id="hubLevel">1</b> · <span id="hubArmor">🛡️ Moletom</span></div>
+  <div class="lobby-rays" aria-hidden="true"></div>
+  <div class="lobby-confetti" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+  <div class="lobby-shell">
+    <header class="lobby-topbar">
+      <div class="lobby-profile">
+        <div class="lobby-avatar" id="hubSkin">😎 Chill Guy</div>
+        <div class="lobby-profile-main">
+          <div class="lobby-name-line">
+            <strong class="hubname" id="hubName">—</strong>
+            <span class="level-pill">NV. <b id="hubLevel">1</b></span>
+          </div>
+          <div class="lobby-rank" id="hubRank">🤖 NPC</div>
+          <div class="xpbar"><div id="hubXpFill" class="xpfill"></div></div>
+          <div class="xptxt" id="hubXpTxt">0 / 0 XP</div>
         </div>
       </div>
-      <div class="hubwallet">🪙 <b id="hubCoins">0</b></div>
-    </div>
 
-    <div class="xpbar"><div id="hubXpFill" class="xpfill"></div></div>
-    <div class="xptxt dim" id="hubXpTxt">0 / 0 XP</div>
+      <div class="season-hub-badge" aria-label="Temporada 1: 67">
+        <span>TEMPORADA 1</span>
+        <b><i>6</i><i>7</i></b>
+        <small id="seasonCountdown">TERMINA EM —</small>
+      </div>
 
-    <div class="seclbl">ARSENAL EQUIPADO</div>
-    <div id="hubWeapons" class="chips"></div>
+      <div class="lobby-top-actions">
+        <div class="hubwallet"><span class="coin-mark" aria-hidden="true">●</span><b id="hubCoins">0</b></div>
+        <button id="glBtn" class="lobby-round purple" title="Metas" aria-label="Metas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v3c0 3-1.6 5-4 6-2.4-1-4-3-4-6V4Z"/><path d="M8 6H4c0 3 1.4 5 4.5 5M16 6h4c0 3-1.4 5-4.5 5M12 13v4M8 20h8M9 17h6"/></svg><span id="glDot" class="dot hid"></span></button>
+        <button id="hubSettings" class="lobby-round blue" title="Opções" aria-label="Opções"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.8"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></button>
+      </div>
+    </header>
 
-    <div class="seclbl">ESTATÍSTICAS</div>
-    <div id="hubStats" class="hstats"></div>
+    <main class="lobby-main">
+      <nav class="lobby-left" aria-label="Coleção e conta">
+        <div class="lobby-nav-label">MENU</div>
+        <button id="seasonBtn" class="lobby-tile acid"><span class="tile-number">67</span><b>CAIXAS</b><small>temporada</small></button>
+        <button id="shopBtn" class="lobby-tile pink"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><b>LOJA</b><small>itens especiais</small></button>
+        <button id="invBtn" class="lobby-tile cyan"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 4 2 4-2 5 3-3 4v9H6v-9L3 8l5-3Z"/><path d="M9 6.5c.5 1.5 1.5 2.2 3 2.2s2.5-.7 3-2.2"/></svg></span><b>PERSONALIZAR</b><small>visual e arsenal</small></button>
+        <button id="mkBtn" class="lobby-tile violet"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h8l8 8-8 8-8-8V4Z"/><circle cx="8.5" cy="8.5" r="1.5"/></svg></span><b>MERCADO</b><small>comprar e revender</small></button>
+        <button id="logoutBtn" class="lobby-exit">↪ SAIR</button>
+      </nav>
 
-    <div class="btnrow">
-      <button id="playBtnHub" class="btn">▶ JOGAR</button>
-      <button id="shopBtn" class="btn sec">🛒 LOJA</button>
-      <button id="invBtn" class="btn sec">🎒 INVENTÁRIO</button>
-      <button id="mpBtn" class="btn sec locked">🔒 MULTIPLAYER</button>
-      <button id="mkBtn" class="btn sec">💱 MERCADO</button>
-      <button id="glBtn" class="btn sec">🏆 METAS<span id="glDot" class="dot hid"></span></button>
-      <button id="hubSettings" class="btn sec">⚙</button>
-      <button id="logoutBtn" class="btn sec">SAIR</button>
-    </div>
+      <section class="lobby-character" aria-label="Personagem equipado">
+        <div class="character-nameplate">
+          <span>VISUAL EQUIPADO</span>
+          <strong id="hubArmor">🛡️ Moletom Básico</strong>
+        </div>
+        <div id="hubCharacterPreview" class="lobby-avatar3d" data-preview-type="avatar" data-preview-id="chill|hoodie|laser">
+          <span>😎</span><i></i>
+        </div>
+        <div class="character-spark s1">✦</div>
+        <div class="character-spark s2">✦</div>
+        <div class="character-spark s3">◆</div>
+        <div class="character-platform" aria-hidden="true"><i></i></div>
+        <div class="lobby-loadout">
+          <span>ARSENAL</span>
+          <div id="hubWeapons" class="chips"></div>
+        </div>
+      </section>
+
+      <aside class="lobby-right">
+        <div class="mode-card" title="Mapa selecionado">
+          <div class="mode-card-head"><span>EVENTO 67</span><i>SOLO</i></div>
+          <div class="mode-map-art"><span id="hubMapIcon">👑</span></div>
+          <b class="mode-shortcut-label">TORNEIOS</b>
+          <small id="hubMapName">Arena 67</small>
+        </div>
+        <button id="mpBtn" class="lobby-multi locked">🔒 GRUPO</button>
+        <button id="playBtnHub" class="lobby-play"><span>▶</span><b>JOGAR</b><small>COMEÇAR PARTIDA</small></button>
+      </aside>
+    </main>
+
+    <footer class="lobby-footer">
+      <div class="pass-callout">RESGATE RECOMPENSAS!</div>
+      <div class="pass-head"><strong>PASSE 67</strong><span>SAZONAL</span></div>
+      <div class="season-wallet" title="Progresso da Temporada 67">
+        <span>⬡ <b id="seasonFragments">0</b></span>
+        <span>⚡ <b id="seasonBoosts">0</b></span>
+        <span>GARANTIA <b id="seasonPity">1/7</b></span>
+      </div>
+      <div id="hubStats" class="hstats"></div>
+      <div class="mini-rating" title="Classificação indicativa Livre"><b>L</b><span>LIVRE</span></div>
+    </footer>
   </div>
 </div>
 
@@ -166,16 +225,38 @@
 <div id="shop" class="screen hid">
   <div class="sheet wide tall">
     <div class="hubtop">
-      <h2 class="h2">🛒 LOJA</h2>
+      <h2 class="h2">67 · LOJA DA TEMPORADA</h2>
       <div class="hubwallet">🪙 <b id="shopCoins">0</b></div>
     </div>
+    <div class="season-shop-strip">
+      <div><span>TEMPORADA 1</span><b>6<span>7</span></b></div>
+      <p>Arte, modelos e efeitos originais · sem música ou áudio da trend<br><strong id="seasonShopCountdown">03 OUT — 28 NOV 2026</strong> · próxima: 29 NOV 2026</p>
+      <div class="season-shop-stats"><span>⬡ <b id="shopFragments">0</b></span><span>⚡ <b id="shopBoosts">0</b></span></div>
+    </div>
     <div class="tabs">
+      <button class="tab season-tab" data-tab="box">📦 CAIXAS 67</button>
       <button class="tab sel" data-tab="weapon">ARMAS</button>
+      <button class="tab" data-tab="ability">HABILIDADES</button>
       <button class="tab" data-tab="skin">SKINS</button>
       <button class="tab" data-tab="armor">ARMADURAS</button>
     </div>
     <div id="shopGrid" class="igrid"></div>
     <div class="btnrow"><button id="shopClose" class="btn sec">← VOLTAR</button></div>
+  </div>
+</div>
+
+<!-- =============================================== ABERTURA CAIXA 67 === -->
+<div id="lootbox" class="screen hid">
+  <div class="sheet season-reveal">
+    <div class="season-eyebrow">TEMPORADA 1 · RECOMPENSA</div>
+    <div class="loot-emblem"><i>6</i><i>7</i></div>
+    <h2 id="lootTitle" class="h2">CAIXA 67 ABERTA</h2>
+    <div id="lootResults" class="loot-results"></div>
+    <div id="lootProgress" class="loot-progress"></div>
+    <div class="btnrow">
+      <button id="lootAgain" class="btn">ABRIR OUTRA</button>
+      <button id="lootClose" class="btn sec">VOLTAR À LOJA</button>
+    </div>
   </div>
 </div>
 
@@ -189,6 +270,7 @@
     <div class="tabs">
       <button class="tab sel" data-tab="all">TUDO</button>
       <button class="tab" data-tab="weapon">ARMAS</button>
+      <button class="tab" data-tab="ability">HABILIDADES</button>
       <button class="tab" data-tab="skin">SKINS</button>
       <button class="tab" data-tab="armor">ARMADURAS</button>
     </div>
@@ -235,7 +317,7 @@
       Itens anunciados por outros jogadores. O pagamento vai direto pra quem vendeu.
     </div>
     <div id="mkSell" class="dim hid" style="margin:2px 0 6px">
-      Ao anunciar, o item sai do seu inventário e volta se você cancelar.
+      Você define o valor dentro da faixa exclusiva de cada item. Ao anunciar, ele sai do inventário e volta se você cancelar.
     </div>
 
     <div id="mkGift" class="hid">
@@ -328,13 +410,14 @@
 <!-- ================================================== TELA INICIAL === -->
 <div id="start" class="screen hid">
   <div class="sheet wide">
+    <div class="season-eyebrow">TEMPORADA 1 · PROTOCOLO 6·7</div>
     <h1 class="title">MEME <span>ARENA</span></h1>
-    <div class="subtitle">APOCALYPSE</div>
-    <div class="subtitle2">BRAINROT SURVIVAL 3D</div>
+    <div class="subtitle">TEMPORADA 67</div>
+    <div class="subtitle2">SOBREVIVÊNCIA 3D</div>
     <p class="intro">
-      A internet colapsou e o <b>Brainrot</b> vazou dos servidores: os memes ganharam forma 3D.
-      Você é o <b class="pink">Chill Guy</b>, o último com dopamina suficiente pra resistir.
-      Segure a arena, escolha seus <b class="cyan">perks</b> e derrube os <b class="yellow">chefes</b>.
+      O <b>Protocolo 6·7</b> tomou a arena: seis partes coragem, sete partes caos.
+      Escolha seu equipamento, segure as hordas, combine <b class="cyan">perks</b> e derrube os
+      <b class="yellow">chefes</b> antes que a temporada termine.
     </p>
     <div id="menuStats" class="mstats"></div>
 
@@ -365,7 +448,8 @@
       <div class="k"><b>CLIQUE ESQ.</b>atirar</div>
       <div class="k"><b>ESPAÇO</b>pular</div>
       <div class="k"><b>SHIFT</b>dash (i-frames)</div>
-      <div class="k"><b>Q / RODA / 1-5</b>trocar arma</div>
+      <div class="k"><b>Q / RODA / 1-9</b>trocar arma</div>
+      <div class="k"><b>F</b>habilidade especial equipada</div>
       <div class="k"><b>E</b>ultimate (Brainrot 100%)</div>
       <div class="k"><b>ESC / P</b>pausar</div>
       <div class="k"><b>M</b>mudo</div>
@@ -378,6 +462,7 @@
     <ul class="bul">
       <li><b>Combo:</b> abates em sequência multiplicam os pontos (reseta se você levar dano).</li>
       <li><b>Brainrot:</b> enche matando memes. Em 100% aperte <b>E</b>: invencível, dano x1.8 e cadência dobrada.</li>
+      <li><b>Habilidade:</b> equipe uma na loja/inventário e aperte <b>F</b>. Cada habilidade tem sua própria recarga.</li>
       <li><b>Perks:</b> ao limpar cada onda você escolhe 1 de 3 cartas permanentes. Elas acumulam.</li>
       <li><b>Elites:</b> inimigos com coroa dourada — muito mais vida e pontos.</li>
       <li><b>Chefes:</b> a cada 5 ondas, com 3 fases e invocação de lacaios.</li>
@@ -429,7 +514,8 @@
       <input id="sInv" type="checkbox"><span></span></div>
     <div class="seclbl">CONTA E PRIVACIDADE</div>
     <div class="privrow">
-      <a class="btn sec tiny" href="privacidade.html" target="_blank" rel="noopener">📄 POLÍTICA DE PRIVACIDADE</a>
+      <a class="btn sec tiny" href="privacidade.html" target="_blank" rel="noopener">📄 PRIVACIDADE</a>
+      <a class="btn sec tiny" href="termos.html" target="_blank" rel="noopener">⚖ TERMOS</a>
       <button id="sDelete" class="btn danger tiny">🗑 APAGAR MINHA CONTA</button>
     </div>
     <div id="sDelMsg" class="formerr"></div>
@@ -479,35 +565,50 @@
   </div>
 </div>
 
-<div id="loading"><div class="ldot"></div><span>CARREGANDO A INTERNET…</span></div>
+<div id="loading">
+  <div class="splash-orb one"></div><div class="splash-orb two"></div>
+  <div class="splash-content">
+    <div class="splash-kicker">TEMPORADA 1 · 03 OUT — 28 NOV 2026</div>
+    <div class="splash-logo season67-logo"><span><i>6</i><i>7</i></span><div><b>MEME</b><strong>ARENA</strong><i class="splash-3d">3D</i><em>SURVIVAL DE MEMES</em></div></div>
+    <div class="splash-tagline">TEMPORADA 67 · SEIS PARTES CORAGEM. SETE PARTES CAOS.</div>
+    <div class="splash-loader"><i></i></div>
+    <div class="splash-loading" aria-live="polite">SINCRONIZANDO O PROTOCOLO 6·7…</div>
+    <button id="enterGame" class="splash-enter" type="button" disabled>
+      <b>ENTRAR NA ARENA</b><small>CLIQUE PARA COMEÇAR</small>
+    </button>
+  </div>
+  <div class="splash-rating" aria-label="Classificação indicativa Livre">
+    <b>L</b><span>CLASSIFICAÇÃO<br><strong>LIVRE</strong></span>
+  </div>
+  <div class="splash-foot">Arte e áudio originais · Violência fantasiosa · Interação entre usuários · Apenas moeda virtual</div>
+</div>
 
-<script src="lib/three.min.js"></script>
-<script src="src/utils.js"></script>
-<script src="src/config.js"></script>
-<script src="src/data.js"></script>
-<script src="src/maps.js"></script>
-<script src="src/items.js"></script>
-<script src="src/audio.js"></script>
-<script src="src/faces.js"></script>
-<script src="src/textures.js"></script>
-<script src="src/world.js"></script>
-<script src="src/builds.js"></script>
-<script src="src/entities.js"></script>
-<script src="src/net.js"></script>
-<script src="src/profile.js"></script>
-<script src="src/ui.js"></script>
-<script src="src/pbuilds.js"></script>
-<script src="src/goals.js"></script>
-<script src="src/market.js"></script>
-<script src="src/multi.js"></script>
-<script src="src/mod.js"></script>
-<script src="src/mpui.js"></script>
-<script src="src/metaui.js"></script>
-<script src="src/game.js"></script>
-<script>
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-  }
-</script>
+<script src="lib/three.min.js?v=35"></script>
+<script src="src/utils.js?v=35"></script>
+<script src="src/config.js?v=35"></script>
+<script src="src/data.js?v=35"></script>
+<script src="src/maps.js?v=35"></script>
+<script src="src/items.js?v=35"></script>
+<script src="src/season.js?v=35"></script>
+<script src="src/audio.js?v=35"></script>
+<script src="src/faces.js?v=35"></script>
+<script src="src/textures.js?v=35"></script>
+<script src="src/world.js?v=35"></script>
+<script src="src/builds.js?v=35"></script>
+<script src="src/weapons3d.js?v=35"></script>
+<script src="src/armor3d.js?v=35"></script>
+<script src="src/entities.js?v=35"></script>
+<script src="src/net.js?v=35"></script>
+<script src="src/profile.js?v=35"></script>
+<script src="src/ui.js?v=35"></script>
+<script src="src/pbuilds.js?v=35"></script>
+<script src="src/previews.js?v=35"></script>
+<script src="src/goals.js?v=35"></script>
+<script src="src/market.js?v=35"></script>
+<script src="src/multi.js?v=35"></script>
+<script src="src/mod.js?v=35"></script>
+<script src="src/mpui.js?v=35"></script>
+<script src="src/metaui.js?v=35"></script>
+<script src="src/game.js?v=35"></script>
 </body>
 </html>

@@ -9,20 +9,20 @@
 
   MA.MAPS = [
     {
-      id: 'arena', name: 'Arena Brainrot', icon: '🌐', level: 1,
-      desc: 'O servidor original. Grade neon, sol retrô e muito roxo.',
-      bg: 0x06010f, fog: 0x0d0126, fogD: 0.0125,
-      ground: { base: '#0c0322', grid: 'rgba(150,20,255,.85)', fine: 'rgba(0,255,220,.22)', speck: true, repeat: 14 },
-      sky: { stops: ['#03010a', '#130228', '#2c0540', '#4a0a46', '#2a0533', '#0a0118'], stars: 500, sun: ['rgba(255,245,150,1)', 'rgba(255,140,190,.85)', 'rgba(190,40,180,.28)'] },
-      ring: 0xff00c8, wall: 0x6a00ff, wallEmissive: 0x4400aa,
-      ambient: [0x2a1d52, .30], hemi: [0x6a38a8, 0x0d001c, .28], sun3d: [0xffcfa0, 1.15],
-      neon: [0xff00c8, 0x00ffd5, 0xffe600, 0x6a5bff, 0xff2d6f],
-      obstacle: { style: 'neonbox', palette: [0xff00c8, 0x00ffd5, 0xffe600, 0x6a5bff, 0xff2d6f, 0x39ff88], count: 20 },
+      id: 'arena', name: 'Arena 67', icon: '6⁷', level: 1,
+      desc: 'O palco oficial da Temporada 1: azul elétrico, magenta e energia ciano.',
+      bg: 0x090b25, fog: 0x17163d, fogD: 0.0125,
+      ground: { base: '#111638', grid: 'rgba(101,114,255,.78)', fine: 'rgba(45,226,255,.25)', speck: true, repeat: 14 },
+      sky: { stops: ['#07091f', '#101743', '#27256a', '#543174', '#661c62', '#121331'], stars: 560, sun: ['rgba(244,250,255,1)', 'rgba(45,226,255,.75)', 'rgba(255,79,189,.26)'] },
+      ring: 0x6572ff, wall: 0x4c3ab2, wallEmissive: 0x281b78,
+      ambient: [0x34377d, .38], hemi: [0x69dff2, 0x120d2d, .38], sun3d: [0xeaf8ff, 1.22],
+      neon: [0x6572ff, 0x2de2ff, 0xff4fbd, 0x9b65ff, 0xffffff],
+      obstacle: { style: 'neonbox', palette: [0x6572ff, 0x2de2ff, 0xff4fbd, 0x9b65ff, 0xe7ecff, 0x424fc9], count: 20 },
       monument: 'likes',
-      signs: [['SKIBIDI\nZONE', '#00ffd5'], ['ERRO 404\nCÉREBRO NÃO ENCONTRADO', '#ff2d6f'],
-              ['+1000\nSOCIAL CREDIT', '#ffe600'], ['SIGMA\nGRINDSET', '#ff00c8'],
-              ['NO CAP\nFR FR ON GOD', '#7a5bff'], ['TOUCH\nGRASS', '#39ff88'],
-              ['OHIO\nFINAL BOSS', '#ffc42e'], ['AURA\n-9999', '#3fb9ff']]
+      signs: [['TEMPORADA\n67', '#6572ff'], ['PROTOCOLO\n6·7 ATIVO', '#ff4fbd'],
+              ['7ª CAIXA\nGARANTIDA', '#2de2ff'], ['SEIS PARTES\nCORAGEM', '#6572ff'],
+              ['SETE PARTES\nCAOS', '#ff4fbd'], ['PULSO 67\nCARREGADO', '#ffffff'],
+              ['03 OUT\n28 NOV', '#e7ecff'], ['ARTE E ÁUDIO\nORIGINAIS', '#2de2ff']]
     },
 
     {

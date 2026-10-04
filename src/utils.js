@@ -13,6 +13,9 @@ window.MA = window.MA || {};
   MA.chance = p => Math.random() < p;
   MA.$ = id => document.getElementById(id);
   MA.fmt = n => Math.round(n).toLocaleString('pt-BR');
+  MA.esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
 
   MA.shuffle = function (arr) {
     const a = arr.slice();
@@ -104,4 +107,9 @@ window.MA = window.MA || {};
       return this.value;
     }
   };
+
+  /* Registro externo ao HTML permite uma CSP sem script inline. */
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=35').catch(() => {}));
+  }
 })(window.MA);

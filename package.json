@@ -1,0 +1,10 @@
+{
+  "name": "meme-arena-3d",
+  "version": "1.0.0-season67",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/validate-release.mjs",
+    "validate:release": "node scripts/validate-release.mjs"
+  }
+}

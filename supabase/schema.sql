@@ -27,7 +27,8 @@ returns trigger language plpgsql as $$
 begin
   new.updated_at = now();
   return new;
-end $$;
+end;
+$$;
 
 drop trigger if exists profiles_touch on public.profiles;
 create trigger profiles_touch before update on public.profiles
@@ -35,15 +36,16 @@ create trigger profiles_touch before update on public.profiles
 
 -- ============================================================
 -- SEGURANÇA (Row Level Security)
--- Qualquer pessoa pode LER (precisamos disso para o ranking),
--- mas só o dono pode CRIAR ou ALTERAR o próprio perfil.
+-- O perfil completo só pode ser lido pelo dono. O ranking público usa a view
+-- limitada abaixo e nunca expõe inventário, equipamentos ou stats completos.
 -- ============================================================
 alter table public.profiles enable row level security;
 
 drop policy if exists "leitura publica" on public.profiles;
-create policy "leitura publica"
+drop policy if exists "dono le" on public.profiles;
+create policy "dono le"
   on public.profiles for select
-  using (true);
+  using (auth.uid() = id);
 
 drop policy if exists "dono insere" on public.profiles;
 create policy "dono insere"
@@ -64,11 +66,14 @@ create policy "dono apaga"
 -- ============================================================
 -- Ranking público já pronto (sem expor nada sensível)
 -- ============================================================
-create or replace view public.leaderboard as
+-- A versão anti-trapaça também recria esta view e usa bigint. Remover antes
+-- evita conflito de tipo/ordem das colunas ao reaplicar o schema-base.
+drop view if exists public.leaderboard;
+create view public.leaderboard as
   select username, level, xp,
-         coalesce((stats->>'bestScore')::int, 0)  as best_score,
-         coalesce((stats->>'bestWave')::int, 0)   as best_wave,
-         coalesce((stats->>'kills')::int, 0)      as kills
+         coalesce((stats->>'bestScore')::bigint, 0) as best_score,
+         coalesce((stats->>'bestWave')::bigint, 0)  as best_wave,
+         coalesce((stats->>'kills')::bigint, 0)     as kills
   from public.profiles
   order by best_score desc
   limit 100;

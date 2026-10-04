@@ -3,6 +3,7 @@
   'use strict';
   const $ = MA.$, clamp = MA.clamp, rand = MA.rand, pick = MA.pick, TAU = MA.TAU;
   const V3 = () => new THREE.Vector3();
+  const BOOT_STARTED = performance.now();
 
   let scene, camera, renderer, clock;
   let player = null;
@@ -43,6 +44,10 @@
     const w = MA.Profile.data ? MA.Profile.equippedWeapons() : [];
     return w.length ? w : [0];
   }
+  function currentAbility() {
+    const a = MA.Profile.data ? MA.Profile.equippedAbility() : null;
+    return a ? a.id : '';
+  }
 
   /* ================================================================ BOOT */
   function boot() {
@@ -65,7 +70,7 @@
     MA.FX.init(scene);
     MA.UI.init();
     player = MA.createPlayer(scene, currentSkin(), currentArmor());
-    player.obj.position.set(0, 0, 26);
+    player.obj.position.set(0, 0, 0);
 
     camera.position.set(0, 12, 46);
     camera.lookAt(0, 5, 0);
@@ -78,7 +83,27 @@
     MA.Audio.setMusicVolume(S.music);
 
     G.booted = true;
-    $('loading').classList.add('hid');
+    /* A entrada é uma etapa real: não desaparece sozinha. Assim a marca, a
+       classificação Livre e o comando para entrar continuam sempre visíveis. */
+    const splash = $('loading');
+    const enterGame = $('enterGame');
+    const splashStatus = splash && splash.querySelector('.splash-loading');
+    const closeSplash = () => {
+      if (!splash || splash.classList.contains('leave')) return;
+      MA.Audio.init();
+      splash.classList.add('leave');
+      setTimeout(() => splash.classList.add('hid'), 460);
+    };
+    const wait = Math.max(0, 1500 - (performance.now() - BOOT_STARTED));
+    setTimeout(() => {
+      if (!splash) return;
+      splash.classList.add('ready');
+      if (splashStatus) splashStatus.textContent = 'PROTOCOLO PRONTO · TEMPORADA 67';
+      if (enterGame) {
+        enterGame.disabled = false;
+        enterGame.onclick = closeSplash;
+      }
+    }, wait);
     animate();
     initMeta();
   }
@@ -105,7 +130,11 @@
     if (!player || G.running) return;
     scene.remove(player.obj); MA.disposeObject(player.obj);
     player = MA.createPlayer(scene, currentSkin(), currentArmor());
-    player.obj.position.set(0, 0, 26);
+    const equipped = currentWeapons();
+    player.weapon = equipped.length ? equipped[0] : 0;
+    player.ability = currentAbility();
+    MA.syncWeaponModel(player);
+    player.obj.position.set(0, 0, 0);
   }
   MA._rebuildLook = rebuildPlayerLook;
   setTimeout(() => { if (MA._bindMulti) MA._bindMulti(); }, 0);
@@ -280,7 +309,8 @@
   function fire() {
     const w = MA.WEAPONS[player.weapon];
     if (player.cooldown > 0) return;
-    const rateMul = player.mRate * (G.ult > 0 ? .45 : 1) * (player.bRate > 0 ? .55 : 1);
+    const rateMul = player.mRate * (G.ult > 0 ? .45 : 1) * (player.bRate > 0 ? .55 : 1) *
+      (player.abilityBuff > 0 ? .67 : 1);
     player.cooldown = w.rate * rateMul;
     player.recoil = 1;
     player.muzzle.material.opacity = 1;
@@ -289,7 +319,8 @@
     const dir = V3().set(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
 
     const n = w.count + player.extraShots;
-    const dmgBase = w.dmg * player.mDmg * (player.bDmg > 0 ? 2 : 1) * (G.ult > 0 ? 1.8 : 1);
+    const dmgBase = w.dmg * player.mDmg * (player.bDmg > 0 ? 2 : 1) *
+      (G.ult > 0 ? 1.8 : 1) * (player.abilityBuff > 0 ? 1.35 : 1);
 
     for (let i = 0; i < n; i++) {
       const d = dir.clone();
@@ -309,9 +340,16 @@
       ? new THREE.ConeGeometry(size, size * 3, 10)
       : w.kind === 'rail'
         ? new THREE.CylinderGeometry(size * .5, size * .5, 3.4, 8)
-        : new THREE.SphereGeometry(size, 10, 8);
+        : w.kind === 'boomerang'
+          ? new THREE.TorusGeometry(size * 1.45, size * .32, 7, 18, Math.PI * 1.38)
+          : w.kind === 'orb'
+            ? new THREE.IcosahedronGeometry(size, 1)
+            : w.kind === 'prism'
+              ? new THREE.OctahedronGeometry(size, 0)
+              : new THREE.SphereGeometry(size, 10, 8);
     const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: w.color }));
     if (w.kind === 'rocket' || w.kind === 'rail') m.rotation.x = Math.PI / 2;
+    if (w.kind === 'prism') m.scale.z = 1.8;
     const holder = new THREE.Group(); holder.add(m);
     holder.position.copy(origin);
     holder.lookAt(origin.clone().add(d));
@@ -323,8 +361,10 @@
     holder.add(tr);
     scene.add(holder);
     bullets.push({
-      obj: holder, vel: d.clone().multiplyScalar(w.speed), dmg: dmgBase,
-      life: w.life, splash: w.splash || 0, color: w.color, kind: w.kind,
+      obj: holder, vel: d.clone().multiplyScalar(w.speed), speed: w.speed, dmg: dmgBase,
+      life: w.life, maxLife: w.life, age: 0, splash: w.splash || 0,
+      color: w.color, kind: w.kind, returnAt: w.returnAt || 0,
+      gravityPull: w.gravityPull || 0, returned: false,
       pierce: (w.pierce || 0) + player.pierce, bounce: player.bounce, hitList: []
     });
   }
@@ -334,6 +374,9 @@
     if (mpClient() && e.netId) {
       /* quem manda na vida do inimigo é o host; aqui só prevemos o efeito */
       mpSend({ t: 'hit', i: e.netId, d: Math.round(dmg) });
+    } else if (mpHost() && e.netId && MA.Multi && MA.Multi.me) {
+      /* O último golpe local também precisa substituir um acerto remoto anterior. */
+      e.lastHitBy = MA.Multi.me.id;
     }
     let final = dmg, crit = false;
     if (allowCrit !== false && Math.random() < player.crit) { final *= 2.5; crit = true; }
@@ -355,6 +398,28 @@
     }
     if (e.hp <= 0) killEnemy(e, hitPos);
     return final;
+  }
+
+  async function grantSeasonBossReward() {
+    if (!MA.Season || !MA.Season.bossReward) return;
+    let reward;
+    try { reward = await MA.Season.bossReward(); }
+    catch (e) {
+      if (MA.MetaUI) MA.MetaUI.toast('❌ Falha ao validar recompensa do chefe.', 'bad');
+      return;
+    }
+    if (!reward) return;
+    if (reward.error) {
+      /* O multiplayer pode anunciar a mesma morte por dois caminhos. A recarga
+         do servidor impede prêmio duplicado sem poluir a tela do jogador. */
+      if (!/recarga/i.test(reward.error) && MA.MetaUI) MA.MetaUI.toast('❌ ' + reward.error, 'bad');
+      return;
+    }
+    const itemDrop = reward.type === 'item';
+    if (MA.MetaUI) {
+      MA.MetaUI.toast((itemDrop ? '🎁 <b>DROP DO CHEFE:</b> ' : '⬡ <b>RECOMPENSA DO CHEFE:</b> ') + reward.name);
+    }
+    if (itemDrop) MA.Audio.pickup();
   }
 
   function killEnemy(e, at) {
@@ -395,6 +460,9 @@
       G.bossesKilled++;
       MA.Audio.boom(); addShake(1.1);
       MA.UI.banner('CHEFE DERROTADO', e.def.name + ' foi cancelado', 2800, 'boss');
+      const localKill = !mpClient() && (!mpHost() || !e.netId || !e.lastHitBy ||
+        (MA.Multi && MA.Multi.me && e.lastHitBy === MA.Multi.me.id));
+      if (localKill) grantSeasonBossReward();
       for (let i = 0; i < 3; i++) {
         const sp = MA.World.spawnPoint(player.pos, 6);
         pickups.push(MA.createPickup(scene, sp.x, sp.z, MA.PICKUPS[i === 0 ? 0 : i === 1 ? 1 : 3]));
@@ -405,7 +473,7 @@
         pickups.push(MA.createPickup(scene, e.obj.position.x, e.obj.position.z, weightedPickup()));
     }
 
-    if (mpHost() && e.netId) mpSend({ t: 'ekill', i: e.netId, by: e.lastHitBy || MA.Multi.me.id });
+    if (mpHost() && e.netId) mpSend({ t: 'ekill', i: e.netId, b: !!e.isBoss, by: e.lastHitBy || MA.Multi.me.id });
     scene.remove(e.obj); MA.disposeObject(e.obj);
     const i = enemies.indexOf(e); if (i >= 0) enemies.splice(i, 1);
     if (e.netId) delete remoteEnemies[e.netId];
@@ -487,7 +555,12 @@
   /* todos: o host confirmou uma morte */
   function onEnemyKill(m) {
     const e = remoteEnemies[m.i];
-    if (!e) return;
+    /* A previsão local pode já ter removido o modelo; o host ainda informa
+       se era chefe para que o drop sazonal não se perca nem seja antecipado. */
+    if (!e) {
+      if (m.b && m.by === MA.Multi.me.id) grantSeasonBossReward();
+      return;
+    }
     if (m.by === MA.Multi.me.id) {       // o abate foi meu: ganho pontos
       const pts = Math.round(e.pts * Math.min(G.combo, 25) * G.diff.pts * player.mScore);
       G.score += pts; G.kills++; G.waveKills++;
@@ -496,7 +569,10 @@
       G.brainrot = clamp(G.brainrot + (e.isBoss ? 70 : 4.6 * player.brainGain), 0, 100);
       MA.UI.kill(e.def.name, e.def.emoji, e.elite ? '#ffd400' : e.def.color);
       MA.FX.popup(e.obj.position.clone().setY(2.6), '+' + MA.fmt(pts), '#ffe600', 1);
-      if (e.isBoss) G.bossesKilled++;
+      if (e.isBoss) {
+        G.bossesKilled++;
+        grantSeasonBossReward();
+      }
       if (MA.Goals) {
         MA.Goals.track('kills', 1);
         if (e.elite) MA.Goals.track('elite', 1);
@@ -796,6 +872,55 @@
     MA.Audio.setIntensity(1);
   }
 
+  function activateAbility() {
+    const def = player.ability && MA.ABILITIES.find(a => a.id === player.ability);
+    if (!def) { MA.Audio.deny(); MA.UI.float('EQUIPE UMA HABILIDADE', '#9b65ff', 20); return; }
+    if (player.abilityCd > 0 || G.over || G.paused || G.choosing) {
+      MA.Audio.deny();
+      if (player.abilityCd > 0) MA.UI.float('RECARGA ' + player.abilityCd.toFixed(1) + 's', '#9fb3c8', 18);
+      return;
+    }
+    player.abilityCd = def.cooldown;
+    if (MA.Goals) MA.Goals.track('abilities', 1);
+
+    if (def.id === 'repulse6') {
+      const at = player.pos.clone().setY(1.05);
+      enemies.slice().forEach(e => {
+        const dist = e.obj.position.distanceTo(at);
+        if (dist > 6.2) return;
+        const force = 1 - dist / 6.2;
+        dealDamage(e, (28 + force * 18) * player.mDmg, e.obj.position.clone().setY(1.4));
+        if (!e.dead) e.knock.add(e.obj.position.clone().sub(at).setY(0).normalize()
+          .multiplyScalar((6 + force * 12) * (e.isBoss ? .28 : 1)));
+      });
+      player.invuln = Math.max(player.invuln, .35);
+      MA.FX.ring(at, new THREE.Color(def.color), 9, .62);
+      MA.FX.burst(at, def.color, 38, 14, .28);
+      MA.UI.banner('REPULSÃO 6', '46 de dano · impacto circular', 1250);
+      MA.Audio.boom(); addShake(.48);
+    } else if (def.id === 'blink7') {
+      const from = player.pos.clone();
+      const dir = V3().set(-Math.sin(yaw), 0, -Math.cos(yaw));
+      const target = from.clone().addScaledVector(dir, 7);
+      MA.World.resolve(target, player.radius);
+      player.pos.copy(target); player.obj.position.set(target.x, player.y, target.z);
+      player.vel.addScaledVector(dir, 15);
+      player.invuln = Math.max(player.invuln, .70);
+      MA.FX.ring(from, new THREE.Color(def.color), 5, .34);
+      MA.FX.ring(target, new THREE.Color(0x9b65ff), 6, .42);
+      MA.FX.burst(target.clone().setY(1), def.color, 24, 10, .22);
+      MA.UI.banner('PASSO 7', 'salto instantâneo · 0,7 s invulnerável', 1100);
+      MA.Audio.dash(); addShake(.18);
+    } else if (def.id === 'overclock67') {
+      player.abilityBuff = 6.7;
+      player.invuln = Math.max(player.invuln, .30);
+      MA.FX.ring(player.pos.clone(), new THREE.Color(def.color), 12, .75);
+      MA.FX.burst(player.pos.clone().setY(1.2), 0x2de2ff, 34, 11, .24);
+      MA.UI.banner('SOBRECARGA 67', '6,7 s · dano +35% · cadência +49% · velocidade +25%', 1700);
+      MA.Audio.ult(); addShake(.32);
+    }
+  }
+
   /* ============================================================ UPDATES */
   function update(dt) {
     G.time += dt;
@@ -815,7 +940,8 @@
     const wish = V3().addScaledVector(fwd, -mz).addScaledVector(right, mx);
     if (wish.lengthSq() > 0) wish.normalize();
 
-    const spd = 15.5 * player.mSpeed * (player.bSpeed > 0 ? 1.55 : 1) * (G.ult > 0 ? 1.22 : 1);
+    const spd = 15.5 * player.mSpeed * (player.bSpeed > 0 ? 1.55 : 1) *
+      (G.ult > 0 ? 1.22 : 1) * (player.abilityBuff > 0 ? 1.25 : 1);
     player.vel.x = MA.damp(player.vel.x, wish.x * spd, 9, dt);
     player.vel.z = MA.damp(player.vel.z, wish.z * spd, 9, dt);
     player.vel.x *= Math.pow(.0016, dt);
@@ -867,6 +993,7 @@
     player.recoil = MA.damp(player.recoil, 0, 16, dt);
     player.gun.position.z = (firstPerson ? -2.05 : -.22) + player.recoil * (firstPerson ? .2 : .36);
     player.muzzle.material.opacity = Math.max(0, player.muzzle.material.opacity - dt * 9);
+    MA.animateWeaponModel(player, dt, mouseDown || touchFire);
     player.aura.rotation.z += dt * 1.6;
 
     /* acessórios de skin */
@@ -895,6 +1022,8 @@
     /* timers */
     player.cooldown -= dt;
     player.invuln -= dt;
+    player.abilityCd = Math.max(0, player.abilityCd - dt);
+    player.abilityBuff = Math.max(0, player.abilityBuff - dt);
     player.bDmg = Math.max(0, player.bDmg - dt);
     player.bSpeed = Math.max(0, player.bSpeed - dt);
     player.bShield = Math.max(0, player.bShield - dt);
@@ -975,23 +1104,49 @@
   }
 
   /* ---------------------------------------------------------- projéteis */
+  function detonateBullet(b, pos) {
+    if (!b.gravityPull) { explode(pos, b.splash, b.dmg, b.color); return; }
+    MA.Audio.boom(); addShake(.48);
+    MA.FX.burst(pos, b.color, 34, 13, .30);
+    MA.FX.ring(pos, new THREE.Color(b.color), b.splash * 1.45, .52);
+    enemies.slice().forEach(e => {
+      const dist = e.obj.position.distanceTo(pos);
+      if (dist >= b.splash) return;
+      const force = 1 - dist / b.splash;
+      dealDamage(e, b.dmg * (.45 + force * .55), e.obj.position.clone().setY(1.4));
+      if (!e.dead) e.knock.add(pos.clone().sub(e.obj.position).setY(0).normalize()
+        .multiplyScalar(force * b.gravityPull * (e.isBoss ? .28 : 1)));
+    });
+  }
+
   function updateBullets(dt) {
     const ARENA = MA.World.ARENA;
     for (let i = bullets.length - 1; i >= 0; i--) {
       const b = bullets[i];
-      b.life -= dt;
+      b.life -= dt; b.age += dt;
+      let done = false;
+      if (b.kind === 'boomerang') {
+        if (b.obj.children[0]) b.obj.children[0].rotation.z += dt * 15;
+        if (b.age >= b.returnAt) {
+          if (!b.returned) { b.returned = true; b.hitList.length = 0; b.pierce += 2; }
+          const hand = player.pos.clone().setY(player.y + 1.25);
+          const back = hand.sub(b.obj.position);
+          if (back.length() < .9 && b.age > b.returnAt + .12) done = true;
+          else b.vel.lerp(back.normalize().multiplyScalar(b.speed * 1.08), Math.min(1, dt * 7));
+        }
+      }
       b.obj.position.addScaledVector(b.vel, dt);
       const p = b.obj.position;
       if (b.kind === 'rocket') b.obj.rotation.z += dt * 10;
+      if (b.kind === 'orb') b.obj.rotation.y += dt * 6;
+      if (b.kind === 'prism') b.obj.rotation.z += dt * 8;
 
-      let done = false;
-
-      for (let j = 0; j < enemies.length; j++) {
+      for (let j = 0; !done && j < enemies.length; j++) {
         const e = enemies[j];
         if (e.dead || b.hitList.indexOf(e) >= 0) continue;
         const dd = Math.hypot(p.x - e.obj.position.x, p.z - e.obj.position.z);
         if (dd < e.radius + .55 && p.y > 0 && p.y < e.radius * 3.6) {
-          if (b.splash) { explode(p.clone(), b.splash, b.dmg, b.color); done = true; }
+          if (b.splash) { detonateBullet(b, p.clone()); done = true; }
           else {
             dealDamage(e, b.dmg, p.clone());
             if (!e.dead) e.knock.add(V3().set(e.obj.position.x - p.x, 0, e.obj.position.z - p.z)
@@ -1009,7 +1164,13 @@
       if (!done) {
         const hitWall = MA.World.outside(p) || MA.World.blocks(p);
         if (p.y < .12 || hitWall) {
-          if (b.bounce > 0 && hitWall && p.y >= .12) {
+          if (b.kind === 'boomerang' && !b.returned) {
+            b.returned = true; b.age = b.returnAt; b.hitList.length = 0; b.pierce += 2;
+            b.vel.multiplyScalar(-.65);
+            p.x = clamp(p.x, -ARENA + 1.2, ARENA - 1.2);
+            p.z = clamp(p.z, -ARENA + 1.2, ARENA - 1.2);
+            MA.FX.burst(p.clone(), b.color, 6, 5, .12);
+          } else if (b.bounce > 0 && hitWall && p.y >= .12) {
             b.bounce--;
             if (Math.abs(p.x) > ARENA - 1) b.vel.x *= -1;
             if (Math.abs(p.z) > ARENA - 1) b.vel.z *= -1;
@@ -1019,13 +1180,14 @@
             b.obj.lookAt(p.clone().add(b.vel));
             MA.FX.burst(p.clone(), b.color, 4, 4, .1);
           } else {
-            if (b.splash) explode(p.clone(), b.splash, b.dmg, b.color);
+            if (b.splash) detonateBullet(b, p.clone());
             else MA.FX.burst(p.clone(), b.color, 4, 5, .12);
             done = true;
           }
         }
       }
 
+      if (!done && b.life <= 0 && b.splash) { detonateBullet(b, p.clone()); done = true; }
       if (done || b.life <= 0) {
         scene.remove(b.obj); MA.disposeObject(b.obj);
         bullets.splice(i, 1);
@@ -1346,6 +1508,9 @@
     player = MA.createPlayer(scene, currentSkin(), currentArmor());
     player.allowedWeapons = currentWeapons();
     player.weapon = player.allowedWeapons.length ? player.allowedWeapons[0] : 0;
+    player.ability = currentAbility();
+    player.abilityCd = 0;
+    MA.syncWeaponModel(player);
     Object.assign(G, {
       score: 0, wave: 0, combo: 1, comboT: 0, kills: 0, waveKills: 0, waveTarget: 0,
       spawnQueue: 0, spawnT: 0, interWave: 0, brainrot: 0, ult: 0, bossAlive: null,
@@ -1362,7 +1527,7 @@
 
   function startGame() {
     MA.Audio.init(); MA.Audio.resume();
-    ['start', 'over', 'pausebox', 'settings', 'board', 'perkScreen', 'help', 'auth', 'hub', 'shop', 'inventory', 'multi']
+    ['start', 'over', 'pausebox', 'settings', 'board', 'perkScreen', 'help', 'auth', 'hub', 'shop', 'lootbox', 'inventory', 'multi']
       .forEach(id => $(id).classList.add('hid'));
     $('hud').classList.remove('hid');
     if (isTouch) $('touch').classList.remove('hid');
@@ -1500,10 +1665,12 @@
       player.obj.children.forEach(o => {
         o.visible = o.userData.__hid3 === undefined ? true : o.userData.__hid3;
       });
-      player.gun.position.set(.92, 1.26, -.22);
-      player.gun.scale.setScalar(1);
+      const bodyScale = player.skin && player.skin.bulky ? 1.18 : 1;
+      player.gun.position.set(1.02 * bodyScale, 1.22, -.20);
+      player.gun.scale.setScalar(.86);
       if (player.armR) {
-        player.armR.position.set(.74, 1.32, 0);
+        player.armR.position.set(.75 * bodyScale, 1.29, 0);
+        player.armR.rotation.z = .075;
         player.armR.scale.set(1, 1, 1);
       }
     }
@@ -1573,8 +1740,9 @@
         return;
       }
       if (e.code === 'KeyQ') cycleWeapon(1);
-      if (/^Digit[1-5]$/.test(e.code)) selectWeapon(parseInt(e.code.slice(5), 10) - 1);
+      if (/^Digit[1-9]$/.test(e.code)) selectWeapon(parseInt(e.code.slice(5), 10) - 1);
       if (e.code === 'KeyE') activateUlt();
+      if (e.code === 'KeyF') activateAbility();
       if (e.code === 'KeyP' || e.code === 'Escape') togglePause();
       if (e.code === 'KeyM') doMute();
       if (e.code === 'KeyV') toggleView();
@@ -1591,13 +1759,16 @@
     if (!avail.length) return;
     const cur = avail.indexOf(player.weapon);
     player.weapon = avail[(cur + dir + avail.length) % avail.length];
+    MA.syncWeaponModel(player);
     MA.Audio.switchW();
     MA.UI.updateWeaponList(player, G);
   }
   function selectWeapon(i) {
     if (i < 0 || i >= MA.WEAPONS.length) return;
     if (player.allowedWeapons ? player.allowedWeapons.indexOf(i) < 0 : G.wave < MA.WEAPONS[i].unlock) { MA.Audio.deny(); return; }
-    player.weapon = i; MA.Audio.switchW(); MA.UI.updateWeaponList(player, G);
+    player.weapon = i;
+    MA.syncWeaponModel(player);
+    MA.Audio.switchW(); MA.UI.updateWeaponList(player, G);
   }
 
   function setupTouch() {
@@ -1631,6 +1802,7 @@
     btn('tJump', () => { keys.Space = true; setTimeout(() => keys.Space = false, 120); });
     btn('tDash', () => { keys._dash = true; });
     btn('tUlt', () => activateUlt());
+    btn('tAbility', () => activateAbility());
     btn('tSwap', () => cycleWeapon(1));
     btn('tView', () => toggleView());
 
@@ -1680,9 +1852,11 @@
     MA.WEAPONS.forEach(w => {
       const d = document.createElement('div');
       d.className = 'rc';
+      const shopDef = MA.WEAPON_SHOP[w.id] || {};
+      const source = shopDef.boxOnly ? 'Caixa 67 ou drop aleatório de chefe'
+        : shopDef.price ? 'loja · 🪙 ' + MA.fmt(shopDef.price) : 'loja';
       d.innerHTML = '<i>' + w.icon + '</i><b>' + w.name + '</b><span>' + w.desc +
-                    '<br><em>' + ((MA.WEAPON_SHOP[w.id] && MA.WEAPON_SHOP[w.id].price) ?
-                      'loja · 🪙 ' + MA.fmt(MA.WEAPON_SHOP[w.id].price) : 'loja') + '</em></span>';
+                    '<br><em>' + source + '</em></span>';
       wl.appendChild(d);
     });
 
@@ -1780,10 +1954,31 @@
       MA.FX.update(dt);
       MA.World.update(dt, (G.time += dt * .3));
       if (!G.running) {
-        menuT += dt * .12;
-        const r = 52;
-        camera.position.set(Math.cos(menuT) * r, 16 + Math.sin(menuT * 2) * 5, Math.sin(menuT) * r);
-        camera.lookAt(0, 6, 0);
+        const hubOpen = !$('hub').classList.contains('hid');
+        if (hubOpen && player) {
+          /* O lobby usa um retrato 3D dedicado no DOM para nunca ficar oculto
+             pelo fundo. Esconde a cópia do canvas e mantém a câmera no palco. */
+          player.obj.visible = false;
+          menuT += dt;
+          player.obj.position.set(0, Math.sin(menuT * 2.1) * .025, 0);
+          player.obj.rotation.y = Math.sin(menuT * .72) * .13;
+          player.legL.rotation.x = Math.sin(menuT * 2.1) * .025;
+          player.legR.rotation.x = -player.legL.rotation.x;
+          player.armL.rotation.z = -.075 + Math.sin(menuT * 1.7) * .022;
+          player.aura.rotation.z += dt * .75;
+          player.aura.material.opacity = .26 + Math.sin(menuT * 2.8) * .08;
+          MA.animateWeaponModel(player, dt, false);
+          const ud = player.obj.userData;
+          if (ud.panim) ud.panim.forEach(fn => { try { fn(G.time, dt); } catch (e) { /* ignora */ } });
+          camera.position.set(0, 2.65, -7.7);
+          camera.lookAt(0, 1.35, 0);
+        } else {
+          if (player) player.obj.visible = true;
+          menuT += dt * .12;
+          const r = 52;
+          camera.position.set(Math.cos(menuT) * r, 16 + Math.sin(menuT * 2) * 5, Math.sin(menuT) * r);
+          camera.lookAt(0, 6, 0);
+        }
       }
     }
 
@@ -1809,6 +2004,36 @@
   };
   window.MEMEARENA = MA.Game.debug;
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
+  function recordClientError(error) {
+    try {
+      const current = JSON.parse(localStorage.getItem('memearena.diagnostics') || '[]');
+      current.push({ at: new Date().toISOString(), message: String(error && (error.message || error) || 'erro desconhecido').slice(0, 300) });
+      localStorage.setItem('memearena.diagnostics', JSON.stringify(current.slice(-10)));
+    } catch (e) { /* diagnóstico nunca pode impedir o jogo */ }
+  }
+
+  function bootSafely() {
+    try { boot(); }
+    catch (error) {
+      recordClientError(error);
+      console.error('[MemeArena] Falha ao iniciar:', error);
+      const splash = $('loading');
+      if (splash) {
+        splash.classList.remove('hid');
+        const progress = document.querySelector('.splash-loading');
+        if (progress) progress.textContent = 'Não foi possível iniciar o modo 3D neste navegador.';
+        const button = $('enterGame');
+        if (button) {
+          button.disabled = false;
+          button.textContent = 'RECARREGAR JOGO';
+          button.onclick = () => location.reload();
+        }
+      }
+    }
+  }
+  addEventListener('error', ev => recordClientError(ev.error || ev.message));
+  addEventListener('unhandledrejection', ev => recordClientError(ev.reason));
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootSafely);
+  else bootSafely();
 })(window.MA);

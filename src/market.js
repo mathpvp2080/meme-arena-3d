@@ -9,7 +9,7 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const PRECO_MIN = 10, PRECO_MAX = 1000000;
+  const PRECO_MIN = 10;
 
   const Market = {
     tab: 'comprar',
@@ -126,10 +126,10 @@
       const icone = it ? (it.icon || it.face || '🎁') : '🎁';
       const raro = it && it.rarity ? it.rarity : 'common';
       return '<div class="mkitem ' + raro + '">' +
-        '<div class="mkico">' + icone + '</div>' +
-        '<div class="mkinfo"><b>' + nome + '</b>' +
-        '<div class="dim">' + (tipo === 'skin' ? 'Skin' : tipo === 'armor' ? 'Armadura' : 'Arma') +
-        ' · vendedor: ' + l.seller_name + '</div></div>' +
+        '<div class="mkico">' + MA.esc(icone) + '</div>' +
+        '<div class="mkinfo"><b>' + MA.esc(nome) + '</b>' +
+        '<div class="dim">' + (tipo === 'skin' ? 'Skin' : tipo === 'armor' ? 'Armadura' : tipo === 'ability' ? 'Habilidade' : 'Arma') +
+        ' · vendedor: ' + MA.esc(l.seller_name) + '</div></div>' +
         '<div class="mkprice">🪙 ' + MA.fmt(l.price) + '</div>' + botao +
         '</div>';
     },
@@ -152,7 +152,8 @@
       const d = MA.Profile.data;
       /* o que dá para vender: o que está no inventário, menos itens iniciais e equipados */
       const equipados = [
-        'skin:' + d.equipped.skin, 'armor:' + d.equipped.armor
+        'skin:' + d.equipped.skin, 'armor:' + d.equipped.armor,
+        'ability:' + (d.equipped.ability || '')
       ].concat((d.equipped.weapons || []).map(w => 'weapon:' + w));
       const vendaveis = d.inventory.filter(key => {
         const [t, i] = key.split(':');
@@ -169,12 +170,14 @@
       html += vendaveis.length ? vendaveis.map(key => {
         const [t, i] = key.split(':');
         const it = MA.findItem(t, i);
-        const sugerido = Math.max(PRECO_MIN, Math.round((it.price || 100) * .7));
+        const bounds = MA.marketPriceBounds ? MA.marketPriceBounds(it) : { min: PRECO_MIN, max: 1000000 };
+        const sugerido = Math.max(bounds.min, Math.min(bounds.max, Math.round((it.price || 100) * .7)));
         return '<div class="mkitem ' + (it.rarity || 'common') + '">' +
           '<div class="mkico">' + (it.icon || it.face || '🎁') + '</div>' +
           '<div class="mkinfo"><b>' + it.name + '</b><div class="dim">' +
-          (t === 'skin' ? 'Skin' : t === 'armor' ? 'Armadura' : 'Arma') + '</div></div>' +
-          '<input class="inp mkp" type="number" min="' + PRECO_MIN + '" max="' + PRECO_MAX +
+          (t === 'skin' ? 'Skin' : t === 'armor' ? 'Armadura' : t === 'ability' ? 'Habilidade' : 'Arma') +
+          ' · faixa 🪙 ' + MA.fmt(bounds.min) + '–' + MA.fmt(bounds.max) + '</div></div>' +
+          '<input class="inp mkp" type="number" min="' + bounds.min + '" max="' + bounds.max +
           '" value="' + sugerido + '" data-price="' + key + '">' +
           '<button class="btn mini" data-sell="' + key + '">ANUNCIAR</button>' +
           '</div>';
@@ -219,8 +222,13 @@
     async acaoVender(key, preco) {
       if (!this.online()) { MA.Audio.deny(); this.msg('Isso só funciona com conta online.'); return; }
       if (this._busy) return;
-      if (!(preco >= PRECO_MIN && preco <= PRECO_MAX)) {
-        MA.Audio.deny(); this.msg('Preço entre ' + PRECO_MIN + ' e ' + MA.fmt(PRECO_MAX) + '.'); return;
+      const parts = String(key || '').split(':');
+      const item = MA.findItem(parts[0], parts[1]);
+      const bounds = MA.marketPriceBounds ? MA.marketPriceBounds(item) : { min: PRECO_MIN, max: 1000000 };
+      if (!item || !(preco >= bounds.min && preco <= bounds.max)) {
+        MA.Audio.deny();
+        this.msg('Este item aceita valores entre 🪙 ' + MA.fmt(bounds.min) + ' e ' + MA.fmt(bounds.max) + '.');
+        return;
       }
       this._busy = true; this.msg('Anunciando…');
       const r = await this.vender(key, preco);
@@ -266,7 +274,8 @@
       const sel = $('giftItem');
       if (!sel) return;
       const d = MA.Profile.data;
-      const equipados = ['skin:' + d.equipped.skin, 'armor:' + d.equipped.armor]
+      const equipados = ['skin:' + d.equipped.skin, 'armor:' + d.equipped.armor,
+        'ability:' + (d.equipped.ability || '')]
         .concat((d.equipped.weapons || []).map(w => 'weapon:' + w));
       const itens = d.inventory.filter(key => {
         const [t, i] = key.split(':');
@@ -301,8 +310,8 @@
             partes.push((it && it.name) || g.item);
           }
           if (g.coins) partes.push('🪙 ' + MA.fmt(g.coins));
-          MA.MetaUI.toast('🎁 <b>' + g.from_name + '</b> te mandou ' + partes.join(' + ') +
-            (g.note ? '<br><i>"' + g.note + '"</i>' : ''));
+          MA.MetaUI.toast('🎁 <b>' + MA.esc(g.from_name) + '</b> te mandou ' + partes.map(MA.esc).join(' + ') +
+            (g.note ? '<br><i>"' + MA.esc(g.note) + '"</i>' : ''));
         });
         await MA.Net.refreshProfile();
         MA.MetaUI.renderHub();
