@@ -201,6 +201,7 @@ Para funcionar pela internet é preciso rodar `supabase/schema_multiplayer.sql`
 no SQL Editor do Supabase. Sem isso, o multiplayer ainda funciona em **modo
 local** entre abas do mesmo navegador.
 
-O mercado de itens (vender/presentear) usa o mesmo SQL. Depois desta atualização,
-rode o arquivo novamente para criar `market_price_limits` e ativar no servidor as
-faixas de preço individuais, inclusive para os três equipamentos da Temporada 67.
+O mercado de itens (vender/presentear) usa o mesmo SQL. A coleção da Temporada 67
+tem 14 itens entre skins, armaduras, armas e habilidades, obtidos originalmente
+em Caixas 67 ou por drop aleatório de chefe. Depois, eles podem ser revendidos no
+mercado dentro das faixas individuais validadas pelo servidor.

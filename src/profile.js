@@ -113,7 +113,7 @@
     /* -------------------------------------------------------------- loja */
     canBuy(item) {
       if (this.owns(item.type, item.id)) return { error: 'Você já tem esse item.' };
-      if (item.boxOnly) return { error: 'Item exclusivo das Caixas 67.' };
+      if (item.boxOnly) return { error: 'Item sazonal: obtenha em uma Caixa 67 ou no drop aleatório de um chefe.' };
       if (this.data.level < (item.level || 1)) return { error: 'Precisa ser nível ' + item.level + '.' };
       if (this.data.coins < item.price) return { error: 'Moedas insuficientes.' };
       return { ok: true };

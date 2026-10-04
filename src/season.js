@@ -16,7 +16,12 @@
     startsAt: '2026-10-03T00:00:00-03:00',
     endsAt: '2026-11-28T23:59:59-03:00',
     nextStartsAt: '2026-11-29T00:00:00-03:00',
-    itemKeys: ['skin:sixtyseven', 'armor:protocol67', 'weapon:pulse67'],
+    itemKeys: [
+      'skin:sixtyseven', 'skin:sixorbit', 'skin:sevenbreak', 'skin:duo67',
+      'armor:protocol67', 'armor:orbit6', 'armor:prism7',
+      'weapon:pulse67', 'weapon:boomerang', 'weapon:gravity6', 'weapon:prism7',
+      'ability:repulse6', 'ability:blink7', 'ability:overclock67'
+    ],
     boxes: [
       {
         id: 'box67', name: 'CAIXA 67', icon: '67', price: 670, count: 1,
@@ -30,8 +35,8 @@
   };
   MA.SEASON = SEASON;
 
-  /* Conteúdo sazonal. Os valores price servem como avaliação de inventário,
-     venda rápida e base do mercado; estes itens saem somente das Caixas 67. */
+  /* Conteúdo sazonal. Os valores price servem como avaliação de inventário e
+     base do mercado; a origem é sempre Caixa 67 ou drop aleatório de chefe. */
   if (!MA.SKINS.some(s => s.id === 'sixtyseven')) {
     MA.SKINS.push({
       id: 'sixtyseven', name: 'Corredor 67', rarity: 'mythic', price: 6700, level: 1,
@@ -82,6 +87,8 @@
         boosts: int(old.boosts),
         fragments: int(old.fragments),
         forged: int(old.forged),
+        bossesDefeated: int(old.bossesDefeated),
+        bossDrops: int(old.bossDrops),
         lastRewards: Array.isArray(old.lastRewards) ? old.lastRewards.slice(-12) : []
       };
       return profile.stats.season67;
@@ -137,7 +144,7 @@
       const roll = Math.random() * 100;
 
       /* 18% de item sazonal. Sem item em seis aberturas, a sétima garante
-         um dos três equipamentos ainda não possuídos. */
+         um dos itens da coleção ainda não possuídos. */
       if (guaranteed || roll < 18) {
         p.pity = 0;
         return this._itemReward(guaranteed, roll);
@@ -168,19 +175,36 @@
       };
     },
 
-    _itemReward(guaranteed, roll) {
-      const choices = SEASON.itemKeys.map(key => {
+    _choices() {
+      return SEASON.itemKeys.map(key => {
         const parts = key.split(':');
         return { key, type: parts[0], id: parts[1], item: MA.findItem(parts[0], parts[1]) };
-      });
+      }).filter(choice => choice.item);
+    },
+
+    _pickWeighted(pool) {
+      const rarityWeight = { common: 67, rare: 34, epic: 17, legendary: 8, mythic: 4 };
+      const total = pool.reduce((sum, choice) => sum + (rarityWeight[choice.item.rarity] || 8), 0);
+      let roll = Math.random() * total;
+      for (let i = 0; i < pool.length; i++) {
+        roll -= rarityWeight[pool[i].item.rarity] || 8;
+        if (roll <= 0) return pool[i];
+      }
+      return pool[pool.length - 1];
+    },
+
+    _itemReward(guaranteed, roll, source) {
+      const choices = this._choices();
       const missing = choices.filter(x => !MA.Profile.owns(x.type, x.id));
       let selected;
       if (guaranteed && missing.length) {
-        selected = missing[Math.floor(Math.random() * missing.length)];
+        selected = this._pickWeighted(missing);
       } else {
-        /* Probabilidades dentro dos 18%: skin 7%, armadura 6%, arma 5%. */
+        /* Dentro dos 18%: 5% skin, 4% armadura, 5% arma e 4% habilidade. */
         const itemRoll = guaranteed ? Math.random() * 18 : Math.max(0, Math.min(17.999, roll));
-        selected = itemRoll < 7 ? choices[0] : itemRoll < 13 ? choices[1] : choices[2];
+        const type = itemRoll < 5 ? 'skin' : itemRoll < 9 ? 'armor' : itemRoll < 14 ? 'weapon' : 'ability';
+        const pool = choices.filter(choice => choice.type === type);
+        selected = this._pickWeighted(pool) || choices[0];
       }
 
       if (MA.Profile.owns(selected.type, selected.id)) {
@@ -189,7 +213,7 @@
         p.fragments += amount;
         return {
           type: 'fragments', icon: '⬡', name: '67 FRAGMENTOS', amount,
-          desc: 'Item repetido convertido. Junte 67 para forjar um equipamento que falta.',
+          desc: 'Item repetido convertido. Use 67 fragmentos para abrir uma caixa garantida.',
           rarity: 'legendary', guaranteed,
           log: '⬡ +67 fragmentos (item repetido)'
         };
@@ -200,24 +224,50 @@
         type: 'item', icon: selected.item.icon || selected.item.face || '67',
         name: selected.item.name, item: selected.item, itemType: selected.type,
         rarity: selected.item.rarity || 'legendary', guaranteed,
-        desc: guaranteed ? 'GARANTIA DA 7ª CAIXA' : 'ITEM EXCLUSIVO DA TEMPORADA',
-        log: '🎁 ' + selected.item.name
+        desc: source === 'boss' ? 'DROP ALEATÓRIO DE CHEFE' :
+          (guaranteed ? 'GARANTIA DA 7ª CAIXA' : 'ITEM EXCLUSIVO DA TEMPORADA'),
+        log: '🎁 ' + selected.item.name + (source === 'boss' ? ' (chefe)' : '')
       };
+    },
+
+    bossReward() {
+      if (!MA.Profile || !MA.Profile.data || !this.active()) return null;
+      const p = this.progress();
+      p.bossesDefeated++;
+      if (Math.random() >= .67) {
+        p.fragments += 7;
+        const fallback = {
+          type: 'fragments', icon: '⬡', name: '7 FRAGMENTOS', amount: 7,
+          desc: 'O chefe não deixou um item desta vez. Fragmentos adicionados à Caixa Garantida.',
+          rarity: 'rare', log: '⬡ +7 fragmentos (chefe)'
+        };
+        p.lastRewards = p.lastRewards.concat(fallback.log).slice(-12);
+        MA.Profile.save(true);
+        return fallback;
+      }
+      const reward = this._itemReward(false, Math.random() * 18, 'boss');
+      p.bossDrops++;
+      p.lastRewards = p.lastRewards.concat(reward.log).slice(-12);
+      MA.Profile.save(true);
+      return reward;
     },
 
     forge() {
       if (!MA.Profile || !MA.Profile.data) return { error: 'Entre em uma conta primeiro.' };
       const p = this.progress();
       if (p.fragments < 67) return { error: 'Você precisa de 67 fragmentos.' };
-      const missing = SEASON.itemKeys.map(key => key.split(':')).filter(parts =>
-        !MA.Profile.owns(parts[0], parts[1]));
+      const missing = this._choices().filter(choice => !MA.Profile.owns(choice.type, choice.id));
       if (!missing.length) return { error: 'Você já possui todos os itens da Temporada 67.' };
-      const parts = missing[0];
-      const item = MA.findItem(parts[0], parts[1]);
-      p.fragments -= 67; p.forged++;
-      MA.Profile.grant(parts[0], parts[1], true);
+      /* Fragmentos não entregam um item diretamente: eles abrem uma Caixa 67
+         com a mesma garantia da sétima abertura. */
+      p.fragments -= 67;
+      p.forged++;
+      p.boxesOpened++;
+      p.pity = 0;
+      const reward = this._itemReward(true, Math.random() * 18, 'box');
+      p.lastRewards = p.lastRewards.concat(reward.log).slice(-12);
       MA.Profile.save(true);
-      return { ok: true, item, type: parts[0] };
+      return { ok: true, item: reward.item, type: reward.itemType, reward };
     },
 
     rewardMultiplier() {

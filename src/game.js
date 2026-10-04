@@ -361,6 +361,9 @@
     if (mpClient() && e.netId) {
       /* quem manda na vida do inimigo é o host; aqui só prevemos o efeito */
       mpSend({ t: 'hit', i: e.netId, d: Math.round(dmg) });
+    } else if (mpHost() && e.netId && MA.Multi && MA.Multi.me) {
+      /* O último golpe local também precisa substituir um acerto remoto anterior. */
+      e.lastHitBy = MA.Multi.me.id;
     }
     let final = dmg, crit = false;
     if (allowCrit !== false && Math.random() < player.crit) { final *= 2.5; crit = true; }
@@ -382,6 +385,17 @@
     }
     if (e.hp <= 0) killEnemy(e, hitPos);
     return final;
+  }
+
+  function grantSeasonBossReward() {
+    if (!MA.Season || !MA.Season.bossReward) return;
+    const reward = MA.Season.bossReward();
+    if (!reward) return;
+    const itemDrop = reward.type === 'item';
+    if (MA.MetaUI) {
+      MA.MetaUI.toast((itemDrop ? '🎁 <b>DROP DO CHEFE:</b> ' : '⬡ <b>RECOMPENSA DO CHEFE:</b> ') + reward.name);
+    }
+    if (itemDrop) MA.Audio.pickup();
   }
 
   function killEnemy(e, at) {
@@ -422,6 +436,9 @@
       G.bossesKilled++;
       MA.Audio.boom(); addShake(1.1);
       MA.UI.banner('CHEFE DERROTADO', e.def.name + ' foi cancelado', 2800, 'boss');
+      const localKill = !mpClient() && (!mpHost() || !e.netId || !e.lastHitBy ||
+        (MA.Multi && MA.Multi.me && e.lastHitBy === MA.Multi.me.id));
+      if (localKill) grantSeasonBossReward();
       for (let i = 0; i < 3; i++) {
         const sp = MA.World.spawnPoint(player.pos, 6);
         pickups.push(MA.createPickup(scene, sp.x, sp.z, MA.PICKUPS[i === 0 ? 0 : i === 1 ? 1 : 3]));
@@ -432,7 +449,7 @@
         pickups.push(MA.createPickup(scene, e.obj.position.x, e.obj.position.z, weightedPickup()));
     }
 
-    if (mpHost() && e.netId) mpSend({ t: 'ekill', i: e.netId, by: e.lastHitBy || MA.Multi.me.id });
+    if (mpHost() && e.netId) mpSend({ t: 'ekill', i: e.netId, b: !!e.isBoss, by: e.lastHitBy || MA.Multi.me.id });
     scene.remove(e.obj); MA.disposeObject(e.obj);
     const i = enemies.indexOf(e); if (i >= 0) enemies.splice(i, 1);
     if (e.netId) delete remoteEnemies[e.netId];
@@ -514,7 +531,12 @@
   /* todos: o host confirmou uma morte */
   function onEnemyKill(m) {
     const e = remoteEnemies[m.i];
-    if (!e) return;
+    /* A previsão local pode já ter removido o modelo; o host ainda informa
+       se era chefe para que o drop sazonal não se perca nem seja antecipado. */
+    if (!e) {
+      if (m.b && m.by === MA.Multi.me.id) grantSeasonBossReward();
+      return;
+    }
     if (m.by === MA.Multi.me.id) {       // o abate foi meu: ganho pontos
       const pts = Math.round(e.pts * Math.min(G.combo, 25) * G.diff.pts * player.mScore);
       G.score += pts; G.kills++; G.waveKills++;
@@ -523,7 +545,10 @@
       G.brainrot = clamp(G.brainrot + (e.isBoss ? 70 : 4.6 * player.brainGain), 0, 100);
       MA.UI.kill(e.def.name, e.def.emoji, e.elite ? '#ffd400' : e.def.color);
       MA.FX.popup(e.obj.position.clone().setY(2.6), '+' + MA.fmt(pts), '#ffe600', 1);
-      if (e.isBoss) G.bossesKilled++;
+      if (e.isBoss) {
+        G.bossesKilled++;
+        grantSeasonBossReward();
+      }
       if (MA.Goals) {
         MA.Goals.track('kills', 1);
         if (e.elite) MA.Goals.track('elite', 1);
@@ -1804,7 +1829,7 @@
       const d = document.createElement('div');
       d.className = 'rc';
       const shopDef = MA.WEAPON_SHOP[w.id] || {};
-      const source = shopDef.boxOnly ? 'exclusiva das Caixas 67'
+      const source = shopDef.boxOnly ? 'Caixa 67 ou drop aleatório de chefe'
         : shopDef.price ? 'loja · 🪙 ' + MA.fmt(shopDef.price) : 'loja';
       d.innerHTML = '<i>' + w.icon + '</i><b>' + w.name + '</b><span>' + w.desc +
                     '<br><em>' + source + '</em></span>';

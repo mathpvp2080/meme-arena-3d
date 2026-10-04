@@ -217,8 +217,8 @@
           '<div class="loot-box-art">' + box.icon + '</div>' +
           '<div><h3>' + box.name + '</h3><p>' + box.desc + '</p>' +
           '<div class="loot-odds"><b>CHANCES POR ABERTURA</b><br>' +
-          '42% moedas · 23% XP · 17% Impulso 67 · 18% equipamento<br>' +
-          '<b>7% skin · 6% armadura · 5% arma especial</b></div>' +
+          '42% moedas · 23% XP · 17% Impulso 67 · 18% item sazonal<br>' +
+          '<b>5% skin · 4% armadura · 5% arma · 4% habilidade</b></div>' +
           '<div class="loot-pity">GARANTIA: próxima abertura ' + Math.min(7, sp.pity + 1) + '/7 · item na 7ª sem drop</div>' +
           '<div class="loot-buy"><button class="ibtn buy' + (can ? '' : ' poor') + '" data-box="' + box.id + '">' +
           '🪙 ' + MA.fmt(box.price) + '</button><small>somente moeda virtual</small></div></div></article>';
@@ -228,9 +228,9 @@
       });
       const forgeDisabled = sp.fragments < 67 || !missing;
       grid.innerHTML = '<div class="box-grid">' + boxes +
-        '<div class="forge-card"><span>⬡</span><div><b>FORJA 67 · ' + MA.fmt(sp.fragments) + '/67 FRAGMENTOS</b>' +
-        '<p>Itens repetidos viram fragmentos. Troque 67 pelo primeiro equipamento sazonal que ainda falta.</p></div>' +
-        '<button class="btn mini sec" id="forge67"' + (forgeDisabled ? ' disabled' : '') + '>FORJAR</button></div></div>';
+        '<div class="forge-card"><span>⬡</span><div><b>CAIXA GARANTIDA · ' + MA.fmt(sp.fragments) + '/67 FRAGMENTOS</b>' +
+        '<p>Itens repetidos e chefes rendem fragmentos. Use 67 para abrir uma Caixa 67 com um item que ainda falta.</p></div>' +
+        '<button class="btn mini sec" id="forge67"' + (forgeDisabled ? ' disabled' : '') + '>ABRIR CAIXA</button></div></div>';
       grid.querySelectorAll('[data-box]').forEach(btn => {
         btn.onclick = () => this.openSeasonBox(btn.dataset.box);
       });
@@ -239,7 +239,7 @@
         const r = MA.Season.forge();
         if (r.error) { MA.Audio.deny(); this.toast('❌ ' + r.error, 'bad'); return; }
         MA.Audio.pickup();
-        this.toast('⬡ Forjado: <b>' + r.item.name + '</b>');
+        this.toast('📦 Caixa garantida: <b>' + r.item.name + '</b>');
         this.renderShop();
       };
     },

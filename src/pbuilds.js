@@ -404,123 +404,165 @@
       c.anim(t => { orb.rotation.y = t; scepter.rotation.x = Math.sin(t * 2) * .08; });
     },
 
-    /* 6 — piloto orbital leve, com linguagem circular assimétrica. */
+    /* 6 — o próprio algarismo virou o corpo do personagem. */
     sixorbit(c) {
-      c.hood.visible = false;
-      const deep = M(0x173760, { rough: .28, metal: .38 });
-      const blue = M(0x327fda, { rough: .18, metal: .24, emissive: 0x133b78, ei: .42 });
-      const cyan = M(0x2de2ff, { rough: .10, metal: .28, emissive: 0x08778d, ei: .92 });
-      const pearl = M(0xe9f8ff, { rough: .18, metal: .35 });
+      [c.body, c.head, c.neck, c.hood, c.hips].forEach(part => { if (part) part.visible = false; });
+      const deep = M(0x102b58, { rough: .24, metal: .58 });
+      const blue = M(0x327fda, { rough: .13, metal: .32, emissive: 0x123d82, ei: .58 });
+      const cyan = M(0x2de2ff, { rough: .07, metal: .28, emissive: 0x08798f, ei: 1.18 });
+      const pearl = M(0xf1fbff, { rough: .12, metal: .18, emissive: 0x2de2ff, ei: .18 });
+      const faceInk = M(0x07152e, { rough: .36 });
 
-      /* aro aberto sobre o topo e satélite à esquerda */
-      const crown = new THREE.Mesh(new THREE.TorusGeometry(.53, .075, 10, 30, Math.PI * 1.55), blue);
-      crown.position.set(0, 2.33, .01); crown.rotation.set(Math.PI / 2, 0, -.84); c.add(crown);
-      const satellite = S(.12, cyan, 16);
-      satellite.position.set(-.56, 2.46, -.12); c.add(satellite);
-      const orbit = Tor(.19, .035, pearl, 24);
-      orbit.position.set(-.56, 2.46, -.12); orbit.rotation.y = .4; c.add(orbit);
+      /* O bojo e a haste têm duas camadas: contorno escuro e frente luminosa.
+         A abertura central permanece grande para a leitura do 6 em qualquer distância. */
+      const ringBack = Tor(.46, .19, deep, 40);
+      ringBack.position.set(0, 1.27, .03); c.add(ringBack);
+      const ring = Tor(.46, .135, blue, 40);
+      ring.position.set(0, 1.27, -.085); c.add(ring);
+      const stemBack = Cap(.19, .66, deep);
+      stemBack.position.set(-.31, 1.88, .03); stemBack.rotation.z = -.19; c.add(stemBack);
+      const stem = Cap(.14, .66, blue);
+      stem.position.set(-.31, 1.88, -.09); stem.rotation.z = -.19; c.add(stem);
+      const join = S(.19, blue, 20);
+      join.position.set(-.18, 1.61, -.085); join.scale.set(1.08, 1.25, .92); c.add(join);
 
-      /* faixa única e emblema 6 no peito */
-      const strap = Cap(.065, .80, deep);
-      strap.position.set(.08, 1.34, -.53); strap.rotation.z = -.42; c.add(strap);
-      const six = Tor(.18, .045, cyan, 26);
-      six.position.set(-.08, 1.34, -.59); c.add(six);
-      const stem = Cap(.038, .26, cyan);
-      stem.position.set(-.18, 1.49, -.59); stem.rotation.z = -.34; c.add(stem);
-      [-1, 1].forEach(s => {
-        const cuff = Tor(.215, .040, s < 0 ? cyan : blue, 20);
+      /* Um único rosto mora na parte alta da haste, sem transformar o número
+         em uma pessoa vestida de seis. */
+      [-1, 1].forEach((side, i) => {
+        const eye = S(.078, pearl, 16);
+        eye.position.set(-.34 + i * .23, 2.04, -.235); eye.scale.set(.9, 1.08, .58); c.add(eye);
+        const pupil = S(.035, faceInk, 12);
+        pupil.position.set(-.34 + i * .23, 2.035, -.285); pupil.scale.set(.82, 1.03, .55); c.add(pupil);
+      });
+      const smile = new THREE.Mesh(new THREE.TorusGeometry(.105, .022, 7, 16, Math.PI), faceInk);
+      smile.position.set(-.22, 1.91, -.275); smile.rotation.z = Math.PI; c.add(smile);
+
+      /* Órbita fina e satélite reforçam o tema sem desenhar um segundo corpo. */
+      const orbit = new THREE.Mesh(new THREE.TorusGeometry(.66, .025, 7, 44),
+        new THREE.MeshBasicMaterial({ color: 0x2de2ff, transparent: true, opacity: .62, depthWrite: false }));
+      orbit.position.set(0, 1.27, .08); orbit.rotation.y = .28; c.add(orbit);
+      const satellite = S(.085, cyan, 14);
+      satellite.position.set(.64, 1.43, -.10); c.add(satellite);
+      [-1, 1].forEach(side => {
+        const cuff = Tor(.215, .040, side < 0 ? cyan : blue, 20);
         cuff.position.y = -.33; cuff.rotation.x = Math.PI / 2;
-        (s < 0 ? c.armL : c.armR).add(cuff);
-        const shoe = S(.29, s < 0 ? blue : deep, 16);
-        shoe.scale.set(.91, .50, 1.26); shoe.position.set(s * .29, .09, -.17); c.add(shoe);
+        (side < 0 ? c.armL : c.armR).add(cuff);
       });
       c.anim(t => {
-        crown.rotation.z = -.84 + Math.sin(t * 1.8) * .08;
-        orbit.rotation.z = t * 1.7;
+        orbit.rotation.z = t * .65;
+        const a = t * 1.7;
+        satellite.position.set(Math.cos(a) * .66, 1.27 + Math.sin(a) * .66, -.12);
         satellite.scale.setScalar(1 + Math.sin(t * 5) * .08);
       });
     },
 
-    /* 7 — corredor angular com faixa e crista prismática. */
+    /* 7 — barra e diagonal são o corpo literal do personagem. */
     sevenbreak(c) {
-      c.hood.visible = false;
-      const ink = M(0x25194d, { rough: .25, metal: .42 });
-      const violet = M(0x9b65ff, { rough: .13, metal: .27, emissive: 0x482595, ei: .62 });
-      const pink = M(0xff4fbd, { rough: .10, metal: .24, emissive: 0x8e185b, ei: .72 });
-      const pearl = M(0xf7efff, { rough: .18, metal: .30 });
+      [c.body, c.head, c.neck, c.hood, c.hips].forEach(part => { if (part) part.visible = false; });
+      const ink = M(0x211344, { rough: .23, metal: .58 });
+      const violet = M(0x8b57f2, { rough: .10, metal: .35, emissive: 0x44208f, ei: .72 });
+      const pink = M(0xff4fbd, { rough: .07, metal: .29, emissive: 0x931a60, ei: 1.04 });
+      const pearl = M(0xfaf4ff, { rough: .12, metal: .18, emissive: 0xff4fbd, ei: .14 });
+      const faceInk = M(0x170b31, { rough: .38 });
 
-      /* Viseira curta e três prismas formam um topo em seta. */
-      const visor = B(.92, .13, .16, pink);
-      visor.position.set(0, 2.42, -.49); visor.rotation.z = -.07; c.add(visor);
-      [-1, 0, 1].forEach(i => {
-        const fin = Cone(.11 - Math.abs(i) * .015, .42 - Math.abs(i) * .05, i ? violet : pink, 6);
-        fin.position.set(i * .24, 2.68 - Math.abs(i) * .03, .06);
-        fin.rotation.z = -i * .18; c.add(fin);
+      const topBack = Cap(.20, .94, ink);
+      topBack.position.set(0, 2.08, .025); topBack.rotation.z = Math.PI / 2; c.add(topBack);
+      const top = Cap(.145, .94, pink);
+      top.position.set(0, 2.08, -.095); top.rotation.z = Math.PI / 2; c.add(top);
+      const slashBack = Cap(.20, 1.06, ink);
+      slashBack.position.set(.10, 1.36, .025); slashBack.rotation.z = -.36; c.add(slashBack);
+      const slash = Cap(.145, 1.06, violet);
+      slash.position.set(.10, 1.36, -.095); slash.rotation.z = -.36; c.add(slash);
+      const joint = S(.19, pink, 18);
+      joint.position.set(.34, 1.93, -.09); joint.scale.set(1.15, 1, .92); c.add(joint);
+
+      /* O rosto fica na barra superior, como num brinquedo vivo em forma de 7. */
+      [-.22, .08].forEach(x => {
+        const eye = S(.08, pearl, 16);
+        eye.position.set(x, 2.10, -.245); eye.scale.set(.92, 1.06, .58); c.add(eye);
+        const pupil = S(.035, faceInk, 12);
+        pupil.position.set(x, 2.095, -.295); pupil.scale.set(.82, 1, .52); c.add(pupil);
       });
-      /* faixa diagonal e número 7 em relevo */
-      const sash = Cap(.075, .92, violet);
-      sash.position.set(0, 1.34, -.54); sash.rotation.z = .46; c.add(sash);
-      const top = Cap(.044, .34, pearl);
-      top.position.set(.02, 1.48, -.62); top.rotation.z = Math.PI / 2; c.add(top);
-      const leg = Cap(.044, .39, pink);
-      leg.position.set(.08, 1.26, -.62); leg.rotation.z = -.42; c.add(leg);
-      [-1, 1].forEach(s => {
-        const shoulder = S(.28, s < 0 ? violet : pink, 16);
-        shoulder.scale.set(1.18, .60, .92); shoulder.position.set(s * .74, 1.62, 0); c.add(shoulder);
-        const ankle = Tor(.235, .040, s < 0 ? pink : violet, 20);
-        ankle.position.set(s * .285, .23, 0); ankle.rotation.x = Math.PI / 2; c.add(ankle);
+      const mouth = Cap(.021, .12, faceInk);
+      mouth.position.set(-.07, 1.98, -.275); mouth.rotation.z = Math.PI / 2; c.add(mouth);
+
+      /* Sete prismas orbitais, pequenos o bastante para não esconder a silhueta. */
+      const sparks = [];
+      for (let i = 0; i < 7; i++) {
+        const spark = new THREE.Mesh(new THREE.OctahedronGeometry(.055 + (i % 2) * .012, 0), i % 2 ? pearl : pink);
+        c.add(spark); sparks.push(spark);
+      }
+      [-1, 1].forEach(side => {
+        const cuff = Tor(.215, .04, side < 0 ? violet : pink, 20);
+        cuff.position.y = -.33; cuff.rotation.x = Math.PI / 2;
+        (side < 0 ? c.armL : c.armR).add(cuff);
       });
       c.anim(t => {
-        visor.position.x = Math.sin(t * 2.2) * .025;
-        top.material.emissiveIntensity = .2 + (Math.sin(t * 6) + 1) * .22;
+        sparks.forEach((spark, i) => {
+          const a = i / 7 * TAU + t * .58;
+          spark.position.set(Math.cos(a) * .67, 1.48 + Math.sin(a) * .82, .12 + Math.sin(a) * .08);
+          spark.rotation.x = spark.rotation.y = t * 1.8 + i;
+        });
       });
     },
 
-    /* 67 — fusão mítica: metade orbital e metade prismática. */
+    /* 67 — dois algarismos literais fundidos por um núcleo compartilhado. */
     duo67(c) {
-      c.hood.visible = false;
-      const ink = M(0x151a43, { rough: .20, metal: .72 });
-      const blue = M(0x6572ff, { rough: .09, metal: .40, emissive: 0x2932a0, ei: .90 });
-      const pink = M(0xff4fbd, { rough: .08, metal: .38, emissive: 0x8e185b, ei: .88 });
-      const cyan = M(0x2de2ff, { rough: .06, metal: .30, emissive: 0x087b91, ei: 1.30 });
-      const pearl = M(0xf5f7ff, { rough: .12, metal: .76 });
+      [c.body, c.head, c.neck, c.hood, c.hips].forEach(part => { if (part) part.visible = false; });
+      const ink = M(0x111633, { rough: .18, metal: .78 });
+      const blue = M(0x6572ff, { rough: .07, metal: .48, emissive: 0x2933aa, ei: .94 });
+      const pink = M(0xff4fbd, { rough: .06, metal: .42, emissive: 0x991860, ei: .98 });
+      const cyan = M(0x2de2ff, { rough: .05, metal: .34, emissive: 0x087f96, ei: 1.25 });
+      const pearl = M(0xf8f9ff, { rough: .10, metal: .55, emissive: 0x6572ff, ei: .22 });
+      const faceInk = M(0x0a0d24, { rough: .34 });
 
-      /* coroa baixa partida: anel do 6 à esquerda, prisma do 7 à direita */
-      const leftRing = new THREE.Mesh(new THREE.TorusGeometry(.40, .065, 9, 28, Math.PI * 1.45), blue);
-      leftRing.position.set(-.13, 2.43, .01); leftRing.rotation.set(Math.PI / 2, 0, -.72); c.add(leftRing);
-      [0, 1, 2].forEach(i => {
-        const fin = Cone(.10 - i * .012, .36 - i * .04, i === 1 ? pearl : pink, 6);
-        fin.position.set(.18 + i * .16, 2.62 - i * .05, .04);
-        fin.rotation.z = -.20 - i * .11; c.add(fin);
+      /* 6 compacto à esquerda. */
+      const sixBack = Tor(.30, .135, ink, 34);
+      sixBack.position.set(-.30, 1.28, .035); c.add(sixBack);
+      const sixRing = Tor(.30, .095, blue, 34);
+      sixRing.position.set(-.30, 1.28, -.075); c.add(sixRing);
+      const sixStemBack = Cap(.135, .48, ink);
+      sixStemBack.position.set(-.48, 1.73, .035); sixStemBack.rotation.z = -.18; c.add(sixStemBack);
+      const sixStem = Cap(.095, .48, cyan);
+      sixStem.position.set(-.48, 1.73, -.075); sixStem.rotation.z = -.18; c.add(sixStem);
+
+      /* 7 compacto à direita. */
+      const sevenTopBack = Cap(.125, .50, ink);
+      sevenTopBack.position.set(.34, 1.98, .035); sevenTopBack.rotation.z = Math.PI / 2; c.add(sevenTopBack);
+      const sevenTop = Cap(.088, .50, pearl);
+      sevenTop.position.set(.34, 1.98, -.078); sevenTop.rotation.z = Math.PI / 2; c.add(sevenTop);
+      const sevenLegBack = Cap(.13, .76, ink);
+      sevenLegBack.position.set(.34, 1.42, .035); sevenLegBack.rotation.z = -.34; c.add(sevenLegBack);
+      const sevenLeg = Cap(.09, .76, pink);
+      sevenLeg.position.set(.34, 1.42, -.078); sevenLeg.rotation.z = -.34; c.add(sevenLeg);
+
+      /* Um olho por algarismo faz os dois números parecerem parceiros fundidos. */
+      [[-.46, 1.84, cyan], [.24, 1.99, pink]].forEach(spec => {
+        const eye = S(.073, pearl, 16);
+        eye.position.set(spec[0], spec[1], -.205); eye.scale.set(.92, 1.05, .58); c.add(eye);
+        const pupil = S(.033, faceInk, 12);
+        pupil.position.set(spec[0], spec[1] - .004, -.252); pupil.scale.set(.82, 1, .52); c.add(pupil);
       });
-      /* placas frontais independentes dão a divisão 6|7 sem trocar a base. */
-      const left = S(.40, ink, 20);
-      left.position.set(-.25, 1.35, -.51); left.scale.set(.86, 1.08, .25); c.add(left);
-      const right = S(.40, ink, 20);
-      right.position.set(.25, 1.35, -.51); right.scale.set(.86, 1.08, .25); c.add(right);
-      const six = Tor(.15, .040, cyan, 24);
-      six.position.set(-.23, 1.39, -.67); c.add(six);
-      const sixStem = Cap(.035, .20, cyan);
-      sixStem.position.set(-.31, 1.52, -.67); sixStem.rotation.z = -.34; c.add(sixStem);
-      const sevenTop = Cap(.038, .25, pearl);
-      sevenTop.position.set(.24, 1.48, -.67); sevenTop.rotation.z = Math.PI / 2; c.add(sevenTop);
-      const sevenLeg = Cap(.038, .28, pink);
-      sevenLeg.position.set(.28, 1.29, -.67); sevenLeg.rotation.z = -.39; c.add(sevenLeg);
-      const core = new THREE.Mesh(new THREE.OctahedronGeometry(.13, 1), pearl);
-      core.position.set(0, 1.02, -.62); c.add(core);
-      const coreOrbit = Tor(.22, .032, blue, 28);
-      coreOrbit.position.set(0, 1.02, -.61); c.add(coreOrbit);
-      [-1, 1].forEach(s => {
-        const cuff = Tor(.22, .050, s < 0 ? blue : pink, 22);
+
+      /* Núcleo e órbita unem os números sem alterar a leitura “67”. */
+      const core = new THREE.Mesh(new THREE.OctahedronGeometry(.12, 1), cyan);
+      core.position.set(.02, 1.27, -.19); c.add(core);
+      const coreHalo = Tor(.19, .025, pearl, 26);
+      coreHalo.position.set(.02, 1.27, -.12); c.add(coreHalo);
+      const orbit = new THREE.Mesh(new THREE.TorusGeometry(.73, .022, 7, 52),
+        new THREE.MeshBasicMaterial({ color: 0x9b65ff, transparent: true, opacity: .55, depthWrite: false }));
+      orbit.position.set(0, 1.48, .14); orbit.scale.y = .82; orbit.rotation.y = .22; c.add(orbit);
+      [-1, 1].forEach(side => {
+        const cuff = Tor(.22, .045, side < 0 ? blue : pink, 22);
         cuff.position.y = -.33; cuff.rotation.x = Math.PI / 2;
-        (s < 0 ? c.armL : c.armR).add(cuff);
-        const shoe = S(.30, s < 0 ? blue : pink, 18);
-        shoe.scale.set(.90, .50, 1.28); shoe.position.set(s * .29, .09, -.17); c.add(shoe);
+        (side < 0 ? c.armL : c.armR).add(cuff);
       });
       c.anim(t => {
-        core.rotation.x = t * .8; core.rotation.y = t * 1.6;
-        coreOrbit.rotation.z = -t * 1.2;
-        leftRing.rotation.z = -.72 + Math.sin(t * 2) * .07;
+        core.rotation.x = t * .9; core.rotation.y = t * 1.7;
+        coreHalo.rotation.z = -t * 1.35;
+        orbit.rotation.z = Math.sin(t * .7) * .16;
+        const pulse = 1 + Math.sin(t * 4.2) * .08;
+        core.scale.setScalar(pulse);
       });
     },
 

@@ -53,6 +53,58 @@
 
   function paired(fn) { [-1, 1].forEach(fn); }
 
+  /* Nas skins-algarismo o centro precisa continuar legível. Em vez de cobrir
+     o 6 ou o 7 com um peitoral convencional, a armadura protege membros e
+     ombros e acrescenta detalhes próprios nas bordas da silhueta. */
+  function numericArmor(c) {
+    if (!c.armor || c.armor.id === 'hoodie') return;
+    const baseColor = c.armor.color || 0x6572ff;
+    const glowIds = ['neon', 'orbit6', 'prism7', 'protocol67'];
+    const glow = glowIds.indexOf(c.armor.id) >= 0;
+    const plate = M(baseColor, {
+      rough: c.armor.id === 'cardboard' ? .94 : .18,
+      metal: c.armor.id === 'cardboard' ? .03 : .78,
+      emissive: glow ? MA.shade(baseColor, -48) : 0x000000,
+      ei: glow ? .86 : .2
+    });
+    const dark = M(MA.shade(baseColor, -48), { rough: .27, metal: .76 });
+    const blocky = ['cardboard', 'pixel', 'prism7'].indexOf(c.armor.id) >= 0;
+
+    paired(side => {
+      const shoulder = blocky ? B(.39, .20, .48, plate) : S(.27, plate, 16);
+      add(c, shoulder, [side * .76 * c.bulk, 1.61, .02], [0, 0, side * .10],
+        blocky ? null : [1.18, .65, 1.02]);
+      const arm = side < 0 ? c.armL : c.armR;
+      const bracer = blocky ? B(.34, .40, .38, dark) : C(.245, .21, .42, dark, 14);
+      attach(arm, bracer, [0, -.16, 0]);
+      const rail = Cap(.035, .25, plate);
+      attach(arm, rail, [0, -.16, -.235]);
+      const leg = side < 0 ? c.legL : c.legR;
+      const greave = blocky ? B(.31, .37, .36, dark) : C(.25, .21, .36, dark, 14);
+      attach(leg, greave, [0, -.13, -.02]);
+      attach(leg, B(.11, .24, .07, plate), [0, -.14, -.235]);
+    });
+
+    if (c.armor.id === 'orbit6') {
+      const ring = Tor(.32, .055, plate, 28);
+      add(c, ring, [-.76 * c.bulk, 1.62, -.03], [PI / 2, 0, 0]);
+    } else if (c.armor.id === 'prism7') {
+      for (let i = -2; i <= 2; i++) {
+        const fin = new THREE.Mesh(new THREE.OctahedronGeometry(.075, 0), i % 2 ? plate : dark);
+        add(c, fin, [i * .17, 2.31 - Math.abs(i) * .04, .10], null, [1, 1.55, .72]);
+      }
+    } else if (c.armor.id === 'protocol67') {
+      const core = new THREE.Mesh(new THREE.OctahedronGeometry(.10, 1), plate);
+      add(c, core, [0, .78, -.22]);
+      c.anim(t => { core.rotation.x = t; core.rotation.y = t * 1.6; });
+    } else if (c.armor.id === 'chadplate') {
+      paired(side => {
+        const spike = Cone(.09, .34, plate, 8);
+        add(c, spike, [side * .96, 1.84, .04], [0, 0, -side * .72]);
+      });
+    }
+  }
+
   const BUILDS = {
     /* Moletom inicial: acabamento de tecido e costuras. A skin Chill já
        fornece bolso e cordões; nas outras, a armadura continua reconhecível. */
@@ -380,6 +432,10 @@
   MA.applyArmorModel = function (ctx) {
     const armor = ctx && ctx.armor;
     if (!armor) return;
+    if (ctx.skin && ctx.skin.numeric) {
+      numericArmor(ctx);
+      return;
+    }
     const build = BUILDS[armor.id] || BUILDS.hoodie;
     build(ctx);
   };

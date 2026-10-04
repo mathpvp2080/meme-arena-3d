@@ -449,7 +449,7 @@
     if (MA.PBUILDS && MA.PBUILDS[skin.id]) {
       try {
         MA.PBUILDS[skin.id]({
-          g, body, head, neck, hood, armL, armR, legL, legR, gun, skin, trans,
+          g, body, head, neck, hood, hips, armL, armR, legL, legR, gun, skin, trans,
           add: m => { m.castShadow = true; g.add(m); return m; },
           anim: fn => panim.push(fn)
         });
@@ -459,7 +459,7 @@
     if (MA.applyArmorModel) {
       try {
         MA.applyArmorModel({
-          g, body, head, neck, hood, armL, armR, legL, legR, gun,
+          g, body, head, neck, hood, hips, armL, armR, legL, legR, gun,
           armor: armorDef, skin, bulk, trans,
           add: m => { m.castShadow = true; g.add(m); return m; },
           anim: fn => panim.push(fn)

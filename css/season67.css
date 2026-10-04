@@ -274,3 +274,61 @@
   #hub .lobby-play{height:48px;min-height:48px;width:132px}#hub .lobby-play b{font-size:16px}
   #hub .lobby-left #mkBtn{top:5px;height:28px;min-height:28px}
 }
+
+/* =====================================================================
+   LOBBY 67 · sincronizado com a interface de jogo
+   A composição compacta continua igual; só a superfície clara foi trocada
+   pelo vidro escuro, violeta, ciano e magenta usados no HUD da arena.
+   ===================================================================== */
+#hub{background:
+  radial-gradient(ellipse at 50% 56%,rgba(45,226,255,.14),transparent 34%),
+  radial-gradient(circle at 82% 24%,rgba(255,79,189,.15),transparent 30%),
+  radial-gradient(circle at 18% 28%,rgba(101,114,255,.20),transparent 34%),
+  linear-gradient(145deg,#050714 0%,#0a1130 48%,#160b2d 100%)}
+#hub:before{background:
+  linear-gradient(153deg,transparent 0 30%,rgba(45,226,255,.035) 30.2% 43%,transparent 43.2% 100%),
+  repeating-linear-gradient(0deg,rgba(101,114,255,.025) 0 1px,transparent 1px 4px);opacity:1}
+#hub .lobby-rays{opacity:.32;background:
+  linear-gradient(24deg,transparent 0 18%,rgba(101,114,255,.18) 18.2% 31%,transparent 31.2% 100%),
+  linear-gradient(154deg,transparent 0 67%,rgba(255,79,189,.10) 67.2% 79%,transparent 79.2% 100%)}
+#hub .lobby-topbar{background:linear-gradient(180deg,rgba(14,18,58,.97),rgba(7,10,35,.98));
+  border-bottom-color:rgba(101,114,255,.62);box-shadow:0 2px 0 rgba(45,226,255,.09),0 8px 22px rgba(0,0,0,.42)}
+#hub .lobby-profile{border-color:rgba(45,226,255,.46);background:linear-gradient(145deg,rgba(18,29,74,.96),rgba(12,14,48,.96));
+  box-shadow:0 2px 0 #07091f,0 0 16px rgba(45,226,255,.08)}
+#hub .lobby-name-line .hubname{text-shadow:0 1px 0 #050714}
+#hub .level-pill{background:linear-gradient(90deg,#2de2ff,#6572ff);color:#080b25;border-color:rgba(255,255,255,.82)}
+#hub .lobby-rank{color:#9ea8ff}
+#hub .lobby-profile .xpbar{border-color:rgba(101,114,255,.56);background:#07091f}
+#hub .season-hub-badge{border-color:rgba(155,101,255,.65);background:linear-gradient(180deg,rgba(73,55,162,.96),rgba(32,25,91,.98));
+  box-shadow:0 0 18px rgba(101,114,255,.18)}
+#hub .hubwallet,#hub .lobby-left #mkBtn{border-color:rgba(101,114,255,.46);background:linear-gradient(180deg,#151a49,#0a0d2d);
+  box-shadow:0 2px 0 #040518,0 0 13px rgba(101,114,255,.10)}
+#hub .lobby-round{border-color:rgba(255,255,255,.65);box-shadow:0 2px 0 #05061b,0 0 12px rgba(101,114,255,.16)}
+#hub .lobby-round.purple{background:linear-gradient(#ff4fbd,#792eaa)}
+#hub .lobby-round.blue{background:linear-gradient(#2de2ff,#4050d8)}
+#hub .lobby-avatar3d img{filter:drop-shadow(0 12px 9px rgba(0,0,0,.48))}
+#hub .character-platform{opacity:.52;background:radial-gradient(ellipse,rgba(45,226,255,.62),rgba(101,114,255,.22) 48%,transparent 70%)}
+
+#hub .lobby-tile,#hub .mode-card,#hub .lobby-multi{border-color:rgba(101,114,255,.62);color:#fff;
+  box-shadow:0 3px 0 #07091f,0 0 16px rgba(101,114,255,.14)}
+#hub .lobby-tile>span{background:rgba(255,255,255,.07);text-shadow:0 0 10px currentColor}
+#hub .lobby-tile.acid{background:linear-gradient(180deg,#263273,#151c50);color:#fff;border-color:rgba(101,114,255,.78)}
+#hub .lobby-tile.acid>span{color:#8994ff;background:rgba(101,114,255,.12)}
+#hub .lobby-tile.pink{background:linear-gradient(180deg,#70245f,#351735);border-color:rgba(255,79,189,.72)}
+#hub .lobby-tile.cyan{background:linear-gradient(180deg,#13556f,#10263e);border-color:rgba(45,226,255,.72)}
+#hub .lobby-tile.violet{background:linear-gradient(180deg,#3e347f,#201b4f);border-color:rgba(155,101,255,.74)}
+#hub .mode-card{background:linear-gradient(180deg,#30296d,#171840);border-color:rgba(155,101,255,.72)}
+#hub .mode-map-art{background:linear-gradient(145deg,rgba(45,226,255,.22),rgba(101,114,255,.28));box-shadow:inset 0 0 14px rgba(45,226,255,.07)}
+#hub .mode-shortcut-label{color:#fff;text-shadow:0 1px 0 #050714}
+#hub .lobby-multi{background:linear-gradient(180deg,#155a73,#17295b);border-color:rgba(45,226,255,.70)}
+#hub .lobby-play{border-color:rgba(255,255,255,.90);background:linear-gradient(155deg,#ff4fbd 0%,#9b65ff 48%,#5263eb 100%);color:#fff;
+  box-shadow:0 4px 0 #422779,0 0 24px rgba(255,79,189,.30),0 8px 18px rgba(0,0,0,.34)}
+#hub .lobby-play:before{background:linear-gradient(150deg,rgba(255,255,255,.30),transparent 52%)}
+#hub .lobby-play b{text-shadow:0 2px 0 rgba(29,13,72,.70)}
+
+#hub .lobby-footer{border-color:rgba(45,226,255,.52);background:linear-gradient(180deg,rgba(20,27,73,.97),rgba(11,14,43,.98));color:#fff;
+  box-shadow:0 3px 0 #05071c,0 0 20px rgba(45,226,255,.10)}
+#hub .pass-callout{color:#2de2ff;text-shadow:0 0 9px rgba(45,226,255,.55)}
+#hub .pass-head strong{color:#dfe4ff}#hub .pass-head span{background:linear-gradient(90deg,#ff4fbd,#9b65ff)}
+#hub .season-wallet>span{background:rgba(101,114,255,.16);border:1px solid rgba(101,114,255,.28);color:#d9e7ff}
+#hub .season-wallet b{color:#2de2ff}
