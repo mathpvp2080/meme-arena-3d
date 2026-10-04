@@ -75,6 +75,16 @@
     player = MA.createPlayer(scene, currentSkin(), currentArmor());
     player.obj.position.set(0, 0, 0);
 
+    /* Skins modeladas à mão (.glb): carrega em segundo plano e, se achar
+       algum modelo, refaz o boneco e as miniaturas com ele. */
+    if (MA.SkinModels) {
+      MA.SkinModels.preload().then(n => {
+        if (!n) return;
+        if (MA.Previews) MA.Previews.cache = Object.create(null);
+        rebuildPlayerLook();
+      }).catch(() => { /* segue com o boneco procedural */ });
+    }
+
     camera.position.set(0, 12, 46);
     camera.lookAt(0, 5, 0);
 

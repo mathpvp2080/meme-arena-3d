@@ -86,6 +86,24 @@ check('todos os assets locais do HTML existem', () => {
     assert.ok(fs.existsSync(path.join(root, ref)), `arquivo ausente: ${ref}`);
   }
 });
+check('skins modeladas à mão apontam para arquivos existentes', () => {
+  run('src/skinmodels.js', contentContext);
+  const registry = MA.SKIN_MODELS || {};
+  const specs = [];
+  for (const [id, spec] of Object.entries(registry)) {
+    assert.ok(MA.SKINS.some(s => s.id === id), `MA.SKIN_MODELS: skin inexistente "${id}"`);
+    specs.push([id, spec]);
+  }
+  for (const skin of MA.SKINS) if (skin.model) specs.push([skin.id, skin.model]);
+  for (const [id, raw] of specs) {
+    const spec = typeof raw === 'string' ? { url: raw } : raw;
+    assert.ok(spec && spec.url, `${id}: modelo sem url`);
+    assert.match(spec.url, /\.(glb|gltf)$/i, `${id}: use .glb ou .gltf (${spec.url})`);
+    assert.ok(fs.existsSync(path.join(root, spec.url)), `${id}: arquivo ausente ${spec.url}`);
+    if (spec.mode === 'part') assert.ok(['head', 'hat', 'body', 'back', 'handL', 'handR', 'gun'].includes(spec.anchor || 'head'), `${id}: anchor inválido`);
+    assert.ok(!spec.url.startsWith('http'), `${id}: hospede o modelo no projeto (CSP só permite 'self')`);
+  }
+});
 check('service worker e manifesto incluem somente assets existentes', () => {
   const sw = read('sw.js');
   const swVersion = sw.match(/meme-arena-3d-v(\d+)/);

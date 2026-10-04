@@ -466,6 +466,18 @@
         });
       } catch (err) { console.warn('[MemeArena] armadura 3D falhou:', armorDef && armorDef.id, err); }
     }
+    /* Skin modelada à mão (.glb) — opcional. Quando a skin tem um modelo
+       registrado em MA.SKIN_MODELS, ele substitui (mode 'full') ou completa
+       (mode 'part') o boneco procedural acima. Ver docs/SKINS_CUSTOM.md. */
+    if (MA.SkinModels && MA.SkinModels.specFor(skin)) {
+      try {
+        MA.SkinModels.apply({
+          g, body, head, neck, hood, hips, armL, armR, legL, legR, gun,
+          aura, ultAura, shieldMesh, skin, trans, bulk,
+          anim: fn => panim.push(fn)
+        });
+      } catch (err) { console.warn('[MemeArena] modelo .glb da skin falhou:', skin.id, err); }
+    }
     g.userData.panim = panim;
 
     MA.linearizeColors(g);
