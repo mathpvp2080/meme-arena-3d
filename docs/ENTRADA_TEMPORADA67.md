@@ -53,3 +53,22 @@ A entrada nova mantém essa linguagem visual sem copiar personagens, memes desen
 - **Celular em retrato:** a arte completa usa largura de 100% sobre um fundo azul-marinho, evitando cortar os personagens 6 e 7.
 - **Telas baixas:** título e controles reduzem de tamanho e mantêm áreas independentes.
 - A imagem é pré-carregada e também entra no cache offline do service worker.
+
+## Continuidade visual no menu principal
+
+O lobby passa a usar uma segunda arte de ambiente, sem personagens ou texto, para
+não competir com a prévia 3D equipada pelo jogador. Ela mantém a mesma cidade
+synthwave, grade refletiva, arquitetura violeta e iluminação ciano/magenta da
+entrada.
+
+A interface foi reorganizada como um cockpit único de vidro:
+
+- barra superior integrada para perfil, temporada, moedas, metas e opções;
+- navegação lateral com ícones vetoriais próprios, em vez de emojis de estilos diferentes;
+- palco central com iluminação e pedestal alinhados ao fundo cinematográfico;
+- cartão do evento sem o morro verde anterior, substituído por horizonte e grade neon;
+- botão Jogar com hierarquia mais forte e acabamento coerente com a entrada;
+- dock inferior unificado para passe, progresso, estatísticas e classificação Livre;
+- tipografia, bordas, sombras, espaçamento e estados de interação padronizados.
+
+O fundo do lobby está em `assets/hub-season67.jpg` e também integra o cache offline.

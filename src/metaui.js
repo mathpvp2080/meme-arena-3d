@@ -167,8 +167,8 @@
       const btn = $('mpBtn');
       btn.classList.toggle('locked', !ok);
       btn.innerHTML = ok
-        ? '👥 GRUPO'
-        : '🔒 GRUPO <em>nível ' + MA.CONFIG.MULTIPLAYER_LEVEL + '</em>';
+        ? '<span class="multi-mark">◈</span> GRUPO'
+        : '<span class="multi-mark">◇</span> GRUPO <em>nível ' + MA.CONFIG.MULTIPLAYER_LEVEL + '</em>';
 
       $('playBtnHub').classList.toggle('needweapon', wIdx.length === 0);
     },
