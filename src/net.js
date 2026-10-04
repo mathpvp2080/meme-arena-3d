@@ -30,6 +30,7 @@
     if (!u || u.length < 3) return 'O nome precisa de pelo menos 3 caracteres.';
     if (u.length > 16) return 'O nome pode ter no máximo 16 caracteres.';
     if (!/^[a-zA-Z0-9_]+$/.test(u)) return 'Use apenas letras, números e _ (underline).';
+    if (/^convidado\d{4}$/i.test(u)) return 'Esse formato de nome é reservado ao modo Convidado.';
     return null;
   }
   function validPassword(p) {
@@ -133,7 +134,8 @@
       if (!window.supabase) {
         await new Promise((res, rej) => {
           const s = document.createElement('script');
-          s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+          /* versão fixa: evita que uma atualização remota quebre o login em produção */
+          s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js';
           s.onload = res; s.onerror = () => rej(new Error('cdn'));
           document.head.appendChild(s);
         });
@@ -227,6 +229,30 @@
       })).sort((a, b) => b.score - a.score);
     },
 
+    async seasonOpenBox(id) {
+      const { data, error } = await this.sb.rpc('season67_open_box', { p_box: id });
+      if (error) return { error: this._msg(error) };
+      return data || { error: 'O servidor não retornou a recompensa.' };
+    },
+
+    async seasonForgeBox() {
+      const { data, error } = await this.sb.rpc('season67_forge_box');
+      if (error) return { error: this._msg(error) };
+      return data || { error: 'O servidor não retornou a recompensa.' };
+    },
+
+    async seasonBossReward() {
+      const { data, error } = await this.sb.rpc('season67_boss_reward');
+      if (error) return { error: this._msg(error) };
+      return data || { error: 'O servidor não retornou a recompensa.' };
+    },
+
+    async seasonConsumeBoost() {
+      const { data, error } = await this.sb.rpc('season67_consume_boost');
+      if (error) return { error: this._msg(error) };
+      return data || { error: 'O servidor não confirmou o Impulso 67.' };
+    },
+
     async deleteAccount() {
       try {
         const { data, error } = await this.sb.rpc('delete_my_account');
@@ -249,13 +275,66 @@
       const m = (e && e.message) || 'Erro desconhecido.';
       if (/rate limit/i.test(m)) return 'Muitas tentativas. Espere um pouco.';
       if (/already registered/i.test(m)) return 'Já existe uma conta com esse nome.';
+      if (/season67_(open_box|forge_box|boss_reward|consume_boost)|schema cache/i.test(m)) {
+        return 'Servidor ainda não recebeu o patch de lançamento. Execute supabase/DEPLOY_LAUNCH.sql.';
+      }
       return m;
+    }
+  };
+
+  /* ================================================ sessão de CONVIDADO --
+     Nunca conversa com o Supabase. O perfil vive no sessionStorage: sobrevive
+     a um recarregamento da aba, mas desaparece quando a sessão do navegador
+     termina. Assim o botão de teste não cria usuários de autenticação reais. */
+  let guestMemory = null;
+  const Guest = {
+    mode: 'guest',
+    key: 'memearena.guest.session',
+    async init() { return true; },
+    _read() {
+      try { return JSON.parse(sessionStorage.getItem(this.key) || 'null'); }
+      catch (e) { return guestMemory; }
+    },
+    _write(value) {
+      guestMemory = value;
+      try {
+        if (value) sessionStorage.setItem(this.key, JSON.stringify(value));
+        else sessionStorage.removeItem(this.key);
+      } catch (e) { /* modo privado pode bloquear storage; memória ainda funciona */ }
+    },
+    async start(username) {
+      const profile = freshProfile(username);
+      profile.guest = true;
+      const rec = { user: { username, guest: true }, profile };
+      this._write(rec);
+      return rec;
+    },
+    async restore() { return this._read(); },
+    async saveProfile(profile) {
+      const rec = this._read();
+      if (!rec) return { error: 'Sessão de convidado encerrada.' };
+      profile.updatedAt = Date.now();
+      profile.guest = true;
+      rec.profile = profile;
+      this._write(rec);
+      return { ok: true };
+    },
+    async signOut() { this._write(null); return true; },
+    async deleteAccount() { this._write(null); return { ok: true }; },
+    async leaderboard() {
+      const rec = this._read();
+      return rec ? [{
+        username: rec.profile.username,
+        score: (rec.profile.stats && rec.profile.stats.bestScore) || 0,
+        level: rec.profile.level || 1
+      }] : [];
     }
   };
 
   /* ============================================================== FACADE */
   const Net = {
     impl: Local,
+    _accountImpl: Local,
     user: null,
     online: false,
     _saveTimer: null,
@@ -265,38 +344,77 @@
       if (hasKeys) {
         try {
           await Remote.init();
-          this.impl = Remote; this.online = true;
+          this._accountImpl = Remote;
         } catch (e) {
           console.warn('[MemeArena] Supabase indisponível, usando modo local.', e);
-          this.impl = Local; this.online = false;
+          this._accountImpl = Local;
         }
       } else {
-        this.impl = Local; this.online = false;
+        this._accountImpl = Local;
       }
+      this.impl = this._accountImpl;
+      this.online = this.impl === Remote;
       await this.impl.init();
       return this.online;
     },
 
     get mode() { return this.impl.mode; },
+    get isGuest() { return this.impl === Guest; },
+
+    _useAccountBackend() {
+      Guest._write(null);
+      this.impl = this._accountImpl;
+      this.online = this.impl === Remote;
+    },
 
     async signUp(u, p) {
+      this._useAccountBackend();
       const r = await this.impl.signUp(u, p);
       if (!r.error) this.user = r.user;
       return r;
     },
     async signIn(u, p) {
+      this._useAccountBackend();
       const r = await this.impl.signIn(u, p);
       if (!r.error) this.user = r.user;
       return r;
     },
+    async startGuest() {
+      /* Se havia uma sessão online residual, encerra antes de entrar localmente. */
+      if (this._accountImpl === Remote) {
+        try { await Remote.signOut(); } catch (e) { /* sem sessão é normal */ }
+      }
+      const name = 'Convidado' + Math.floor(Math.random() * 9000 + 1000);
+      const r = await Guest.start(name);
+      this.impl = Guest;
+      this.online = false;
+      this.user = r.user;
+      return r;
+    },
     /* devolve só o PERFIL (ou null) — é isso que MA.Profile.set espera */
     async restore() {
+      const guest = await Guest.restore();
+      if (guest) {
+        this.impl = Guest;
+        this.online = false;
+        this.user = guest.user;
+        return guest.profile;
+      }
+      this.impl = this._accountImpl;
+      this.online = this.impl === Remote;
       const r = await this.impl.restore();
       if (!r) return null;
       this.user = r.user;
       return r.profile || null;
     },
-    async signOut() { this.user = null; return this.impl.signOut(); },
+    async signOut() {
+      const active = this.impl;
+      this.user = null;
+      const result = await active.signOut();
+      this.impl = this._accountImpl;
+      this.online = this.impl === Remote;
+      return result;
+    },
 
     /* grava com debounce pra não martelar o banco */
     saveProfile(profile, immediate) {
@@ -319,8 +437,29 @@
       return MA.Profile.data;
     },
 
+    seasonOpenBox(id) {
+      return this.online && this.impl.seasonOpenBox ? this.impl.seasonOpenBox(id) : null;
+    },
+    seasonForgeBox() {
+      return this.online && this.impl.seasonForgeBox ? this.impl.seasonForgeBox() : null;
+    },
+    seasonBossReward() {
+      return this.online && this.impl.seasonBossReward ? this.impl.seasonBossReward() : null;
+    },
+    seasonConsumeBoost() {
+      return this.online && this.impl.seasonConsumeBoost ? this.impl.seasonConsumeBoost() : null;
+    },
     leaderboard() { return this.impl.leaderboard(); },
-    deleteAccount() { return this.impl.deleteAccount(); },
+    async deleteAccount() {
+      const active = this.impl;
+      const result = await active.deleteAccount();
+      if (active === Guest && !result.error) {
+        this.user = null;
+        this.impl = this._accountImpl;
+        this.online = this.impl === Remote;
+      }
+      return result;
+    },
     freshProfile
   };
 

@@ -36,15 +36,16 @@ create trigger profiles_touch before update on public.profiles
 
 -- ============================================================
 -- SEGURANÇA (Row Level Security)
--- Qualquer pessoa pode LER (precisamos disso para o ranking),
--- mas só o dono pode CRIAR ou ALTERAR o próprio perfil.
+-- O perfil completo só pode ser lido pelo dono. O ranking público usa a view
+-- limitada abaixo e nunca expõe inventário, equipamentos ou stats completos.
 -- ============================================================
 alter table public.profiles enable row level security;
 
 drop policy if exists "leitura publica" on public.profiles;
-create policy "leitura publica"
+drop policy if exists "dono le" on public.profiles;
+create policy "dono le"
   on public.profiles for select
-  using (true);
+  using (auth.uid() = id);
 
 drop policy if exists "dono insere" on public.profiles;
 create policy "dono insere"

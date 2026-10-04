@@ -34,6 +34,7 @@
         const reg = t.dataset.tab === 'register';
         $('authAction').textContent = reg ? 'CRIAR CONTA' : 'ENTRAR';
         $('authConfirmRow').classList.toggle('hid', !reg);
+        $('authPass').autocomplete = reg ? 'new-password' : 'current-password';
         $('authMode').value = reg ? 'register' : 'login';
         this.authError('');
       });
@@ -57,7 +58,7 @@
           if (r.error) { this.authError(r.error); return; }
           MA.Profile.set(r.profile);
           MA.Profile.save(true);
-          this.toast('👋 Bem-vindo, <b>' + r.profile.username + '</b>!');
+          this.toast('👋 Bem-vindo, <b>' + MA.esc(r.profile.username) + '</b>!');
           this.openHub();
         } catch (e) {
           this.authError('Falha de conexão: ' + e.message);
@@ -68,13 +69,21 @@
       };
 
       $('authGuest').onclick = async () => {
-        const name = 'Convidado' + Math.floor(Math.random() * 9000 + 1000);
-        const r = await MA.Net.signUp(name, 'convidado123');
-        if (r.error) return this.authError(r.error);
-        MA.Profile.set(r.profile);
-        MA.Profile.save(true);
-        this.toast('Jogando como <b>' + name + '</b>. O progresso fica salvo neste navegador.');
-        this.openHub();
+        if (this.busy) return;
+        this.busy = true;
+        this.authError('');
+        try {
+          const r = await MA.Net.startGuest();
+          if (r.error) return this.authError(r.error);
+          MA.Profile.set(r.profile);
+          await MA.Profile.save(true);
+          this.toast('Modo <b>Convidado</b>: nada é enviado ao Supabase e o progresso termina com esta sessão.');
+          this.openHub();
+        } catch (e) {
+          this.authError('Não foi possível iniciar o modo Convidado: ' + e.message);
+        } finally {
+          this.busy = false;
+        }
       };
 
       $('modeBadge').textContent = MA.Net.online ? '🌐 ONLINE' : '💾 LOCAL';
@@ -94,13 +103,6 @@
     openHub() {
       if (MA._prepHub) MA._prepHub();
       this.renderHub();
-      const mp = $('mpBtn');
-      if (mp) {
-        const liberado = MA.Profile.canMultiplayer();
-        mp.classList.toggle('locked', !liberado);
-        mp.textContent = liberado ? '👥 GRUPO'
-          : '🔒 GRUPO (nv ' + MA.CONFIG.MULTIPLAYER_LEVEL + ')';
-      }
       if (MA.Market) MA.Market.checarPresentes();
       this.refreshGoalDot();
       this.screen('hub');
@@ -129,7 +131,9 @@
         if ($('seasonPity')) $('seasonPity').textContent = Math.min(7, season.pity + 1) + '/7';
       }
       const rank = MA.rankFor((p.stats && p.stats.bestScore) || 0);
-      if ($('hubRank')) $('hubRank').textContent = rank.icon + ' ' + rank.name;
+      if ($('hubRank')) $('hubRank').textContent = MA.Net.isGuest
+        ? '◇ SESSÃO TEMPORÁRIA · SEM SUPABASE'
+        : rank.icon + ' ' + rank.name;
       const map = MA.mapById(MA.store.get('map', 'arena'));
       if ($('hubMapIcon')) $('hubMapIcon').textContent = map.icon;
       if ($('hubMapName')) $('hubMapName').textContent = map.name;
@@ -235,18 +239,31 @@
         btn.onclick = () => this.openSeasonBox(btn.dataset.box);
       });
       const forge = $('forge67');
-      if (forge) forge.onclick = () => {
-        const r = MA.Season.forge();
-        if (r.error) { MA.Audio.deny(); this.toast('❌ ' + r.error, 'bad'); return; }
+      if (forge) forge.onclick = async () => {
+        if (forge.disabled) return;
+        forge.disabled = true; forge.textContent = 'ABRINDO…';
+        let r;
+        try { r = await MA.Season.forge(); }
+        catch (e) { r = { error: 'Falha na Caixa Garantida: ' + e.message }; }
+        if (r.error) { MA.Audio.deny(); this.toast('❌ ' + r.error, 'bad'); this.renderBoxes(); return; }
         MA.Audio.pickup();
         this.toast('📦 Caixa garantida: <b>' + r.item.name + '</b>');
         this.renderShop();
       };
     },
 
-    openSeasonBox(id) {
-      const r = MA.Season.openBox(id);
-      if (r.error) { MA.Audio.deny(); this.toast('❌ ' + r.error, 'bad'); return; }
+    async openSeasonBox(id) {
+      const btn = document.querySelector('[data-box="' + id + '"]');
+      if (btn && btn.disabled) return;
+      if (btn) { btn.disabled = true; btn.textContent = 'ABRINDO…'; }
+      let r;
+      try { r = await MA.Season.openBox(id); }
+      catch (e) { r = { error: 'Falha ao abrir a caixa: ' + e.message }; }
+      if (r.error) {
+        MA.Audio.deny(); this.toast('❌ ' + r.error, 'bad');
+        if (!$('shop').classList.contains('hid')) this.renderBoxes();
+        return;
+      }
       MA.Audio.pickup();
       this._lastBox = id;
       this.showLootResults(r);
@@ -546,7 +563,10 @@
       on('glClose', () => this.openHub());
       document.querySelectorAll('#goals .tab').forEach(t =>
         t.onclick = () => { MA.Audio.ui(); this.openGoals(t.dataset.tab); });
-      on('hubSettings', () => $('settings').classList.remove('hid'));
+      on('hubSettings', () => {
+        $('settings').classList.remove('hid');
+        $('sDelete').textContent = MA.Net.isGuest ? '🗑 ENCERRAR SESSÃO DE CONVIDADO' : '🗑 APAGAR MINHA CONTA';
+      });
       /* exclusao de conta: exigencia das lojas e da politica de privacidade */
       let confirmando = false;
       on('sDelete', async () => {
@@ -554,26 +574,32 @@
         if (!confirmando) {
           confirmando = true;
           btn.textContent = '⚠️ CLIQUE DE NOVO PARA CONFIRMAR';
-          msg.innerHTML = 'Isso apaga <b>para sempre</b> sua conta, nível, moedas e todos os itens. ' +
-                          'Não tem como desfazer. Clique de novo em até 8 segundos para confirmar.';
+          msg.innerHTML = MA.Net.isGuest
+            ? 'Isso encerra a sessão temporária e apaga o progresso local do convidado. Clique novamente para confirmar.'
+            : 'Isso apaga <b>para sempre</b> sua conta, nível, moedas e todos os itens. ' +
+              'Não tem como desfazer. Clique de novo em até 8 segundos para confirmar.';
           MA.Audio.deny();
           setTimeout(() => {
             if (!confirmando) return;
-            confirmando = false; btn.textContent = '🗑 APAGAR MINHA CONTA'; msg.innerHTML = '';
+            confirmando = false;
+            btn.textContent = MA.Net.isGuest ? '🗑 ENCERRAR SESSÃO DE CONVIDADO' : '🗑 APAGAR MINHA CONTA';
+            msg.innerHTML = '';
           }, 8000);
           return;
         }
         confirmando = false;
-        btn.textContent = 'apagando…'; btn.disabled = true;
+        const wasGuest = MA.Net.isGuest;
+        btn.textContent = wasGuest ? 'encerrando…' : 'apagando…'; btn.disabled = true;
         const r = await MA.Net.deleteAccount();
-        btn.disabled = false; btn.textContent = '🗑 APAGAR MINHA CONTA';
+        btn.disabled = false;
+        btn.textContent = wasGuest ? '🗑 ENCERRAR SESSÃO DE CONVIDADO' : '🗑 APAGAR MINHA CONTA';
         if (r && r.error) { msg.innerHTML = r.error; return; }
         msg.innerHTML = '';
         try { localStorage.removeItem('memearena.session'); } catch (e) { /* ignora */ }
         MA.Profile.data = null;
         $('settings').classList.add('hid');
         this.screen('auth');
-        this.toast('Conta apagada. Até a próxima! 👋');
+        this.toast(wasGuest ? 'Sessão temporária encerrada. 👋' : 'Conta apagada. Até a próxima! 👋');
       });
 
       on('logoutBtn', async () => {

@@ -126,10 +126,10 @@
       const icone = it ? (it.icon || it.face || '🎁') : '🎁';
       const raro = it && it.rarity ? it.rarity : 'common';
       return '<div class="mkitem ' + raro + '">' +
-        '<div class="mkico">' + icone + '</div>' +
-        '<div class="mkinfo"><b>' + nome + '</b>' +
+        '<div class="mkico">' + MA.esc(icone) + '</div>' +
+        '<div class="mkinfo"><b>' + MA.esc(nome) + '</b>' +
         '<div class="dim">' + (tipo === 'skin' ? 'Skin' : tipo === 'armor' ? 'Armadura' : tipo === 'ability' ? 'Habilidade' : 'Arma') +
-        ' · vendedor: ' + l.seller_name + '</div></div>' +
+        ' · vendedor: ' + MA.esc(l.seller_name) + '</div></div>' +
         '<div class="mkprice">🪙 ' + MA.fmt(l.price) + '</div>' + botao +
         '</div>';
     },
@@ -310,8 +310,8 @@
             partes.push((it && it.name) || g.item);
           }
           if (g.coins) partes.push('🪙 ' + MA.fmt(g.coins));
-          MA.MetaUI.toast('🎁 <b>' + g.from_name + '</b> te mandou ' + partes.join(' + ') +
-            (g.note ? '<br><i>"' + g.note + '"</i>' : ''));
+          MA.MetaUI.toast('🎁 <b>' + MA.esc(g.from_name) + '</b> te mandou ' + partes.map(MA.esc).join(' + ') +
+            (g.note ? '<br><i>"' + MA.esc(g.note) + '"</i>' : ''));
         });
         await MA.Net.refreshProfile();
         MA.MetaUI.renderHub();

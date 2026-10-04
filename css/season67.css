@@ -432,3 +432,19 @@
   #hub .mode-map-art{height:92px}#hub .lobby-play{min-height:70px}
   #hub .lobby-footer{min-height:60px;padding:7px}#hub .pass-head{min-width:72px}#hub .lobby-footer .hst{padding:5px 3px}
 }
+
+/* Dispositivos com recorte/notch e acessibilidade de movimento. */
+@supports (padding: max(0px)) {
+  #hub .lobby-shell { padding-top: max(14px, env(safe-area-inset-top)); padding-left: max(18px, env(safe-area-inset-left)); padding-right: max(18px, env(safe-area-inset-right)); padding-bottom: max(13px, env(safe-area-inset-bottom)); }
+  .splash-rating { left: max(24px, env(safe-area-inset-left)); bottom: max(20px, env(safe-area-inset-bottom)); }
+  .splash-foot { right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); }
+  #touch { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
+  #loading .splash-orb, .splash-logo span, .splash-loader i,
+  #hub .lobby-character::before, #hub .lobby-play::after,
+  .player-float, .floating-tag { animation: none !important; }
+  #hub .lobby-tile, #hub .lobby-play, .splash-enter { transition-duration: .01ms !important; }
+}

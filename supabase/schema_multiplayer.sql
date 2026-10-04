@@ -33,6 +33,18 @@ create table if not exists public.rooms (
   updated_at  timestamptz not null default now()
 );
 
+-- Valida novas salas mesmo quando alguém chama a API REST sem usar o cliente.
+alter table public.rooms drop constraint if exists rooms_code_format;
+alter table public.rooms add constraint rooms_code_format check (code ~ '^[A-Z]{4}$') not valid;
+alter table public.rooms drop constraint if exists rooms_host_name_format;
+alter table public.rooms add constraint rooms_host_name_format check (host_name ~ '^[A-Za-z0-9_]{3,16}$') not valid;
+alter table public.rooms drop constraint if exists rooms_values_valid;
+alter table public.rooms add constraint rooms_values_valid check (
+  mode in ('coop','pvp') and map in ('arena','ohio','praia','esgoto','servidor') and
+  diff in ('easy','norm','normal','hard','brain') and state in ('lobby','playing') and
+  players between 1 and 4 and max_players between 1 and 4 and players <= max_players
+) not valid;
+
 create index if not exists rooms_updated_idx on public.rooms (updated_at desc);
 
 drop trigger if exists rooms_touch on public.rooms;
@@ -58,10 +70,11 @@ create policy "host apaga sala" on public.rooms for delete
 
 -- faxina: some com salas paradas há mais de 15 minutos
 create or replace function public.clean_rooms()
-returns void language sql security definer as $$
+returns void language sql security definer set search_path = public as $$
   delete from public.rooms where updated_at < now() - interval '15 minutes';
 $$;
-grant execute on function public.clean_rooms() to anon, authenticated;
+revoke all on function public.clean_rooms() from public, anon;
+grant execute on function public.clean_rooms() to authenticated;
 
 -- ------------------------------------------------------------------
 -- MERCADO: anúncios de itens à venda por moedas
@@ -147,13 +160,10 @@ alter table public.market_listings enable row level security;
 drop policy if exists "mercado leitura" on public.market_listings;
 create policy "mercado leitura" on public.market_listings for select using (true);
 
+-- Escrita direta é proibida. Somente as RPCs security definer abaixo podem
+-- inserir/remover anúncios depois de validar inventário e faixa de preço.
 drop policy if exists "dono anuncia" on public.market_listings;
-create policy "dono anuncia" on public.market_listings for insert
-  with check (auth.uid() = seller_id);
-
 drop policy if exists "dono cancela" on public.market_listings;
-create policy "dono cancela" on public.market_listings for delete
-  using (auth.uid() = seller_id and sold = false);
 
 -- ------------------------------------------------------------------
 -- PRESENTES: itens enviados de um jogador para outro
@@ -184,7 +194,7 @@ create policy "ve meus presentes" on public.gifts for select
 
 -- Anunciar um item: só se ele estiver mesmo no inventário; sai do inventário na hora.
 create or replace function public.market_sell(p_item text, p_price int)
-returns json language plpgsql security definer as $$
+returns json language plpgsql security definer set search_path = public as $$
 declare
   me uuid := auth.uid(); inv jsonb; equip jsonb; nome text;
   minimo int; maximo int; pode_vender boolean;
@@ -228,7 +238,7 @@ $$;
 
 -- Cancelar anúncio: devolve o item para o inventário.
 create or replace function public.market_cancel(p_id bigint)
-returns json language plpgsql security definer as $$
+returns json language plpgsql security definer set search_path = public as $$
 declare me uuid := auth.uid(); it text;
 begin
   /* operação confiável: roda dentro do banco, a trava anti-trapaça libera */
@@ -245,7 +255,7 @@ $$;
 
 -- Comprar: tira moedas do comprador, dá o item, paga o vendedor. Tudo junto.
 create or replace function public.market_buy(p_id bigint)
-returns json language plpgsql security definer as $$
+returns json language plpgsql security definer set search_path = public as $$
 declare me uuid := auth.uid(); l record; meu_saldo int; meu_inv jsonb; meu_nome text;
 begin
   /* operação confiável: roda dentro do banco, a trava anti-trapaça libera */
@@ -275,7 +285,7 @@ $$;
 
 -- Presentear outro jogador pelo nome: item sai de quem envia e entra em quem recebe.
 create or replace function public.send_gift(p_to text, p_item text, p_coins int default 0, p_note text default null)
-returns json language plpgsql security definer as $$
+returns json language plpgsql security definer set search_path = public as $$
 declare me uuid := auth.uid(); alvo uuid; meu_nome text; inv jsonb; saldo int; inv_alvo jsonb;
 begin
   /* operação confiável: roda dentro do banco, a trava anti-trapaça libera */
@@ -313,4 +323,17 @@ $$;
 grant execute on function public.market_sell(text,int)  to authenticated;
 grant execute on function public.market_cancel(bigint)  to authenticated;
 grant execute on function public.market_buy(bigint)     to authenticated;
+grant execute on function public.send_gift(text,text,int,text) to authenticated;
+
+
+-- Lançamento: privilégios mínimos das funções com autoridade.
+revoke all on function public.clean_rooms() from public, anon;
+grant execute on function public.clean_rooms() to authenticated;
+revoke all on function public.market_sell(text,int) from public, anon;
+revoke all on function public.market_cancel(bigint) from public, anon;
+revoke all on function public.market_buy(bigint) from public, anon;
+revoke all on function public.send_gift(text,text,int,text) from public, anon;
+grant execute on function public.market_sell(text,int) to authenticated;
+grant execute on function public.market_cancel(bigint) to authenticated;
+grant execute on function public.market_buy(bigint) to authenticated;
 grant execute on function public.send_gift(text,text,int,text) to authenticated;

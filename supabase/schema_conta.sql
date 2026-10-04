@@ -18,9 +18,9 @@ begin
     return jsonb_build_object('error', 'Você precisa estar conectado.');
   end if;
 
-  -- anúncios do mercado (se a tabela existir)
+  -- anúncios do mercado (as compras guardam só o nome público do comprador)
   begin
-    delete from public.market_listings where seller_id = me or buyer_id = me;
+    delete from public.market_listings where seller_id = me;
   exception when undefined_table then null;
   end;
 
@@ -46,4 +46,5 @@ begin
 end;
 $$;
 
+revoke all on function public.delete_my_account() from public, anon;
 grant execute on function public.delete_my_account() to authenticated;

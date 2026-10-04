@@ -400,10 +400,21 @@
     return final;
   }
 
-  function grantSeasonBossReward() {
+  async function grantSeasonBossReward() {
     if (!MA.Season || !MA.Season.bossReward) return;
-    const reward = MA.Season.bossReward();
+    let reward;
+    try { reward = await MA.Season.bossReward(); }
+    catch (e) {
+      if (MA.MetaUI) MA.MetaUI.toast('❌ Falha ao validar recompensa do chefe.', 'bad');
+      return;
+    }
     if (!reward) return;
+    if (reward.error) {
+      /* O multiplayer pode anunciar a mesma morte por dois caminhos. A recarga
+         do servidor impede prêmio duplicado sem poluir a tela do jogador. */
+      if (!/recarga/i.test(reward.error) && MA.MetaUI) MA.MetaUI.toast('❌ ' + reward.error, 'bad');
+      return;
+    }
     const itemDrop = reward.type === 'item';
     if (MA.MetaUI) {
       MA.MetaUI.toast((itemDrop ? '🎁 <b>DROP DO CHEFE:</b> ' : '⬡ <b>RECOMPENSA DO CHEFE:</b> ') + reward.name);
@@ -1993,6 +2004,36 @@
   };
   window.MEMEARENA = MA.Game.debug;
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
+  function recordClientError(error) {
+    try {
+      const current = JSON.parse(localStorage.getItem('memearena.diagnostics') || '[]');
+      current.push({ at: new Date().toISOString(), message: String(error && (error.message || error) || 'erro desconhecido').slice(0, 300) });
+      localStorage.setItem('memearena.diagnostics', JSON.stringify(current.slice(-10)));
+    } catch (e) { /* diagnóstico nunca pode impedir o jogo */ }
+  }
+
+  function bootSafely() {
+    try { boot(); }
+    catch (error) {
+      recordClientError(error);
+      console.error('[MemeArena] Falha ao iniciar:', error);
+      const splash = $('loading');
+      if (splash) {
+        splash.classList.remove('hid');
+        const progress = document.querySelector('.splash-loading');
+        if (progress) progress.textContent = 'Não foi possível iniciar o modo 3D neste navegador.';
+        const button = $('enterGame');
+        if (button) {
+          button.disabled = false;
+          button.textContent = 'RECARREGAR JOGO';
+          button.onclick = () => location.reload();
+        }
+      }
+    }
+  }
+  addEventListener('error', ev => recordClientError(ev.error || ev.message));
+  addEventListener('unhandledrejection', ev => recordClientError(ev.reason));
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootSafely);
+  else bootSafely();
 })(window.MA);

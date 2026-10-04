@@ -1,4 +1,4 @@
-# Ficha do PWABuilder — MEME ARENA: APOCALYPSE
+# Ficha do PWABuilder — MEME ARENA 3D
 
 Copie e cole estes valores no PWABuilder. São dados **públicos**: ficam dentro
 de todo app publicado na Microsoft Store.
@@ -10,7 +10,7 @@ de todo app publicado na Microsoft Store.
 | **Publisher display name** | `fewkss` |
 | **Package ID** | `fewkss.MEMEARENAAPOCALYPSE` |
 | **Publisher ID** | `CN=2963B636-05D1-40E1-BD68-FC070070CBDD` |
-| **App name** | `MEME ARENA: APOCALYPSE` |
+| **App name** | `MEME ARENA 3D` |
 | **App version** | `1.0.1` |
 | **Classic package version** | `1.0.0` |
 | **URL** | `https://mathpvp2080.github.io/meme-arena-3d/` |
@@ -32,7 +32,7 @@ de todo app publicado na Microsoft Store.
 
 ## Depois: enviar no Partner Center
 
-1. Partner Center → **Aplicativos e jogos** → clique em **MEME ARENA: APOCALYPSE**
+1. Partner Center → **Aplicativos e jogos** → clique em **MEME ARENA 3D**
 2. **Iniciar envio** / **Start submission**
 3. **Pacotes** → arraste o `.msixbundle`
 4. **Preços e disponibilidade** → **Gratuito**, todos os mercados

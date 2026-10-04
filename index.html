@@ -4,20 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#151a43">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <title>MEME ARENA 3D — Temporada 67</title>
 <meta name="description" content="Temporada 67 do jogo de arena 3D: sobreviva às hordas, abra Caixas 67, derrote chefes e conquiste equipamento sazonal com arte original.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="MEME ARENA 3D — Temporada 67">
 <meta property="og:description" content="A Temporada 1 chegou: identidade 67, caixas com garantia, equipamento sazonal e arena 3D.">
-<meta property="og:image" content="assets/og.jpg">
+<meta property="og:image" content="assets/splash-season67.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preload" as="image" href="assets/splash-season67.jpg" fetchpriority="high">
-<link rel="stylesheet" href="css/style.css?v=34">
-<link rel="stylesheet" href="css/season67.css?v=34">
+<link rel="stylesheet" href="css/style.css?v=35">
+<link rel="stylesheet" href="css/season67.css?v=35">
 </head>
 <body>
 <div id="app"></div>
@@ -111,14 +113,14 @@
       <button class="tab" data-tab="register">CRIAR CONTA</button>
     </div>
 
-    <form id="authForm" autocomplete="off">
+    <form id="authForm">
       <input type="hidden" id="authMode" value="login">
       <label class="field"><span>NOME DE JOGADOR</span>
-        <input id="authUser" type="text" maxlength="16" required placeholder="ex.: ChillGuy99"></label>
+        <input id="authUser" type="text" maxlength="16" required autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex.: ChillGuy99"></label>
       <label class="field"><span>SENHA</span>
-        <input id="authPass" type="password" minlength="6" required placeholder="mínimo 6 caracteres"></label>
+        <input id="authPass" type="password" minlength="6" required autocomplete="current-password" placeholder="mínimo 6 caracteres"></label>
       <label class="field hid" id="authConfirmRow"><span>REPETIR SENHA</span>
-        <input id="authPass2" type="password" minlength="6" placeholder="digite de novo"></label>
+        <input id="authPass2" type="password" minlength="6" autocomplete="new-password" placeholder="digite de novo"></label>
       <div id="authError" class="autherr hid"></div>
       <button id="authAction" type="submit" class="btn wide">ENTRAR</button>
     </form>
@@ -126,8 +128,8 @@
     <div class="btnrow">
       <button id="authGuest" class="btn sec">JOGAR COMO CONVIDADO</button>
     </div>
-    <div class="foot">Todo jogador começa com a mesma skin e <b>600 moedas</b> — o bastante
-      pra comprar a primeira arma.</div>
+    <div class="foot">Todo jogador começa com a mesma skin e <b>600 moedas</b>.<br>
+      <b>Conta:</b> guarde sua senha; não há recuperação por e-mail. <b>Convidado:</b> sessão temporária, nunca enviada ao Supabase.</div>
     <div class="auth-rating"><b>L</b><span>CLASSIFICAÇÃO LIVRE<br><small>violência fantasiosa</small></span></div>
   </div>
 </div>
@@ -512,7 +514,8 @@
       <input id="sInv" type="checkbox"><span></span></div>
     <div class="seclbl">CONTA E PRIVACIDADE</div>
     <div class="privrow">
-      <a class="btn sec tiny" href="privacidade.html" target="_blank" rel="noopener">📄 POLÍTICA DE PRIVACIDADE</a>
+      <a class="btn sec tiny" href="privacidade.html" target="_blank" rel="noopener">📄 PRIVACIDADE</a>
+      <a class="btn sec tiny" href="termos.html" target="_blank" rel="noopener">⚖ TERMOS</a>
       <button id="sDelete" class="btn danger tiny">🗑 APAGAR MINHA CONTA</button>
     </div>
     <div id="sDelMsg" class="formerr"></div>
@@ -580,37 +583,32 @@
   <div class="splash-foot">Arte e áudio originais · Violência fantasiosa · Interação entre usuários · Apenas moeda virtual</div>
 </div>
 
-<script src="lib/three.min.js?v=34"></script>
-<script src="src/utils.js?v=34"></script>
-<script src="src/config.js?v=34"></script>
-<script src="src/data.js?v=34"></script>
-<script src="src/maps.js?v=34"></script>
-<script src="src/items.js?v=34"></script>
-<script src="src/season.js?v=34"></script>
-<script src="src/audio.js?v=34"></script>
-<script src="src/faces.js?v=34"></script>
-<script src="src/textures.js?v=34"></script>
-<script src="src/world.js?v=34"></script>
-<script src="src/builds.js?v=34"></script>
-<script src="src/weapons3d.js?v=34"></script>
-<script src="src/armor3d.js?v=34"></script>
-<script src="src/entities.js?v=34"></script>
-<script src="src/net.js?v=34"></script>
-<script src="src/profile.js?v=34"></script>
-<script src="src/ui.js?v=34"></script>
-<script src="src/pbuilds.js?v=34"></script>
-<script src="src/previews.js?v=34"></script>
-<script src="src/goals.js?v=34"></script>
-<script src="src/market.js?v=34"></script>
-<script src="src/multi.js?v=34"></script>
-<script src="src/mod.js?v=34"></script>
-<script src="src/mpui.js?v=34"></script>
-<script src="src/metaui.js?v=34"></script>
-<script src="src/game.js?v=34"></script>
-<script>
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=34').catch(() => {}));
-  }
-</script>
+<script src="lib/three.min.js?v=35"></script>
+<script src="src/utils.js?v=35"></script>
+<script src="src/config.js?v=35"></script>
+<script src="src/data.js?v=35"></script>
+<script src="src/maps.js?v=35"></script>
+<script src="src/items.js?v=35"></script>
+<script src="src/season.js?v=35"></script>
+<script src="src/audio.js?v=35"></script>
+<script src="src/faces.js?v=35"></script>
+<script src="src/textures.js?v=35"></script>
+<script src="src/world.js?v=35"></script>
+<script src="src/builds.js?v=35"></script>
+<script src="src/weapons3d.js?v=35"></script>
+<script src="src/armor3d.js?v=35"></script>
+<script src="src/entities.js?v=35"></script>
+<script src="src/net.js?v=35"></script>
+<script src="src/profile.js?v=35"></script>
+<script src="src/ui.js?v=35"></script>
+<script src="src/pbuilds.js?v=35"></script>
+<script src="src/previews.js?v=35"></script>
+<script src="src/goals.js?v=35"></script>
+<script src="src/market.js?v=35"></script>
+<script src="src/multi.js?v=35"></script>
+<script src="src/mod.js?v=35"></script>
+<script src="src/mpui.js?v=35"></script>
+<script src="src/metaui.js?v=35"></script>
+<script src="src/game.js?v=35"></script>
 </body>
 </html>

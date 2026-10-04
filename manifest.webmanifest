@@ -28,13 +28,12 @@
     { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ],
   "screenshots": [
+    { "src": "assets/screens/00-season67.jpg", "sizes": "1280x720", "type": "image/jpeg", "form_factor": "wide", "label": "Arte oficial da Temporada 67" },
     { "src": "assets/screens/01-arena.png",    "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Arena 67: ondas de criaturas atacando" },
     { "src": "assets/screens/02-ohio.png",     "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Planície de Ohio: milharal infinito" },
     { "src": "assets/screens/03-praia.png",    "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Praia do Tubarão: chefe final" },
     { "src": "assets/screens/04-esgoto.png",   "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Esgoto Skibidi" },
-    { "src": "assets/screens/05-servidor.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Núcleo do Servidor" },
-    { "src": "assets/screens/06-hub.png",      "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Perfil, nível e moedas" },
-    { "src": "assets/screens/07-loja.png",     "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Loja de skins e armas" }
+    { "src": "assets/screens/05-servidor.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Núcleo do Servidor" }
   ],
   "prefer_related_applications": false
 }

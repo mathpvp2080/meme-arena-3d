@@ -16,6 +16,7 @@
     startsAt: '2026-10-03T00:00:00-03:00',
     endsAt: '2026-11-28T23:59:59-03:00',
     nextStartsAt: '2026-11-29T00:00:00-03:00',
+    odds: { coins: 42, xp: 23, boost: 17, item: 18 },
     itemKeys: [
       'skin:sixtyseven', 'skin:sixorbit', 'skin:sevenbreak', 'skin:duo67',
       'armor:protocol67', 'armor:orbit6', 'armor:prism7',
@@ -89,6 +90,7 @@
         forged: int(old.forged),
         bossesDefeated: int(old.bossesDefeated),
         bossDrops: int(old.bossDrops),
+        lastBossRewardAt: old.lastBossRewardAt || null,
         lastRewards: Array.isArray(old.lastRewards) ? old.lastRewards.slice(-12) : []
       };
       return profile.stats.season67;
@@ -120,12 +122,24 @@
 
     box(id) { return SEASON.boxes.find(b => b.id === id) || null; },
 
-    openBox(id) {
+    async openBox(id) {
       if (!MA.Profile || !MA.Profile.data) return { error: 'Entre em uma conta para abrir caixas.' };
       if (!this.active()) return { error: 'As Caixas 67 só ficam disponíveis durante a temporada.' };
       const box = this.box(id);
       if (!box) return { error: 'Caixa desconhecida.' };
       if (MA.Profile.data.coins < box.price) return { error: 'Moedas insuficientes.' };
+
+      /* Conta online: moedas, piedade e sorteio são autoridade do PostgreSQL.
+         Convidado/modo local preserva o mesmo algoritmo sem criar dados remotos. */
+      if (MA.Net && MA.Net.online) {
+        const remote = await MA.Net.seasonOpenBox(id);
+        if (!remote) return { error: 'Servidor sazonal indisponível.' };
+        if (remote.error) return { error: remote.error };
+        await MA.Net.refreshProfile();
+        const results = (remote.results || []).map(r => this._enrichServerReward(r));
+        if (MA.Goals) { MA.Goals.track('buys', 1); MA.Goals.track('inv', 0); }
+        return { ok: true, box, results, progress: this.progress() };
+      }
 
       MA.Profile.addCoins(-box.price);
       const results = [];
@@ -133,7 +147,7 @@
       const p = this.progress();
       p.lastRewards = p.lastRewards.concat(results.map(r => r.log)).slice(-12);
       if (MA.Goals) { MA.Goals.track('buys', 1); MA.Goals.track('inv', 0); }
-      MA.Profile.save(true);
+      await MA.Profile.save(true);
       return { ok: true, box, results, progress: p };
     },
 
@@ -230,8 +244,37 @@
       };
     },
 
-    bossReward() {
+    _enrichServerReward(reward) {
+      const r = Object.assign({}, reward || {});
+      if (r.itemKey) {
+        const parts = r.itemKey.split(':');
+        r.itemType = r.itemType || parts[0];
+        r.item = MA.findItem(parts[0], parts[1]);
+        if (r.item) {
+          r.name = r.item.name;
+          r.icon = r.item.icon || r.item.face || r.icon || '67';
+          r.rarity = r.item.rarity || r.rarity;
+        }
+      }
+      if (!r.log) {
+        if (r.type === 'item') r.log = '🎁 ' + r.name;
+        else if (r.type === 'coins') r.log = '🪙 +' + r.amount + ' moedas';
+        else if (r.type === 'xp') r.log = '✦ +' + r.amount + ' XP';
+        else if (r.type === 'boost') r.log = '⚡ Impulso 67 ×' + r.amount;
+        else r.log = '⬡ +' + r.amount + ' fragmentos';
+      }
+      return r;
+    },
+
+    async bossReward() {
       if (!MA.Profile || !MA.Profile.data || !this.active()) return null;
+      if (MA.Net && MA.Net.online) {
+        const remote = await MA.Net.seasonBossReward();
+        if (!remote) return { error: 'Servidor sazonal indisponível.' };
+        if (remote.error) return { error: remote.error };
+        await MA.Net.refreshProfile();
+        return this._enrichServerReward(remote.reward);
+      }
       const p = this.progress();
       p.bossesDefeated++;
       if (Math.random() >= .67) {
@@ -252,8 +295,17 @@
       return reward;
     },
 
-    forge() {
+    async forge() {
       if (!MA.Profile || !MA.Profile.data) return { error: 'Entre em uma conta primeiro.' };
+      if (!this.active()) return { error: 'A Caixa Garantida só fica disponível durante a temporada.' };
+      if (MA.Net && MA.Net.online) {
+        const remote = await MA.Net.seasonForgeBox();
+        if (!remote) return { error: 'Servidor sazonal indisponível.' };
+        if (remote.error) return { error: remote.error };
+        await MA.Net.refreshProfile();
+        const reward = this._enrichServerReward(remote.reward);
+        return { ok: true, item: reward.item, type: reward.itemType, reward };
+      }
       const p = this.progress();
       if (p.fragments < 67) return { error: 'Você precisa de 67 fragmentos.' };
       const missing = this._choices().filter(choice => !MA.Profile.owns(choice.type, choice.id));
@@ -279,6 +331,14 @@
       const p = this.progress();
       if (!p || p.boosts <= 0) return false;
       p.boosts--;
+      /* O resultado da partida continua imediato na UI, mas a conta online
+         confirma o consumo na tabela sazonal privada do servidor. */
+      if (MA.Net && MA.Net.online) {
+        const request = MA.Net.seasonConsumeBoost();
+        if (request && request.then) request.then(r => {
+          if (r && r.error) console.warn('[Temporada 67] impulso não confirmado:', r.error);
+        }).catch(e => console.warn('[Temporada 67] impulso não confirmado', e));
+      }
       return true;
     }
   };
