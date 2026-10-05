@@ -51,6 +51,46 @@
   }
 
   /* ================================================================ BOOT */
+  /* Cria o renderer tentando do melhor para o mais compatível. Em máquinas
+     virtuais e notebooks sem GPU dedicada (como as usadas na certificação da
+     Microsoft Store) o contexto "high-performance" pode falhar; antes disso
+     derrubava o jogo inteiro e sobrava uma tela preta. */
+  function createRenderer() {
+    const tentativas = [
+      { antialias: S.quality !== 'low', powerPreference: 'high-performance' },
+      { antialias: false, powerPreference: 'default' },
+      { antialias: false, powerPreference: 'low-power', failIfMajorPerformanceCaveat: false }
+    ];
+    let ultimo = null;
+    for (const opts of tentativas) {
+      try { return new THREE.WebGLRenderer(opts); }
+      catch (e) { ultimo = e; console.warn('[MemeArena] WebGL recusou', opts, e && e.message); }
+    }
+    const err = new Error('WebGL indisponível: ' + (ultimo && ultimo.message ? ultimo.message : 'contexto não criado'));
+    err.webgl = true;
+    throw err;
+  }
+
+  /* Rede nunca pode travar a interface: numa máquina sem internet (ou com a
+     CDN bloqueada) o await ficava pendurado para sempre e o jogador via uma
+     tela vazia. Tudo que depende de rede passa por aqui. */
+  function comLimite(promessa, ms, nome) {
+    return Promise.race([
+      Promise.resolve(promessa),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('tempo esgotado: ' + nome)), ms))
+    ]);
+  }
+
+  /* Garante que SEMPRE exista uma tela visível para o jogador. */
+  function telaVisivel() {
+    return ['auth', 'hub', 'shop', 'lootbox', 'inventory', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over']
+      .some(id => { const e = $(id); return e && !e.classList.contains('hid'); });
+  }
+  function garantirTela() {
+    if (G.running || telaVisivel()) return;
+    try { MA.MetaUI.screen('auth'); } catch (e) { recordClientError(e); }
+  }
+
   function boot() {
     Object.assign(S, MA.store.get('settings', {}));
     /* quem já jogava antes não tem 'shoulder' salvo — cai no padrão do ombro */
@@ -58,7 +98,7 @@
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(S.fov, innerWidth / innerHeight, .1, 650);
-    renderer = new THREE.WebGLRenderer({ antialias: S.quality !== 'low', powerPreference: 'high-performance' });
+    renderer = createRenderer();
     applyQuality();
     renderer.setSize(innerWidth, innerHeight);
     renderer.outputEncoding = THREE.sRGBEncoding;
@@ -74,6 +114,16 @@
     MA.UI.init();
     player = MA.createPlayer(scene, currentSkin(), currentArmor());
     player.obj.position.set(0, 0, 0);
+
+    /* Skins modeladas à mão (.glb): carrega em segundo plano e, se achar
+       algum modelo, refaz o boneco e as miniaturas com ele. */
+    if (MA.SkinModels) {
+      MA.SkinModels.preload().then(n => {
+        if (!n) return;
+        if (MA.Previews) MA.Previews.cache = Object.create(null);
+        rebuildPlayerLook();
+      }).catch(() => { /* segue com o boneco procedural */ });
+    }
 
     camera.position.set(0, 12, 46);
     camera.lookAt(0, 5, 0);
@@ -115,16 +165,29 @@
     MA.MetaUI.bind();
     if (MA.MPUI) MA.MPUI.init();
     if (MA.Market) MA.Market.init();
-    try { await MA.Net.init(); } catch (e) { console.warn('rede:', e); }
-    MA.MetaUI.initAuth();
+    /* rede de segurança: aconteça o que acontecer, em 12s tem tela na frente
+       do jogador (exigência 10.1.2 da Microsoft Store) */
+    const salvaVidas = setTimeout(garantirTela, 12000);
+    try { await comLimite(MA.Net.init(), 7000, 'rede'); }
+    catch (e) { console.warn('[MemeArena] rede indisponível, seguindo offline:', e && e.message); }
+    try { MA.MetaUI.initAuth(); } catch (e) { recordClientError(e); }
     let prof = null;
-    try { prof = await MA.Net.restore(); } catch (e) { /* segue local */ }
-    if (prof) {
-      MA.Profile.set(prof);
-      rebuildPlayerLook();
-      MA.MetaUI.openHub();
-    } else {
+    try { prof = await comLimite(MA.Net.restore(), 7000, 'restaurar sessão'); }
+    catch (e) { console.warn('[MemeArena] sessão não restaurada:', e && e.message); }
+    try {
+      if (prof) {
+        MA.Profile.set(prof);
+        rebuildPlayerLook();
+        MA.MetaUI.openHub();
+      } else {
+        MA.MetaUI.screen('auth');
+      }
+    } catch (e) {
+      recordClientError(e);
       MA.MetaUI.screen('auth');
+    } finally {
+      clearTimeout(salvaVidas);
+      garantirTela();
     }
   }
 
@@ -2045,24 +2108,36 @@
     } catch (e) { /* diagnóstico nunca pode impedir o jogo */ }
   }
 
+  /* A entrada NUNCA pode ficar em branco: se o 3D falhar (máquina sem GPU,
+     WebGL desligado, driver em software), mostramos a tela de aviso já
+     visível e clicável — antes o botão continuava com opacity:0 porque a
+     classe .ready só era adicionada no caminho feliz. */
+  function showBootFailure(error) {
+    recordClientError(error);
+    console.error('[MemeArena] Falha ao iniciar:', error);
+    const splash = $('loading');
+    if (!splash) return;
+    splash.classList.remove('hid', 'leave');
+    splash.classList.add('ready', 'failed');
+    const semWebgl = !!(error && (error.webgl || /webgl/i.test(String(error.message || error))));
+    const progress = document.querySelector('.splash-loading');
+    if (progress) {
+      progress.textContent = semWebgl
+        ? 'Este dispositivo não liberou a aceleração 3D (WebGL). Atualize o driver de vídeo ou ative a aceleração por hardware e tente de novo.'
+        : 'Não foi possível iniciar o jogo nesta máquina. Toque em recarregar para tentar de novo.';
+    }
+    const button = $('enterGame');
+    if (button) {
+      button.disabled = false;
+      button.classList.add('retry');
+      button.innerHTML = '<b>RECARREGAR JOGO</b><small>TENTAR NOVAMENTE</small>';
+      button.onclick = () => location.reload();
+    }
+  }
+
   function bootSafely() {
     try { boot(); }
-    catch (error) {
-      recordClientError(error);
-      console.error('[MemeArena] Falha ao iniciar:', error);
-      const splash = $('loading');
-      if (splash) {
-        splash.classList.remove('hid');
-        const progress = document.querySelector('.splash-loading');
-        if (progress) progress.textContent = 'Não foi possível iniciar o modo 3D neste navegador.';
-        const button = $('enterGame');
-        if (button) {
-          button.disabled = false;
-          button.textContent = 'RECARREGAR JOGO';
-          button.onclick = () => location.reload();
-        }
-      }
-    }
+    catch (error) { showBootFailure(error); }
   }
   addEventListener('error', ev => recordClientError(ev.error || ev.message));
   addEventListener('unhandledrejection', ev => recordClientError(ev.reason));

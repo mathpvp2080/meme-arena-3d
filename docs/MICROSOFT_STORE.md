@@ -128,7 +128,7 @@ Responda o questionário da IARC. Para este jogo:
 - **Interação entre usuários: SIM** (tem chat no multiplayer) — isso é importante
   marcar, senão pode ser reprovado depois.
 
-A classificação final é determinada pela IARC/loja. Não anuncie o selo Livre como oficial antes da confirmação.
+Classificação confirmada pela IARC/loja: **Livre (L)** — equivalente a *Everyone*. Esse é o selo exibido na entrada do jogo, na Política de Privacidade e nos Termos; mantenha os três iguais em qualquer atualização.
 
 ### 4.4 Packages
 Arraste o arquivo **`.msixbundle`** que você baixou na Parte 3.
@@ -254,3 +254,87 @@ Rode na ordem acima. Todos podem ser rodados mais de uma vez sem quebrar nada.
 | "App version must be greater than..." | Aumente a "App version" (ex.: `1.0.2`) e gere o pacote de novo. |
 | PWABuilder reclama do manifesto | Aperte Ctrl+Shift+R na página do jogo e tente de novo; pode ser cache. |
 | Reprovado por "user-generated content" | Marque "interação entre usuários = sim" na classificação etária. |
+
+
+---
+
+## Reprovação 10.1.2.10 (tela em branco) — o que foi feito
+
+**Relatório de 05/10/2026, Product ID `9MW26RG35NDT`:** "the product does not
+display any content and it only displays a blank screen after launch"
+(Microsoft Surface Laptop, build 26200.8037).
+
+### Diagnóstico
+
+A máquina de certificação é um notebook/VM sem GPU dedicada e com rede
+restrita. Três pontos do jogo transformavam isso em tela preta:
+
+1. **WebGL recusado.** O renderer era criado só com
+   `powerPreference:'high-performance'`. Se o contexto falha, `boot()` lançava
+   erro e o jogo parava.
+2. **Botão de recuperação invisível.** A tela de erro existia, mas o botão
+   "ENTRAR NA ARENA" só ganha opacidade com a classe `.ready`, que nunca era
+   adicionada no caminho de falha. Resultado: fundo escuro e nada clicável.
+3. **Rede sem tempo limite.** O SDK do Supabase vinha de CDN com `await` sem
+   timeout. Com a rede bloqueada, a promessa nunca resolvia e nenhuma tela era
+   exibida depois da entrada.
+
+Ainda somava-se o título recortado por gradiente
+(`-webkit-background-clip:text` + `color:transparent`), que não é pintado em
+alguns rasterizadores por software: o texto ficava literalmente invisível.
+
+### Correções (todas validadas por `npm test`)
+
+| Correção | Onde |
+|---|---|
+| Renderer tenta 3 configurações, incluindo WebGL por software (`failIfMajorPerformanceCaveat:false`) | `src/game.js` |
+| Tela de falha fica visível e com botão "RECARREGAR JOGO" clicável | `src/game.js`, `css/season67.css` |
+| Aviso específico quando não há WebGL (driver/aceleração) | `src/game.js` |
+| `MA.Net.init()` e `MA.Net.restore()` com tempo limite de 7s | `src/game.js` |
+| Carregamento do SDK remoto com tempo limite de 8s e queda para modo local | `src/net.js` |
+| Rede de segurança: em 12s sempre há uma tela na frente do jogador | `src/game.js` |
+| CSS crítico embutido no `index.html` (conteúdo visível mesmo sem as folhas externas) | `index.html` |
+| Fallback de cor sólida quando o recorte de texto por gradiente não existe | `css/season67.css` |
+| `display` do manifesto passou de `fullscreen` para `standalone` (recomendado para pacote Windows) | `manifest.webmanifest` |
+
+### Como reenviar
+
+1. **Publique o site atualizado** — o pacote da Store é um PWA hospedado: ele
+   carrega `https://mathpvp2080.github.io/meme-arena-3d/`. Enquanto o GitHub
+   Pages não servir esta versão, o app da loja continua com o código antigo.
+2. Abra a URL no Edge e force `Ctrl+Shift+R`. Confirme que a entrada aparece.
+3. Gere o pacote de novo no PWABuilder com:
+   - **App version** `1.0.2`
+   - **Classic package version** `1.0.1`
+   (os demais campos seguem em `docs/IDENTIDADE_STORE.md`)
+4. Instale o `.sideload.msix` do zip no seu PC e **abra o app** antes de enviar.
+   Teste também com a internet desligada: a entrada precisa aparecer mesmo assim.
+5. Partner Center → novo envio → suba o `.msixbundle` → em **Notas para
+   certificação**, cole o texto abaixo.
+
+### Texto para "Notes to certification"
+
+```
+Product ID: 9MW26RG35NDT
+
+Thank you for the detailed report (10.1.2.10, blank screen on launch).
+
+Root cause: the WebGL context was requested only with
+powerPreference:"high-performance" and the recovery UI stayed hidden when the
+context failed, so on a machine without hardware acceleration the app showed a
+dark, empty screen. Network calls also had no timeout, which could leave the
+first screen unrendered on a restricted network.
+
+Fixes in this build (1.0.2):
+- WebGL context is now created with three progressive fallbacks, including a
+  software-rendering friendly configuration.
+- If 3D is unavailable, a visible, readable message and a working
+  "reload" button are displayed instead of a blank screen.
+- All network calls have timeouts (7-8s) and the app falls back to fully
+  offline local mode.
+- A watchdog guarantees that a screen is presented within 12 seconds of launch.
+- Critical CSS is inlined so content renders even if stylesheets fail.
+
+The app is fully playable offline after launch and requires no sign-in: the
+first screen offers "JOGAR COMO CONVIDADO" (play as guest).
+```

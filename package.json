@@ -5,6 +5,11 @@
   "type": "module",
   "scripts": {
     "test": "node scripts/validate-release.mjs",
-    "validate:release": "node scripts/validate-release.mjs"
+    "validate:release": "node scripts/validate-release.mjs",
+    "export:base": "node scripts/export-base-skin.mjs",
+    "export:acessorios": "node scripts/export-acessorios.mjs"
+  },
+  "devDependencies": {
+    "three": "^0.128.0"
   }
 }

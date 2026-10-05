@@ -11,8 +11,8 @@ de todo app publicado na Microsoft Store.
 | **Package ID** | `fewkss.MEMEARENAAPOCALYPSE` |
 | **Publisher ID** | `CN=2963B636-05D1-40E1-BD68-FC070070CBDD` |
 | **App name** | `MEME ARENA 3D` |
-| **App version** | `1.0.1` |
-| **Classic package version** | `1.0.0` |
+| **App version** | `1.0.2` |
+| **Classic package version** | `1.0.1` |
 | **URL** | `https://mathpvp2080.github.io/meme-arena-3d/` |
 
 > ⚠️ "App version" precisa ser **maior** que "Classic package version".

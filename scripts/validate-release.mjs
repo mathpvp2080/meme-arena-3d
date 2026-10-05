@@ -86,6 +86,40 @@ check('todos os assets locais do HTML existem', () => {
     assert.ok(fs.existsSync(path.join(root, ref)), `arquivo ausente: ${ref}`);
   }
 });
+check('skins modeladas à mão apontam para arquivos existentes', () => {
+  run('src/skinmodels.js', contentContext);
+  const registry = MA.SKIN_MODELS || {};
+  const specs = [];
+  for (const [id, spec] of Object.entries(registry)) {
+    assert.ok(MA.SKINS.some(s => s.id === id), `MA.SKIN_MODELS: skin inexistente "${id}"`);
+    specs.push([id, spec]);
+  }
+  for (const skin of MA.SKINS) if (skin.model) specs.push([skin.id, skin.model]);
+  for (const [id, raw] of specs) {
+    const spec = typeof raw === 'string' ? { url: raw } : raw;
+    assert.ok(spec && spec.url, `${id}: modelo sem url`);
+    assert.match(spec.url, /\.(glb|gltf)$/i, `${id}: use .glb ou .gltf (${spec.url})`);
+    assert.ok(fs.existsSync(path.join(root, spec.url)), `${id}: arquivo ausente ${spec.url}`);
+    if (spec.mode === 'part') assert.ok(['head', 'hat', 'body', 'back', 'handL', 'handR', 'gun'].includes(spec.anchor || 'head'), `${id}: anchor inválido`);
+    assert.ok(!spec.url.startsWith('http'), `${id}: hospede o modelo no projeto (CSP só permite 'self')`);
+  }
+});
+check('entrada resiste a máquina sem GPU e sem rede (certificação 10.1.2)', () => {
+  const jogo = read('src/game.js');
+  const rede = read('src/net.js');
+  const html = read('index.html');
+  const css = read('css/season67.css');
+  assert.match(jogo, /function createRenderer/, 'sem fallback de WebGL');
+  assert.match(jogo, /failIfMajorPerformanceCaveat/, 'sem tentativa de WebGL por software');
+  assert.match(jogo, /classList\.add\('ready', 'failed'\)/, 'tela de erro precisa ficar visível e clicável');
+  assert.match(jogo, /function comLimite/, 'chamadas de rede sem tempo limite');
+  assert.match(jogo, /setTimeout\(garantirTela, 12000\)/, 'sem rede de segurança para exibir uma tela');
+  assert.match(rede, /tempo esgotado/, 'carregamento do SDK remoto sem tempo limite');
+  assert.ok(html.includes('CSS crítico embutido'), 'index.html sem CSS crítico embutido');
+  assert.match(css, /@supports not \(\(-webkit-background-clip: text\)/, 'sem fallback para título recortado');
+  const manifest = JSON.parse(read('manifest.webmanifest'));
+  assert.equal(manifest.display, 'standalone', 'display fullscreen quebra a janela do pacote Windows');
+});
 check('service worker e manifesto incluem somente assets existentes', () => {
   const sw = read('sw.js');
   const swVersion = sw.match(/meme-arena-3d-v(\d+)/);
@@ -170,8 +204,19 @@ check('CSP não depende de script inline e dados sociais são escapados', () => 
 });
 check('política e termos têm identidade e data atuais', () => {
   assert.match(read('privacidade.html'), /MEME ARENA 3D/);
-  assert.match(read('privacidade.html'), /4 de outubro de 2026/);
+  assert.match(read('privacidade.html'), /5 de outubro de 2026/);
   assert.match(read('termos.html'), /Moedas, skins, armas/);
+});
+check('classificação Livre está declarada e coerente em todo o produto', () => {
+  const politica = read('privacidade.html');
+  const termos = read('termos.html');
+  const index = read('index.html');
+  assert.match(politica, /Classificação: Livre \(L\)/, 'política sem a classificação confirmada');
+  assert.match(politica, /Interação entre usuários/i, 'política precisa citar chat/multiplayer');
+  assert.match(politica, /não existem compras com dinheiro real/i, 'política precisa citar ausência de compras reais');
+  assert.match(termos, /Livre \(L\)/, 'termos sem a classificação');
+  assert.match(index, /Classificação indicativa Livre/, 'selo da entrada fora do padrão');
+  assert.ok(!/Não anuncie o selo Livre como oficial/.test(read('docs/MICROSOFT_STORE.md')), 'documentação ainda trata o selo como não confirmado');
 });
 
 if (failures.length) {
