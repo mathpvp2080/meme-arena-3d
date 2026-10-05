@@ -104,6 +104,22 @@ check('skins modeladas à mão apontam para arquivos existentes', () => {
     assert.ok(!spec.url.startsWith('http'), `${id}: hospede o modelo no projeto (CSP só permite 'self')`);
   }
 });
+check('entrada resiste a máquina sem GPU e sem rede (certificação 10.1.2)', () => {
+  const jogo = read('src/game.js');
+  const rede = read('src/net.js');
+  const html = read('index.html');
+  const css = read('css/season67.css');
+  assert.match(jogo, /function createRenderer/, 'sem fallback de WebGL');
+  assert.match(jogo, /failIfMajorPerformanceCaveat/, 'sem tentativa de WebGL por software');
+  assert.match(jogo, /classList\.add\('ready', 'failed'\)/, 'tela de erro precisa ficar visível e clicável');
+  assert.match(jogo, /function comLimite/, 'chamadas de rede sem tempo limite');
+  assert.match(jogo, /setTimeout\(garantirTela, 12000\)/, 'sem rede de segurança para exibir uma tela');
+  assert.match(rede, /tempo esgotado/, 'carregamento do SDK remoto sem tempo limite');
+  assert.ok(html.includes('CSS crítico embutido'), 'index.html sem CSS crítico embutido');
+  assert.match(css, /@supports not \(\(-webkit-background-clip: text\)/, 'sem fallback para título recortado');
+  const manifest = JSON.parse(read('manifest.webmanifest'));
+  assert.equal(manifest.display, 'standalone', 'display fullscreen quebra a janela do pacote Windows');
+});
 check('service worker e manifesto incluem somente assets existentes', () => {
   const sw = read('sw.js');
   const swVersion = sw.match(/meme-arena-3d-v(\d+)/);

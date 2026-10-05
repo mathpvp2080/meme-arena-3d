@@ -451,3 +451,34 @@
   .player-float, .floating-tag { animation: none !important; }
   #hub .lobby-tile, #hub .lobby-play, .splash-enter { transition-duration: .01ms !important; }
 }
+
+/* =====================================================================
+   REDE DE SEGURANÇA VISUAL
+   Em máquinas sem aceleração por hardware (VMs de certificação, drivers
+   antigos) o recorte de texto por gradiente não é pintado e o título ficava
+   invisível — na prática, uma tela em branco. Aqui garantimos texto sólido
+   sempre que o recurso não existir, e deixamos a tela de erro legível.
+   ===================================================================== */
+@supports not ((-webkit-background-clip: text) and (background-clip: text)) {
+  .title,
+  #loading .season67-logo b, #loading .season67-logo strong,
+  #loading .season67-logo .splash-3d, #loading .season67-logo em {
+    background: none !important;
+    color: #eaf4ff !important;
+    -webkit-text-fill-color: #eaf4ff !important;
+    filter: none !important;
+  }
+  #loading .season67-logo strong { color: #ff8bd8 !important; -webkit-text-fill-color: #ff8bd8 !important; }
+  #loading .season67-logo em { color: #ffd18a !important; -webkit-text-fill-color: #ffd18a !important; }
+}
+
+/* entrada em modo de falha: aviso legível e botão sempre clicável */
+#loading.failed { background: linear-gradient(160deg, #0b1030, #1a0b2e 60%, #05040f); }
+#loading.failed .splash-loading {
+  position: absolute; left: 50%; bottom: 120px; translate: -50% 0;
+  max-width: min(680px, 88vw); padding: 12px 16px; border-radius: 12px;
+  background: rgba(8, 10, 38, .88); border: 1px solid rgba(255, 79, 189, .5);
+  color: #fff; font-size: 11px; line-height: 1.7; letter-spacing: .06em; text-align: center;
+}
+#loading.failed .splash-enter,
+#loading .splash-enter.retry { opacity: 1 !important; translate: 0 0 !important; pointer-events: auto !important; }

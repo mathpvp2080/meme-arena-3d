@@ -136,9 +136,14 @@
           const s = document.createElement('script');
           /* versão fixa: evita que uma atualização remota quebre o login em produção */
           s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js';
-          s.onload = res; s.onerror = () => rej(new Error('cdn'));
+          /* rede bloqueada/lenta não pode pendurar o jogo: sem resposta em 8s
+             o modo local assume e a interface aparece normalmente */
+          const limite = setTimeout(() => { s.onload = s.onerror = null; rej(new Error('cdn: tempo esgotado')); }, 8000);
+          s.onload = () => { clearTimeout(limite); res(); };
+          s.onerror = () => { clearTimeout(limite); rej(new Error('cdn')); };
           document.head.appendChild(s);
         });
+        if (!window.supabase) throw new Error('cdn: SDK não carregou');
       }
       this.sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, {
         auth: { persistSession: true, autoRefreshToken: true }

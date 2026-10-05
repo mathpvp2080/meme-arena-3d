@@ -18,10 +18,20 @@
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preload" as="image" href="assets/splash-season67.jpg" fetchpriority="high">
-<link rel="stylesheet" href="css/style.css?v=37">
-<link rel="stylesheet" href="css/season67.css?v=37">
+<style>
+/* CSS crítico embutido: garante conteúdo visível mesmo se as folhas de
+   estilo externas falharem ao carregar (requisito 10.1.2 da Store). */
+html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:system-ui,"Segoe UI",Arial,sans-serif}
+#loading{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:#06051d}
+#loading .splash-content{text-align:center}
+#bootFallback{position:fixed;left:50%;bottom:16px;translate:-50% 0;z-index:9;max-width:92vw;padding:8px 14px;
+  border-radius:10px;background:rgba(8,10,38,.82);color:#cfe2ff;font-size:11px;letter-spacing:.08em;text-align:center}
+</style>
+<link rel="stylesheet" href="css/style.css?v=38">
+<link rel="stylesheet" href="css/season67.css?v=38">
 </head>
 <body>
+<noscript><div id="bootFallback">Este jogo precisa de JavaScript ativado para iniciar.</div></noscript>
 <div id="app"></div>
 <div id="vig"></div>
 
@@ -585,35 +595,35 @@
   <div class="splash-foot">Arte e áudio originais · Violência fantasiosa · Interação entre usuários · Apenas moeda virtual</div>
 </div>
 
-<script src="lib/three.min.js?v=37"></script>
-<script src="lib/GLTFLoader.js?v=37"></script>
-<script src="lib/SkeletonUtils.js?v=37"></script>
-<script src="src/utils.js?v=37"></script>
-<script src="src/config.js?v=37"></script>
-<script src="src/data.js?v=37"></script>
-<script src="src/maps.js?v=37"></script>
-<script src="src/items.js?v=37"></script>
-<script src="src/season.js?v=37"></script>
-<script src="src/audio.js?v=37"></script>
-<script src="src/faces.js?v=37"></script>
-<script src="src/textures.js?v=37"></script>
-<script src="src/world.js?v=37"></script>
-<script src="src/builds.js?v=37"></script>
-<script src="src/weapons3d.js?v=37"></script>
-<script src="src/armor3d.js?v=37"></script>
-<script src="src/skinmodels.js?v=37"></script>
-<script src="src/entities.js?v=37"></script>
-<script src="src/net.js?v=37"></script>
-<script src="src/profile.js?v=37"></script>
-<script src="src/ui.js?v=37"></script>
-<script src="src/pbuilds.js?v=37"></script>
-<script src="src/previews.js?v=37"></script>
-<script src="src/goals.js?v=37"></script>
-<script src="src/market.js?v=37"></script>
-<script src="src/multi.js?v=37"></script>
-<script src="src/mod.js?v=37"></script>
-<script src="src/mpui.js?v=37"></script>
-<script src="src/metaui.js?v=37"></script>
-<script src="src/game.js?v=37"></script>
+<script src="lib/three.min.js?v=38"></script>
+<script src="lib/GLTFLoader.js?v=38"></script>
+<script src="lib/SkeletonUtils.js?v=38"></script>
+<script src="src/utils.js?v=38"></script>
+<script src="src/config.js?v=38"></script>
+<script src="src/data.js?v=38"></script>
+<script src="src/maps.js?v=38"></script>
+<script src="src/items.js?v=38"></script>
+<script src="src/season.js?v=38"></script>
+<script src="src/audio.js?v=38"></script>
+<script src="src/faces.js?v=38"></script>
+<script src="src/textures.js?v=38"></script>
+<script src="src/world.js?v=38"></script>
+<script src="src/builds.js?v=38"></script>
+<script src="src/weapons3d.js?v=38"></script>
+<script src="src/armor3d.js?v=38"></script>
+<script src="src/skinmodels.js?v=38"></script>
+<script src="src/entities.js?v=38"></script>
+<script src="src/net.js?v=38"></script>
+<script src="src/profile.js?v=38"></script>
+<script src="src/ui.js?v=38"></script>
+<script src="src/pbuilds.js?v=38"></script>
+<script src="src/previews.js?v=38"></script>
+<script src="src/goals.js?v=38"></script>
+<script src="src/market.js?v=38"></script>
+<script src="src/multi.js?v=38"></script>
+<script src="src/mod.js?v=38"></script>
+<script src="src/mpui.js?v=38"></script>
+<script src="src/metaui.js?v=38"></script>
+<script src="src/game.js?v=38"></script>
 </body>
 </html>
