@@ -204,8 +204,19 @@ check('CSP não depende de script inline e dados sociais são escapados', () => 
 });
 check('política e termos têm identidade e data atuais', () => {
   assert.match(read('privacidade.html'), /MEME ARENA 3D/);
-  assert.match(read('privacidade.html'), /4 de outubro de 2026/);
+  assert.match(read('privacidade.html'), /5 de outubro de 2026/);
   assert.match(read('termos.html'), /Moedas, skins, armas/);
+});
+check('classificação Livre está declarada e coerente em todo o produto', () => {
+  const politica = read('privacidade.html');
+  const termos = read('termos.html');
+  const index = read('index.html');
+  assert.match(politica, /Classificação: Livre \(L\)/, 'política sem a classificação confirmada');
+  assert.match(politica, /Interação entre usuários/i, 'política precisa citar chat/multiplayer');
+  assert.match(politica, /não existem compras com dinheiro real/i, 'política precisa citar ausência de compras reais');
+  assert.match(termos, /Livre \(L\)/, 'termos sem a classificação');
+  assert.match(index, /Classificação indicativa Livre/, 'selo da entrada fora do padrão');
+  assert.ok(!/Não anuncie o selo Livre como oficial/.test(read('docs/MICROSOFT_STORE.md')), 'documentação ainda trata o selo como não confirmado');
 });
 
 if (failures.length) {

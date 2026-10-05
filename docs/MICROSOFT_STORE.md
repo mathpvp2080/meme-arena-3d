@@ -128,7 +128,7 @@ Responda o questionário da IARC. Para este jogo:
 - **Interação entre usuários: SIM** (tem chat no multiplayer) — isso é importante
   marcar, senão pode ser reprovado depois.
 
-A classificação final é determinada pela IARC/loja. Não anuncie o selo Livre como oficial antes da confirmação.
+Classificação confirmada pela IARC/loja: **Livre (L)** — equivalente a *Everyone*. Esse é o selo exibido na entrada do jogo, na Política de Privacidade e nos Termos; mantenha os três iguais em qualquer atualização.
 
 ### 4.4 Packages
 Arraste o arquivo **`.msixbundle`** que você baixou na Parte 3.
