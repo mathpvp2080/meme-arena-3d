@@ -209,3 +209,9 @@ O mercado de itens (vender/presentear) usa o mesmo SQL. A coleção da Temporada
 tem 14 itens entre skins, armaduras, armas e habilidades, obtidos originalmente
 em Caixas 67 ou por drop aleatório de chefe. Depois, eles podem ser revendidos no
 mercado dentro das faixas individuais validadas pelo servidor.
+
+## Créditos de recursos externos
+
+Os créditos, fontes, licenças e adaptações dos modelos 3D de terceiros estão
+registrados em [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md) e também aparecem dentro do
+jogo em **Opções → Créditos dos modelos 3D**.

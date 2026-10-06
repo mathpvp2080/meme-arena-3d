@@ -611,6 +611,17 @@
       } catch (err) { console.warn('[MemeArena] build falhou:', def.id, err); }
     }
 
+    /* Modelo externo opcional do NPC. Mantém barra, brilho, hitbox e IA; só
+       substitui a aparência criada acima. Se falhar, o build procedural fica. */
+    if (MA.SkinModels && MA.SkinModels.enemySpecFor(def)) {
+      try {
+        MA.SkinModels.applyEnemy({
+          g, body, head, a1, a2, l1, l2, hb, glow, def, trans: false,
+          anim: fn => anim.push(fn)
+        });
+      } catch (err) { console.warn('[MemeArena] modelo .glb do NPC falhou:', def.id, err); }
+    }
+
     scene.add(g);
 
     const hpMul = (opts.hpScale || 1) * (elite ? 2.6 : 1);

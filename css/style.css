@@ -237,6 +237,15 @@ body:not(.touch) #touch{display:none}
 .opt input[type=range]::-moz-range-thumb{width:17px;height:17px;border:none;border-radius:50%;background:#fff;cursor:pointer}
 .opt select{background:#1a0b33;color:#fff;border:1px solid var(--line);border-radius:8px;padding:6px;font-family:inherit}
 .opt input[type=checkbox]{width:20px;height:20px;accent-color:#ff00c8}
+.modelcredits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;text-align:left}
+.modelcredits article{padding:10px 12px;border:1px solid rgba(45,226,255,.22);border-radius:11px;
+  background:rgba(45,226,255,.045);font-size:10px;line-height:1.45}
+.modelcredits strong,.modelcredits span,.modelcredits small{display:block}
+.modelcredits strong{color:var(--cyan);font-size:12px;letter-spacing:.06em}
+.modelcredits span{margin-top:2px;color:#e5efff}.modelcredits span b{color:#fff}
+.modelcredits a{display:inline-block;margin:3px 0;color:var(--yellow);text-decoration:none}
+.modelcredits a:hover{text-decoration:underline}.modelcredits small{color:#aebbd0;font-size:9px}
+@media(max-width:560px){.modelcredits{grid-template-columns:1fr}}
 
 /* cards de perk */
 .perktop{font-size:12px;letter-spacing:4px;color:var(--yellow);margin-bottom:16px;font-weight:bold}

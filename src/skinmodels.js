@@ -56,6 +56,19 @@
     }
   };
 
+  /* Modelos completos que substituem NPCs procedurais de src/builds.js.
+     O Tralalero original olha para +X; -90° em Y alinha o focinho com a
+     frente dos inimigos (+Z). A altura preserva a escala da versão antiga. */
+  MA.ENEMY_MODELS = MA.ENEMY_MODELS || {
+    tralala: {
+      url: 'assets/skins/tralalero.glb',
+      mode: 'full',
+      height: 2.2,
+      rotY: -Math.PI / 2,
+      hide: 'all'
+    }
+  };
+
   const ANCHORS = ['head', 'hat', 'body', 'back', 'handL', 'handR', 'gun'];
   const cache = new Map();   /* url -> { scene, animations } | null (falhou) */
   const inflight = new Map();/* url -> Promise                                */
@@ -99,6 +112,11 @@
     return normalize(MA.SKIN_MODELS[skin.id] || skin.model || null);
   }
 
+  function enemySpecFor(def) {
+    if (!def) return null;
+    return normalize(MA.ENEMY_MODELS[def.id] || def.model || null);
+  }
+
   /* ----------------------------------------------------------- loading -- */
   function load(url) {
     if (cache.has(url)) return Promise.resolve(cache.get(url));
@@ -137,9 +155,11 @@
       const sp = specFor(s);
       if (sp && urls.indexOf(sp.url) < 0) urls.push(sp.url);
     });
-    Object.keys(MA.SKIN_MODELS).forEach(id => {
-      const sp = normalize(MA.SKIN_MODELS[id]);
-      if (sp && urls.indexOf(sp.url) < 0) urls.push(sp.url);
+    [MA.SKIN_MODELS, MA.ENEMY_MODELS].forEach(registry => {
+      Object.keys(registry || {}).forEach(id => {
+        const sp = normalize(registry[id]);
+        if (sp && urls.indexOf(sp.url) < 0) urls.push(sp.url);
+      });
     });
     if (!urls.length) return Promise.resolve(0);
     return Promise.all(urls.map(load)).then(list => list.filter(Boolean).length);
@@ -226,7 +246,9 @@
   }
 
   function hideProcedural(ctx, hide) {
-    const keep = [ctx.gun, ctx.aura, ctx.ultAura, ctx.shieldMesh];
+    /* Jogadores preservam arma e efeitos; NPCs preservam barra de vida e
+       brilho do chão, que continuam ligados à física procedural. */
+    const keep = [ctx.gun, ctx.aura, ctx.ultAura, ctx.shieldMesh, ctx.hb, ctx.glow];
     if (hide === 'all') {
       ctx.g.children.forEach(child => {
         if (keep.indexOf(child) >= 0) return;
@@ -306,9 +328,25 @@
     return false;
   }
 
+  /* Mesmo fluxo para NPCs. O corpo procedural permanece como fallback caso
+     o download ou o parse do modelo falhe. */
+  function applyEnemy(ctx) {
+    const sp = enemySpecFor(ctx.def);
+    if (!sp) return false;
+    const ready = cache.get(sp.url);
+    if (ready) { mount(ctx, sp, ready); return true; }
+    if (cache.has(sp.url)) return false;
+    load(sp.url).then(entry => {
+      if (!entry || !ctx.g || !ctx.g.parent) return;
+      try { mount(ctx, sp, entry); } catch (e) { console.warn('[MemeArena] modelo do NPC falhou:', sp.url, e); }
+    });
+    return false;
+  }
+
   MA.SkinModels = {
-    specFor, apply, preload, load, hasLoaded,
+    specFor, enemySpecFor, apply, applyEnemy, preload, load, hasLoaded,
     register(id, spec) { MA.SKIN_MODELS[id] = spec; return load(normalize(spec).url); },
+    registerEnemy(id, spec) { MA.ENEMY_MODELS[id] = spec; return load(normalize(spec).url); },
     get loaded() { return cache; }
   };
 })(window.MA);

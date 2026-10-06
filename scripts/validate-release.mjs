@@ -86,15 +86,19 @@ check('todos os assets locais do HTML existem', () => {
     assert.ok(fs.existsSync(path.join(root, ref)), `arquivo ausente: ${ref}`);
   }
 });
-check('skins modeladas à mão apontam para arquivos existentes', () => {
+check('modelos 3D registrados apontam para arquivos existentes', () => {
   run('src/skinmodels.js', contentContext);
-  const registry = MA.SKIN_MODELS || {};
   const specs = [];
-  for (const [id, spec] of Object.entries(registry)) {
+  for (const [id, spec] of Object.entries(MA.SKIN_MODELS || {})) {
     assert.ok(MA.SKINS.some(s => s.id === id), `MA.SKIN_MODELS: skin inexistente "${id}"`);
-    specs.push([id, spec]);
+    specs.push([`skin:${id}`, spec]);
   }
-  for (const skin of MA.SKINS) if (skin.model) specs.push([skin.id, skin.model]);
+  for (const skin of MA.SKINS) if (skin.model) specs.push([`skin:${skin.id}`, skin.model]);
+  const enemyDefs = [...MA.MEMES, ...MA.BOSSES];
+  for (const [id, spec] of Object.entries(MA.ENEMY_MODELS || {})) {
+    assert.ok(enemyDefs.some(def => def.id === id), `MA.ENEMY_MODELS: NPC inexistente "${id}"`);
+    specs.push([`npc:${id}`, spec]);
+  }
   for (const [id, raw] of specs) {
     const spec = typeof raw === 'string' ? { url: raw } : raw;
     assert.ok(spec && spec.url, `${id}: modelo sem url`);
@@ -122,6 +126,24 @@ check('DOGE usa o modelo customizado com escala e frente alinhadas', () => {
   assert.equal(spec.rotY, -Math.PI / 2, 'DOGE não está voltado para -Z');
   assert.equal(Array.from(spec.hide || []).join(','), 'head', 'DOGE deve substituir a cabeça procedural');
 });
+check('Tralalero substitui o NPC procedural com escala e frente alinhadas', () => {
+  const spec = MA.ENEMY_MODELS && MA.ENEMY_MODELS.tralala;
+  assert.ok(spec, 'registro do NPC Tralalero ausente');
+  assert.equal(spec.url, 'assets/skins/tralalero.glb');
+  assert.equal(spec.mode, 'full');
+  assert.ok(spec.height > 0, 'Tralalero sem escala ajustada');
+  assert.equal(spec.rotY, -Math.PI / 2, 'Tralalero não está voltado para +Z');
+  assert.equal(spec.hide, 'all', 'Tralalero deve substituir o modelo procedural');
+});
+check('modelos CC BY têm atribuição visível e registro permanente', () => {
+  const notices = read('ATTRIBUTIONS.md');
+  for (const value of ['徹水', 'CalnnHotCake', '5I9ouA0S-WG', 'wQErnZDU4ed', 'Creative Commons Attribution']) {
+    assert.ok(index.includes(value) || notices.includes(value), `crédito ausente: ${value}`);
+  }
+  assert.match(index, /CRÉDITOS DOS MODELOS 3D/);
+  assert.match(index, /CalnnHotCake/);
+  assert.match(index, /徹水/);
+});
 check('entrada resiste a máquina sem GPU e sem rede (certificação 10.1.2)', () => {
   const jogo = read('src/game.js');
   const rede = read('src/net.js');
@@ -147,7 +169,7 @@ check('service worker e manifesto incluem somente assets existentes', () => {
   const indexVersions = new Set([...read('index.html').matchAll(/\?v=(\d+)/g)].map(m => m[1]));
   assert.equal(indexVersions.size, 1, `index.html mistura versões de cache: ${[...indexVersions].join(', ')}`);
   assert.equal([...indexVersions][0], swVersion[1], 'index.html e service worker em versões diferentes');
-  for (const rel of ['termos.html', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
+  for (const rel of ['termos.html', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
   for (const [, asset] of sw.matchAll(/'\.\/([^']*)'/g)) assert.ok(fs.existsSync(path.join(root, asset || '.')), `cache aponta para arquivo ausente: ${asset}`);
   const manifest = JSON.parse(read('manifest.webmanifest'));
   for (const asset of [...manifest.icons, ...manifest.screenshots]) assert.ok(fs.existsSync(path.join(root, asset.src)), `manifesto aponta para arquivo ausente: ${asset.src}`);
