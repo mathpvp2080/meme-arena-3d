@@ -58,7 +58,7 @@
 
   /* Modelos completos que substituem NPCs procedurais de src/builds.js.
      Os inimigos olham para +Z: o DOGE nasce voltado para -X e gira +90°;
-     o Tralalero nasce em +X e gira -90°. */
+     Tralalero e Tung Tung nascem em +X e giram -90°. */
   MA.ENEMY_MODELS = MA.ENEMY_MODELS || {
     doge: {
       url: 'assets/skins/doge.glb',
@@ -72,6 +72,13 @@
       url: 'assets/skins/tralalero.glb',
       mode: 'full',
       height: 2.2,
+      rotY: -Math.PI / 2,
+      hide: 'all'
+    },
+    tung: {
+      url: 'assets/skins/tung.glb',
+      mode: 'full',
+      height: 2.8,
       rotY: -Math.PI / 2,
       hide: 'all'
     }

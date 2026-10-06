@@ -145,9 +145,18 @@ check('Tralalero substitui o NPC procedural com escala e frente alinhadas', () =
   assert.equal(spec.rotY, -Math.PI / 2, 'Tralalero não está voltado para +Z');
   assert.equal(spec.hide, 'all', 'Tralalero deve substituir o modelo procedural');
 });
+check('Tung Tung substitui o NPC procedural com escala e frente alinhadas', () => {
+  const spec = MA.ENEMY_MODELS && MA.ENEMY_MODELS.tung;
+  assert.ok(spec, 'registro do NPC Tung Tung ausente');
+  assert.equal(spec.url, 'assets/skins/tung.glb');
+  assert.equal(spec.mode, 'full');
+  assert.ok(spec.height > 0, 'Tung Tung sem escala ajustada');
+  assert.equal(spec.rotY, -Math.PI / 2, 'Tung Tung não está voltado para +Z');
+  assert.equal(spec.hide, 'all', 'Tung Tung deve substituir o modelo procedural');
+});
 check('modelos CC BY têm atribuição visível e registro permanente', () => {
   const notices = read('ATTRIBUTIONS.md');
-  for (const value of ['徹水', 'CalnnHotCake', '5I9ouA0S-WG', 'wQErnZDU4ed', 'Creative Commons Attribution']) {
+  for (const value of ['徹水', 'CalnnHotCake', '5I9ouA0S-WG', 'wQErnZDU4ed', 'Q6SvoDhhwA', 'Creative Commons Attribution']) {
     assert.ok(index.includes(value) || notices.includes(value), `crédito ausente: ${value}`);
   }
   assert.match(index, /CRÉDITOS DOS MODELOS 3D/);
@@ -179,7 +188,7 @@ check('service worker e manifesto incluem somente assets existentes', () => {
   const indexVersions = new Set([...read('index.html').matchAll(/\?v=(\d+)/g)].map(m => m[1]));
   assert.equal(indexVersions.size, 1, `index.html mistura versões de cache: ${[...indexVersions].join(', ')}`);
   assert.equal([...indexVersions][0], swVersion[1], 'index.html e service worker em versões diferentes');
-  for (const rel of ['termos.html', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
+  for (const rel of ['termos.html', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'assets/skins/tung.glb', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
   for (const [, asset] of sw.matchAll(/'\.\/([^']*)'/g)) assert.ok(fs.existsSync(path.join(root, asset || '.')), `cache aponta para arquivo ausente: ${asset}`);
   const manifest = JSON.parse(read('manifest.webmanifest'));
   for (const asset of [...manifest.icons, ...manifest.screenshots]) assert.ok(fs.existsSync(path.join(root, asset.src)), `manifesto aponta para arquivo ausente: ${asset.src}`);
