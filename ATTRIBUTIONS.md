@@ -11,7 +11,7 @@ implica participação ou endosso ao jogo.
 - **Autor:** 徹水
 - **Fonte:** [Poly Pizza](https://poly.pizza/m/5I9ouA0S-WG)
 - **Licença informada na fonte:** Creative Commons Attribution (CC BY)
-- **Alterações no jogo:** redimensionamento, rotação, reposicionamento e integração como cabeça da skin Doge Dourado.
+- **Alterações no jogo:** redimensionamento, rotação, reposicionamento e integração como cabeça da skin Doge Dourado e como NPC flutuante Doge Corrompido.
 - **Data de acesso registrada:** 6 de outubro de 2026
 
 ## Tralalero Tralala

@@ -57,9 +57,17 @@
   };
 
   /* Modelos completos que substituem NPCs procedurais de src/builds.js.
-     O Tralalero original olha para +X; -90° em Y alinha o focinho com a
-     frente dos inimigos (+Z). A altura preserva a escala da versão antiga. */
+     Os inimigos olham para +Z: o DOGE nasce voltado para -X e gira +90°;
+     o Tralalero nasce em +X e gira -90°. */
   MA.ENEMY_MODELS = MA.ENEMY_MODELS || {
+    doge: {
+      url: 'assets/skins/doge.glb',
+      mode: 'full',
+      height: 1.6,
+      y: 0.48,
+      rotY: Math.PI / 2,
+      hide: 'all'
+    },
     tralala: {
       url: 'assets/skins/tralalero.glb',
       mode: 'full',

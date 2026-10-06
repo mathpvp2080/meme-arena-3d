@@ -126,6 +126,16 @@ check('DOGE usa o modelo customizado com escala e frente alinhadas', () => {
   assert.equal(spec.rotY, -Math.PI / 2, 'DOGE não está voltado para -Z');
   assert.equal(Array.from(spec.hide || []).join(','), 'head', 'DOGE deve substituir a cabeça procedural');
 });
+check('DOGE substitui o NPC procedural como cabeça flutuante', () => {
+  const spec = MA.ENEMY_MODELS && MA.ENEMY_MODELS.doge;
+  assert.ok(spec, 'registro do NPC DOGE ausente');
+  assert.equal(spec.url, 'assets/skins/doge.glb');
+  assert.equal(spec.mode, 'full');
+  assert.ok(spec.height > 0, 'NPC DOGE sem escala ajustada');
+  assert.ok(spec.y > 0, 'NPC DOGE deveria flutuar acima do chão');
+  assert.equal(spec.rotY, Math.PI / 2, 'NPC DOGE não está voltado para +Z');
+  assert.equal(spec.hide, 'all', 'NPC DOGE deve esconder o corpo procedural');
+});
 check('Tralalero substitui o NPC procedural com escala e frente alinhadas', () => {
   const spec = MA.ENEMY_MODELS && MA.ENEMY_MODELS.tralala;
   assert.ok(spec, 'registro do NPC Tralalero ausente');
