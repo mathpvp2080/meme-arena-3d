@@ -43,7 +43,17 @@
      }
      --------------------------------------------------------------------- */
   MA.SKIN_MODELS = MA.SKIN_MODELS || {
-    /* vazio por padrão — o jogo roda 100% procedural até você registrar algo */
+    /* O arquivo foi modelado olhando para -X. A rotação alinha o focinho à
+       frente do jogo (-Z), e o tamanho mantém a cabeça proporcional ao corpo. */
+    doge: {
+      url: 'assets/skins/doge.glb',
+      mode: 'part',
+      anchor: 'head',
+      size: 1.15,
+      y: 0.03,
+      rotY: -Math.PI / 2,
+      hide: ['head']
+    }
   };
 
   const ANCHORS = ['head', 'hat', 'body', 'back', 'handL', 'handR', 'gun'];
@@ -197,6 +207,24 @@
 
   /* ------------------------------------------------------------- hide --- */
   const PART_KEYS = ['body', 'head', 'neck', 'hood', 'hips', 'armL', 'armR', 'legL', 'legR'];
+
+  /* No modo part o modelo pode ser filho justamente da peça que substitui.
+     Esconder o Object3D inteiro também esconderia o .glb; por isso ocultamos
+     apenas os materiais procedurais que já existem e mantemos o anchor ativo. */
+  function hideRenderable(root) {
+    root.traverse(o => {
+      if (!o.material || (o.userData && o.userData.__customModel)) return;
+      const materials = Array.isArray(o.material) ? o.material : [o.material];
+      const hidden = materials.map(material => {
+        if (!material) return material;
+        const copy = material.clone ? material.clone() : material;
+        copy.visible = false;
+        return copy;
+      });
+      o.material = Array.isArray(o.material) ? hidden : hidden[0];
+    });
+  }
+
   function hideProcedural(ctx, hide) {
     const keep = [ctx.gun, ctx.aura, ctx.ultAura, ctx.shieldMesh];
     if (hide === 'all') {
@@ -210,7 +238,7 @@
     (Array.isArray(hide) ? hide : [hide]).forEach(name => {
       if (PART_KEYS.indexOf(name) < 0) return;
       const o = ctx[name];
-      if (o) o.visible = false;
+      if (o) hideRenderable(o);
     });
   }
 

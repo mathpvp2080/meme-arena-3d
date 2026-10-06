@@ -99,10 +99,28 @@ check('skins modeladas à mão apontam para arquivos existentes', () => {
     const spec = typeof raw === 'string' ? { url: raw } : raw;
     assert.ok(spec && spec.url, `${id}: modelo sem url`);
     assert.match(spec.url, /\.(glb|gltf)$/i, `${id}: use .glb ou .gltf (${spec.url})`);
-    assert.ok(fs.existsSync(path.join(root, spec.url)), `${id}: arquivo ausente ${spec.url}`);
+    const modelPath = path.join(root, spec.url);
+    assert.ok(fs.existsSync(modelPath), `${id}: arquivo ausente ${spec.url}`);
     if (spec.mode === 'part') assert.ok(['head', 'hat', 'body', 'back', 'handL', 'handR', 'gun'].includes(spec.anchor || 'head'), `${id}: anchor inválido`);
     assert.ok(!spec.url.startsWith('http'), `${id}: hospede o modelo no projeto (CSP só permite 'self')`);
+    if (/\.glb$/i.test(spec.url)) {
+      const glb = fs.readFileSync(modelPath);
+      assert.ok(glb.length >= 12, `${id}: arquivo GLB truncado`);
+      assert.equal(glb.toString('ascii', 0, 4), 'glTF', `${id}: cabeçalho GLB inválido`);
+      assert.equal(glb.readUInt32LE(4), 2, `${id}: o jogo requer GLB versão 2`);
+      assert.equal(glb.readUInt32LE(8), glb.length, `${id}: tamanho declarado do GLB é inválido`);
+    }
   }
+});
+check('DOGE usa o modelo customizado com escala e frente alinhadas', () => {
+  const spec = MA.SKIN_MODELS && MA.SKIN_MODELS.doge;
+  assert.ok(spec, 'registro da skin DOGE ausente');
+  assert.equal(spec.url, 'assets/skins/doge.glb');
+  assert.equal(spec.mode, 'part');
+  assert.equal(spec.anchor, 'head');
+  assert.ok(spec.size > 0, 'DOGE sem escala ajustada');
+  assert.equal(spec.rotY, -Math.PI / 2, 'DOGE não está voltado para -Z');
+  assert.equal(Array.from(spec.hide || []).join(','), 'head', 'DOGE deve substituir a cabeça procedural');
 });
 check('entrada resiste a máquina sem GPU e sem rede (certificação 10.1.2)', () => {
   const jogo = read('src/game.js');
