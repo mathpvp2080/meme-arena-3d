@@ -929,6 +929,14 @@
     MA.FX.burst(pos, color, 36, 16, .34);
     MA.FX.burst(pos, 0xffffff, 14, 10, .2);
     MA.FX.ring(pos, new THREE.Color(color), radius * 1.5, .55);
+    if (mpPvP() && MA.Multi) {
+      MA.Multi.peerList.forEach(q => {
+        if (!q.dead && q.obj) {
+          const d = q.pos.distanceTo(pos);
+          if (d < radius) mpSend({ t: 'pvp', to: q.id, d: Math.max(1, Math.round(dmg * (1 - d / radius))) });
+        }
+      });
+    }
     enemies.slice().forEach(e => {
       const d = e.obj.position.distanceTo(pos);
       if (d < radius) {
@@ -945,6 +953,9 @@
     MA.UI.banner('NUKE DE MEME', 'todo mundo foi ratiado', 1900);
     MA.Audio.boom(); addShake(1.2);
     MA.FX.ring(player.pos.clone(), new THREE.Color(0xff2d6f), MA.World.ARENA, 1.4);
+    if (mpPvP() && MA.Multi) MA.Multi.peerList.forEach(q => {
+      if (!q.dead) mpSend({ t: 'pvp', to: q.id, d: Math.round(999 * player.mDmg) });
+    });
     enemies.slice().forEach(e => {
       dealDamage(e, e.isBoss ? 320 * player.mDmg : 99999, e.obj.position.clone().setY(1.5), false);
     });
