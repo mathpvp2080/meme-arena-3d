@@ -460,15 +460,15 @@
 
   function dealDamage(e, dmg, hitPos, allowCrit) {
     if (e.dead) return 0;
-    if (mpClient() && e.netId) {
-      /* quem manda na vida do inimigo é o host; aqui só prevemos o efeito */
-      mpSend({ t: 'hit', i: e.netId, d: Math.round(dmg) });
-    } else if (mpHost() && e.netId && MA.Multi && MA.Multi.me) {
-      /* O último golpe local também precisa substituir um acerto remoto anterior. */
-      e.lastHitBy = MA.Multi.me.id;
-    }
+    /* O crítico é calculado antes do envio: o host precisa receber o mesmo
+       dano que o jogador viu, não apenas o dano-base. */
     let final = dmg, crit = false;
     if (allowCrit !== false && Math.random() < player.crit) { final *= 2.5; crit = true; }
+    if (mpClient() && e.netId) {
+      mpSend({ t: 'hit', i: e.netId, d: Math.round(final) });
+    } else if (mpHost() && e.netId && MA.Multi && MA.Multi.me) {
+      e.lastHitBy = MA.Multi.me.id;
+    }
     e.hp -= final;
     e.flash = .12;
     MA.updateHB(e);
@@ -679,7 +679,7 @@
       const q = peers[i];
       if (q.dead || !q.obj) continue;
       const d = Math.hypot(p.x - q.pos.x, p.z - q.pos.z);
-      if (d < 1.15 && p.y > .2 && p.y < 3.2) {
+      if (d < 1.3 && p.y > .2 && p.y < 3.2) {
         mpSend({ t: 'pvp', to: q.id, d: Math.round(b.dmg) });
         MA.FX.burst(p.clone(), 0xff3d7f, 10, 8, .18);
         MA.UI.float('ACERTOU!', '#ff3d7f', 22);
@@ -929,6 +929,14 @@
     MA.FX.burst(pos, color, 36, 16, .34);
     MA.FX.burst(pos, 0xffffff, 14, 10, .2);
     MA.FX.ring(pos, new THREE.Color(color), radius * 1.5, .55);
+    if (mpPvP() && MA.Multi) {
+      MA.Multi.peerList.forEach(q => {
+        if (!q.dead && q.obj) {
+          const d = q.pos.distanceTo(pos);
+          if (d < radius) mpSend({ t: 'pvp', to: q.id, d: Math.max(1, Math.round(dmg * (1 - d / radius))) });
+        }
+      });
+    }
     enemies.slice().forEach(e => {
       const d = e.obj.position.distanceTo(pos);
       if (d < radius) {
@@ -945,6 +953,9 @@
     MA.UI.banner('NUKE DE MEME', 'todo mundo foi ratiado', 1900);
     MA.Audio.boom(); addShake(1.2);
     MA.FX.ring(player.pos.clone(), new THREE.Color(0xff2d6f), MA.World.ARENA, 1.4);
+    if (mpPvP() && MA.Multi) MA.Multi.peerList.forEach(q => {
+      if (!q.dead) mpSend({ t: 'pvp', to: q.id, d: Math.round(999 * player.mDmg) });
+    });
     enemies.slice().forEach(e => {
       dealDamage(e, e.isBoss ? 320 * player.mDmg : 99999, e.obj.position.clone().setY(1.5), false);
     });
@@ -1228,6 +1239,7 @@
           else b.vel.lerp(back.normalize().multiplyScalar(b.speed * 1.08), Math.min(1, dt * 7));
         }
       }
+      const previous = b.obj.position.clone();
       b.obj.position.addScaledVector(b.vel, dt);
       const p = b.obj.position;
       if (b.kind === 'rocket') b.obj.rotation.z += dt * 10;
@@ -1237,8 +1249,15 @@
       for (let j = 0; !done && j < enemies.length; j++) {
         const e = enemies[j];
         if (e.dead || b.hitList.indexOf(e) >= 0) continue;
-        const dd = Math.hypot(p.x - e.obj.position.x, p.z - e.obj.position.z);
-        if (dd < e.radius + .55 && p.y > 0 && p.y < e.radius * 3.6) {
+        /* testa o segmento inteiro do disparo, não só a posição final do
+           frame; isso evita que balas rápidas atravessem inimigos com lag. */
+        const vx = p.x - previous.x, vz = p.z - previous.z;
+        const len2 = vx * vx + vz * vz || 1;
+        const u = clamp(((e.obj.position.x - previous.x) * vx + (e.obj.position.z - previous.z) * vz) / len2, 0, 1);
+        const cx = previous.x + vx * u, cz = previous.z + vz * u;
+        const dd = Math.hypot(cx - e.obj.position.x, cz - e.obj.position.z);
+        const cy = previous.y + (p.y - previous.y) * u;
+        if (dd < e.radius + .55 && cy > 0 && cy < e.radius * 3.6) {
           if (b.splash) { detonateBullet(b, p.clone()); done = true; }
           else {
             dealDamage(e, b.dmg, p.clone());
