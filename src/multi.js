@@ -385,7 +385,7 @@
       this._snapT -= dt;
       if (this._snapT > 0) return;
       this._snapT = 1 / SNAP_HZ;
-      const e = enemies.slice(0, 40).map(x => ({
+      const e = enemies.slice(0, 60).map(x => ({
         i: x.netId, d: x.def.id,
         x: +x.obj.position.x.toFixed(1), z: +x.obj.position.z.toFixed(1),
         r: +x.obj.rotation.y.toFixed(2),
@@ -395,7 +395,7 @@
       /* itens do chão também viajam: sem isso o cliente nunca via
          cura, dano dobrado, nuke… tudo caía só na tela do anfitrião. */
       const it = (this._pickFn ? this._pickFn() : []).slice(0, 24);
-      this.send({ t: 'snap', e, it, w: G.wave, q: G.spawnQueue | 0, tgt: G.waveTarget | 0 });
+      this.send({ t: 'snap', e, full: enemies.length <= 60, it, w: G.wave, q: G.spawnQueue | 0, tgt: G.waveTarget | 0 });
     },
 
     startMatch() {

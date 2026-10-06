@@ -96,10 +96,11 @@
 
   /* -------------------------------------------------------- dificuldade -- */
   MA.DIFFS = [
-    { id:'easy',  name:'NORMIE',   icon:'🙂', ehp:0.70, edmg:0.65, espd:0.90, spawn:1.25, pts:0.8,  desc:'Pra curtir a vibe e ver os memes.' },
-    { id:'norm',  name:'MEME LORD',icon:'😎', ehp:1.00, edmg:1.00, espd:1.00, spawn:1.00, pts:1.0,  desc:'A experiência balanceada.' },
-    { id:'hard',  name:'SIGMA',    icon:'🗿', ehp:1.45, edmg:1.40, espd:1.12, spawn:0.80, pts:1.45, desc:'Pra quem acorda às 5h.' },
-    { id:'brain', name:'BRAINROT', icon:'🧠', ehp:2.10, edmg:1.90, espd:1.25, spawn:0.62, pts:2.2,  desc:'Sofrimento puro. Boa sorte.' }
+    { id:'easy',  name:'NORMIE',   icon:'🙂', ehp:0.85, edmg:0.80, espd:0.95, spawn:1.10, pts:0.9,  desc:'Pra curtir a vibe e ver os memes.' },
+    { id:'norm',  name:'MEME LORD',icon:'😎', ehp:1.25, edmg:1.20, espd:1.06, spawn:0.92, pts:1.2,  desc:'A experiência balanceada.' },
+    { id:'hard',  name:'SIGMA',    icon:'🗿', ehp:1.90, edmg:1.75, espd:1.22, spawn:0.70, pts:1.9, desc:'Pra quem acorda às 5h.' },
+    { id:'brain', name:'BRAINROT', icon:'🧠', ehp:3.00, edmg:2.55, espd:1.40, spawn:0.48, pts:3.0,  desc:'Sofrimento puro. Boa sorte.' },
+    { id:'feed', name:'FIM DO FEED', icon:'🕳️', ehp:4.60, edmg:3.60, espd:1.60, spawn:0.36, pts:4.5, desc:'Não foi feito pra ser vencido. Prove o contrário.' }
   ];
 
   MA.TAUNTS = ['NICE!','DELETADO','BANIDO','RATIO','L + BOZO','GG EZ','REKT','CANCELADO','SKILL ISSUE','NO CAP','COOKED','AURA +100','FANUM TAXED','UNSUBSCRIBED'];
