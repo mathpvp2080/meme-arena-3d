@@ -110,24 +110,24 @@
       this.screen('hub');
     },
 
-    /* O protocolo escolhido no painel do hub fica salvo. JOGAR usa essa
-       escolha diretamente, sem repetir o antigo botão GRUPO. */
+    /* A escolha feita no cartão de modo fica salva. JOGAR usa essa escolha
+       diretamente, sem manter um atalho GRUPO duplicado no menu principal. */
     selectHubMode(mode, persist) {
       const specs = {
         solo: {
-          code: '01', title: 'SOLO PVE', readout: 'SOLO // RANDOM POOL', capacity: '01 OPERADOR',
-          detail: 'arena aleatória · dificuldade pelo seu nível', feature: '⚡ Dificuldade pelo nível',
-          hint: 'JOGAR INICIA O SOLO PVE'
+          title: 'SOLO PVE', readout: 'MAPA ALEATÓRIO', capacity: '1 JOGADOR',
+          detail: 'dificuldade ajustada ao seu nível', feature: '⚡ Dificuldade pelo nível',
+          hint: 'PRONTO PARA PARTIDA SOLO'
         },
         coop: {
-          code: '02', title: 'COOP PVE', readout: 'COOP // RANDOM POOL', capacity: '02–06 OPERADORES',
-          detail: 'arena aleatória · dificuldade pelo tamanho do grupo', feature: '⚡ Escala para 2–6 jogadores',
-          hint: 'JOGAR ABRE AS SALAS COOP'
+          title: 'COOP PVE', readout: 'MAPA ALEATÓRIO', capacity: '2–6 JOGADORES',
+          detail: 'dificuldade ajustada ao tamanho da equipe', feature: '⚡ Escala para 2–6 jogadores',
+          hint: 'PRONTO PARA ABRIR SALAS COOP'
         },
         pvp: {
-          code: '03', title: 'EQUIPES', readout: 'PVP // ARENA POOL', capacity: '04–12 OPERADORES',
+          title: 'EQUIPES', readout: 'ARENA ALEATÓRIA', capacity: '4–12 JOGADORES',
           detail: 'PvP ou PvPvE · equipes Rosa e Ciano', feature: '⚔ PvP puro ou PvPvE',
-          hint: 'JOGAR ABRE AS SALAS DE EQUIPES'
+          hint: 'PRONTO PARA ABRIR SALAS DE EQUIPE'
         }
       };
       this.hubMode = specs[mode] ? mode : 'solo';
@@ -149,15 +149,14 @@
         launch.dataset.mode = this.hubMode;
         launch.classList.toggle('locked-mode', locked);
       }
-      put('hubModeCode', spec.code + ' DEFINIDO');
+      put('hubModeCode', spec.title);
       put('hubModeReadout', spec.readout);
       put('hubModeCapacity', spec.capacity);
       put('hubModeTitle', spec.title);
       put('hubMapName', spec.detail);
       put('hubModeFeature', spec.feature);
       put('hubModeHint', locked ? 'LIBERA NO NÍVEL ' + MA.CONFIG.MULTIPLAYER_LEVEL : spec.hint);
-      put('hubPlayModeLabel', 'PROTOCOLO ' + spec.code + ' // ' + spec.title);
-      put('hubSelectedMode', locked ? 'BLOQUEADO · NV. ' + MA.CONFIG.MULTIPLAYER_LEVEL : spec.title);
+      put('hubPlayModeLabel', locked ? 'BLOQUEADO · NÍVEL ' + MA.CONFIG.MULTIPLAYER_LEVEL : spec.title);
       put('hubModeCoopMeta', unlocked ? '2–6' : 'NV.' + MA.CONFIG.MULTIPLAYER_LEVEL);
       put('hubModePvpMeta', unlocked ? '4–12' : 'NV.' + MA.CONFIG.MULTIPLAYER_LEVEL);
       if (persist !== false && MA.store) MA.store.set('hubMode', this.hubMode);
@@ -214,7 +213,7 @@
       if ($('hubRank')) $('hubRank').textContent = MA.Net.isGuest
         ? '◇ SESSÃO TEMPORÁRIA · SEM SUPABASE'
         : rank.icon + ' ' + rank.name;
-      if ($('hubMapIcon')) $('hubMapIcon').textContent = '6·7';
+      if ($('hubMapIcon')) $('hubMapIcon').textContent = 'M/A';
       const sticker = MA.Profile.equippedSticker();
       const badge = $('hubStickerBadge');
       if (badge) {

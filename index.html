@@ -27,8 +27,9 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
 #bootFallback{position:fixed;left:50%;bottom:16px;translate:-50% 0;z-index:9;max-width:92vw;padding:8px 14px;
   border-radius:10px;background:rgba(8,10,38,.82);color:#cfe2ff;font-size:11px;letter-spacing:.08em;text-align:center}
 </style>
-<link rel="stylesheet" href="css/style.css?v=47">
-<link rel="stylesheet" href="css/season67.css?v=47">
+<link rel="stylesheet" href="css/style.css?v=48">
+<link rel="stylesheet" href="css/season67.css?v=48">
+<link rel="stylesheet" href="css/hub.css?v=48">
 </head>
 <body>
 <noscript><div id="bootFallback">Este jogo precisa de JavaScript ativado para iniciar.</div></noscript>
@@ -155,7 +156,7 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
       <div class="lobby-profile">
         <div class="lobby-avatar-wrap">
           <div class="lobby-avatar" id="hubSkin">😎</div>
-          <span>OPERADOR</span>
+          <span>JOGADOR</span>
         </div>
         <div class="lobby-profile-main">
           <div class="lobby-name-line">
@@ -170,10 +171,9 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
         </div>
       </div>
 
-      <div class="season-hub-badge" aria-label="Temporada 1: 67">
-        <span>TEMPORADA 1</span>
-        <b><i>6</i><i>7</i></b>
-        <small id="seasonCountdown">TERMINA EM —</small>
+      <div class="lobby-brand" aria-label="Meme Arena 3D">
+        <span class="brand-mark"><i>M</i><i>A</i></span>
+        <span class="brand-type"><b>MEME</b><strong>ARENA</strong><small>3D</small></span>
       </div>
 
       <div class="lobby-top-actions">
@@ -186,12 +186,12 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
 
     <main class="lobby-main">
       <nav class="lobby-left" aria-label="Coleção e conta">
-        <div class="lobby-nav-label"><span>CENTRAL</span><small>COLEÇÃO E PROGRESSO</small></div>
-        <button id="seasonBtn" class="lobby-tile acid"><span class="tile-number">67</span><b>CAIXAS</b><small>DROP // TEMPORADA</small><em>01</em></button>
-        <button id="shopBtn" class="lobby-tile pink"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><b>LOJA</b><small>ARSENAL // COSMÉTICOS</small><em>02</em></button>
-        <button id="invBtn" class="lobby-tile cyan"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 4 2 4-2 5 3-3 4v9H6v-9L3 8l5-3Z"/><path d="M9 6.5c.5 1.5 1.5 2.2 3 2.2s2.5-.7 3-2.2"/></svg></span><b>OPERADOR</b><small>VISUAL // LOADOUT</small><em>03</em></button>
-        <button id="albumBtn" class="lobby-tile orange"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h11l2 3v15H6V3Z"/><path d="M6 7H3v14h12M10 11h5M10 15h5"/><path d="m9 7 1-1 1 1-1 1-1-1Z"/></svg></span><b>ARQUIVO</b><small>MAPAS // NPCS</small><em>04</em></button>
-        <button id="mkBtn" class="lobby-tile violet"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h8l8 8-8 8-8-8V4Z"/><circle cx="8.5" cy="8.5" r="1.5"/></svg></span><b>MERCADO</b><small>TROCAS // JOGADORES</small><em>05</em></button>
+        <div class="lobby-nav-label"><span>MENU</span><small>MEME ARENA</small></div>
+        <button id="seasonBtn" class="lobby-tile acid"><span class="tile-symbol">✦</span><b>EVENTO</b><small>CAIXAS E RECOMPENSAS</small><em>01</em></button>
+        <button id="shopBtn" class="lobby-tile pink"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><b>LOJA</b><small>ITENS E OFERTAS</small><em>02</em></button>
+        <button id="invBtn" class="lobby-tile cyan"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 4 2 4-2 5 3-3 4v9H6v-9L3 8l5-3Z"/><path d="M9 6.5c.5 1.5 1.5 2.2 3 2.2s2.5-.7 3-2.2"/></svg></span><b>VISUAL</b><small>SKINS E LOADOUT</small><em>03</em></button>
+        <button id="albumBtn" class="lobby-tile orange"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h11l2 3v15H6V3Z"/><path d="M6 7H3v14h12M10 11h5M10 15h5"/><path d="m9 7 1-1 1 1-1 1-1-1Z"/></svg></span><b>ÁLBUM</b><small>MAPAS E PERSONAGENS</small><em>04</em></button>
+        <button id="mkBtn" class="lobby-tile violet"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h8l8 8-8 8-8-8V4Z"/><circle cx="8.5" cy="8.5" r="1.5"/></svg></span><b>MERCADO</b><small>TROCAS E PRESENTES</small><em>05</em></button>
         <div class="lobby-collection-progress" title="Progresso do álbum de figurinhas">
           <div><span>ÁLBUM</span><b id="hubStickerProgress">0 / 14</b></div>
           <div class="collection-track"><i id="hubStickerFill"></i></div>
@@ -200,10 +200,10 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
       </nav>
 
       <section class="lobby-character" aria-label="Personagem equipado">
-        <div class="character-brand-bg" aria-hidden="true"><b>6</b><b>7</b><span>ARENA OPERATOR</span></div>
-        <div class="character-tech-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="character-brand-bg" aria-hidden="true"><b>M</b><b>A</b><span>MEME ARENA</span></div>
+        <div class="character-sticker-burst" aria-hidden="true"><i></i><i></i><i></i></div>
         <div class="character-nameplate">
-          <span>OPERADOR EM CAMPO</span>
+          <span>VISUAL EQUIPADO</span>
           <strong id="hubArmor">🛡️ Moletom Básico</strong>
         </div>
         <div id="hubCharacterPreview" class="lobby-avatar3d" data-preview-type="avatar" data-preview-id="chill|hoodie|laser">
@@ -214,47 +214,39 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
         <div class="character-spark s3">◆</div>
         <div class="character-platform" aria-hidden="true"><i></i></div>
         <div class="lobby-loadout">
-          <span>LOADOUT ATIVO // 03 SLOTS</span>
+          <span>ARSENAL EQUIPADO</span>
           <div id="hubWeapons" class="chips"></div>
         </div>
       </section>
 
       <aside class="lobby-right">
-        <div class="queue-status"><span><i></i> PROTOCOLO PRONTO</span><small id="hubModeHint">CLIQUE EM UM MODO PARA PRÉ-DEFINIR</small></div>
+        <div class="queue-status"><span><i></i> MODO DE JOGO</span><small id="hubModeHint">ESCOLHA E JOGUE</small></div>
         <div class="mode-card" data-mode="solo" title="Escolha o modo; o mapa será sorteado ao iniciar">
-          <div class="mode-card-head"><span>PROTOCOLO DA PARTIDA</span><i id="hubModeCode">01 DEFINIDO</i></div>
+          <div class="mode-card-head"><span>PRÓXIMA PARTIDA</span><i id="hubModeCode">SOLO</i></div>
           <div class="mode-map-art">
-            <div class="map-orbit" aria-hidden="true"><i></i><i></i><span id="hubMapIcon">6·7</span></div>
-            <div class="map-readout"><b id="hubModeReadout">SOLO // RANDOM POOL</b><small id="hubModeCapacity">01 OPERADOR</small></div>
-            <em>SORTEIO AO INICIAR</em>
+            <div class="map-orbit" aria-hidden="true"><i></i><i></i><span id="hubMapIcon">M/A</span></div>
+            <div class="map-readout"><b id="hubModeReadout">MAPA ALEATÓRIO</b><small id="hubModeCapacity">1 JOGADOR</small></div>
+            <em>SORTEIO AUTOMÁTICO</em>
           </div>
           <b class="mode-shortcut-label" id="hubModeTitle">SOLO PVE</b>
-          <small id="hubMapName">arena aleatória · dificuldade pelo seu nível</small>
+          <small id="hubMapName">dificuldade ajustada ao seu nível</small>
           <div class="hub-mode-pills" role="group" aria-label="Modo pré-definido">
-            <button type="button" class="sel" data-hub-mode="solo" aria-pressed="true"><i>01</i><b>SOLO</b><small>PVE</small></button>
-            <button type="button" data-hub-mode="coop" aria-pressed="false"><i>02</i><b>COOP</b><small id="hubModeCoopMeta">2–6</small></button>
-            <button type="button" data-hub-mode="pvp" aria-pressed="false"><i>03</i><b>EQUIPES</b><small id="hubModePvpMeta">4–12</small></button>
+            <button type="button" class="sel" data-hub-mode="solo" aria-pressed="true"><i>●</i><b>SOLO</b><small>PVE</small></button>
+            <button type="button" data-hub-mode="coop" aria-pressed="false"><i>◆</i><b>COOP</b><small id="hubModeCoopMeta">2–6</small></button>
+            <button type="button" data-hub-mode="pvp" aria-pressed="false"><i>▲</i><b>EQUIPES</b><small id="hubModePvpMeta">4–12</small></button>
           </div>
-          <div class="hub-match-features"><span id="hubModeFeature">⚡ Dificuldade pelo nível</span><span>◇ Sem vantagem cosmética</span></div>
+          <div class="hub-match-features"><span id="hubModeFeature">⚡ Dificuldade pelo nível</span><span>◇ Cosméticos sem vantagem</span></div>
         </div>
+        <button id="playBtnHub" class="lobby-play" data-mode="solo">
+          <span class="play-icon">▶</span>
+          <span class="play-copy"><b>JOGAR</b><small id="hubPlayModeLabel">SOLO PVE</small></span>
+          <kbd>ENTER</kbd>
+        </button>
       </aside>
-
-      <button id="playBtnHub" class="lobby-play lobby-launch" data-mode="solo">
-        <span class="launch-icon">▶</span>
-        <span class="launch-copy"><b>JOGAR</b><small id="hubPlayModeLabel">PROTOCOLO 01 // SOLO PVE</small></span>
-        <em class="launch-selection"><i>MODO PRÉ-DEFINIDO</i><strong id="hubSelectedMode">SOLO PVE</strong></em>
-        <kbd>ENTER</kbd>
-      </button>
     </main>
 
     <footer class="lobby-footer">
-      <div class="pass-callout">RESGATE RECOMPENSAS!</div>
-      <div class="pass-head"><strong>PASSE 67</strong><span>SAZONAL</span></div>
-      <div class="season-wallet" title="Progresso da Temporada 67">
-        <span>⬡ <b id="seasonFragments">0</b></span>
-        <span>⚡ <b id="seasonBoosts">0</b></span>
-        <span>GARANTIA <b id="seasonPity">1/7</b></span>
-      </div>
+      <div class="arena-footer-mark"><i>MA</i><span>SEU HISTÓRICO DE ARENA</span></div>
       <div id="hubStats" class="hstats"></div>
       <div class="mini-rating" title="Classificação indicativa Livre"><b>L</b><span>LIVRE</span></div>
     </footer>
@@ -701,36 +693,36 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
   <div class="splash-foot">Arte própria, modelos licenciados e áudio original · Violência fantasiosa · Interação entre usuários · Apenas moeda virtual</div>
 </div>
 
-<script src="lib/three.min.js?v=47"></script>
-<script src="lib/GLTFLoader.js?v=47"></script>
-<script src="lib/SkeletonUtils.js?v=47"></script>
-<script src="src/utils.js?v=47"></script>
-<script src="src/config.js?v=47"></script>
-<script src="src/data.js?v=47"></script>
-<script src="src/maps.js?v=47"></script>
-<script src="src/items.js?v=47"></script>
-<script src="src/season.js?v=47"></script>
-<script src="src/audio.js?v=47"></script>
-<script src="src/faces.js?v=47"></script>
-<script src="src/textures.js?v=47"></script>
-<script src="src/cityassets.js?v=47"></script>
-<script src="src/world.js?v=47"></script>
-<script src="src/builds.js?v=47"></script>
-<script src="src/weapons3d.js?v=47"></script>
-<script src="src/armor3d.js?v=47"></script>
-<script src="src/skinmodels.js?v=47"></script>
-<script src="src/entities.js?v=47"></script>
-<script src="src/net.js?v=47"></script>
-<script src="src/profile.js?v=47"></script>
-<script src="src/ui.js?v=47"></script>
-<script src="src/pbuilds.js?v=47"></script>
-<script src="src/previews.js?v=47"></script>
-<script src="src/goals.js?v=47"></script>
-<script src="src/market.js?v=47"></script>
-<script src="src/multi.js?v=47"></script>
-<script src="src/mod.js?v=47"></script>
-<script src="src/mpui.js?v=47"></script>
-<script src="src/metaui.js?v=47"></script>
-<script src="src/game.js?v=47"></script>
+<script src="lib/three.min.js?v=48"></script>
+<script src="lib/GLTFLoader.js?v=48"></script>
+<script src="lib/SkeletonUtils.js?v=48"></script>
+<script src="src/utils.js?v=48"></script>
+<script src="src/config.js?v=48"></script>
+<script src="src/data.js?v=48"></script>
+<script src="src/maps.js?v=48"></script>
+<script src="src/items.js?v=48"></script>
+<script src="src/season.js?v=48"></script>
+<script src="src/audio.js?v=48"></script>
+<script src="src/faces.js?v=48"></script>
+<script src="src/textures.js?v=48"></script>
+<script src="src/cityassets.js?v=48"></script>
+<script src="src/world.js?v=48"></script>
+<script src="src/builds.js?v=48"></script>
+<script src="src/weapons3d.js?v=48"></script>
+<script src="src/armor3d.js?v=48"></script>
+<script src="src/skinmodels.js?v=48"></script>
+<script src="src/entities.js?v=48"></script>
+<script src="src/net.js?v=48"></script>
+<script src="src/profile.js?v=48"></script>
+<script src="src/ui.js?v=48"></script>
+<script src="src/pbuilds.js?v=48"></script>
+<script src="src/previews.js?v=48"></script>
+<script src="src/goals.js?v=48"></script>
+<script src="src/market.js?v=48"></script>
+<script src="src/multi.js?v=48"></script>
+<script src="src/mod.js?v=48"></script>
+<script src="src/mpui.js?v=48"></script>
+<script src="src/metaui.js?v=48"></script>
+<script src="src/game.js?v=48"></script>
 </body>
 </html>

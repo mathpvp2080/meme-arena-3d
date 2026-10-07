@@ -118,23 +118,28 @@ check('todos os assets locais do HTML existem', () => {
     assert.ok(fs.existsSync(path.join(root, ref)), `arquivo ausente: ${ref}`);
   }
 });
-check('hub tem identidade própria Arena Control 67 e estados úteis', () => {
-  const css = read('css/season67.css');
+check('hub tem identidade permanente Meme Arena e estados úteis', () => {
+  const css = read('css/hub.css');
   const meta = read('src/metaui.js');
+  const hubMarkup = index.slice(index.indexOf('<div id="hub"'), index.indexOf('<!-- =========================================================== LOJA'));
   for (const id of ['hubNetworkState', 'hubStickerProgress', 'hubStickerFill', 'hubOperatorId', 'playBtnHub']) {
-    assert.match(index, new RegExp(`id="${id}"`), `controle ausente no hub: ${id}`);
+    assert.match(hubMarkup, new RegExp(`id="${id}"`), `controle ausente no hub: ${id}`);
   }
-  for (const cls of ['queue-status', 'hub-mode-pills', 'hub-match-features', 'lobby-collection-progress', 'character-brand-bg', 'character-tech-frame', 'map-orbit', 'map-readout']) {
-    assert.ok(index.includes(`class="${cls}`) || index.includes(` ${cls}`), `bloco visual ausente: ${cls}`);
+  for (const cls of ['lobby-brand', 'queue-status', 'hub-mode-pills', 'hub-match-features', 'lobby-collection-progress', 'character-brand-bg', 'character-sticker-burst', 'map-orbit', 'map-readout', 'arena-footer-mark']) {
+    assert.ok(hubMarkup.includes(`class="${cls}`) || hubMarkup.includes(` ${cls}`), `bloco visual ausente: ${cls}`);
   }
-  for (const signature of ['DROP // TEMPORADA', 'ARSENAL // COSMÉTICOS', 'VISUAL // LOADOUT', 'PROTOCOLO DA PARTIDA', 'MODO PRÉ-DEFINIDO']) {
-    assert.ok(index.includes(signature), `assinatura visual ausente: ${signature}`);
+  for (const signature of ['CAIXAS E RECOMPENSAS', 'ITENS E OFERTAS', 'SKINS E LOADOUT', 'MAPAS E PERSONAGENS', 'TROCAS E PRESENTES', 'MODO DE JOGO']) {
+    assert.ok(hubMarkup.includes(signature), `assinatura visual ausente: ${signature}`);
   }
-  assert.ok(!index.includes('id="mpBtn"'), 'botão GRUPO redundante ainda está no hub');
-  for (const mode of ['solo', 'coop', 'pvp']) assert.ok(index.includes(`data-hub-mode="${mode}"`), `pré-seleção ausente: ${mode}`);
-  assert.match(css, /ARENA CONTROL 67 · identidade própria do lobby/);
-  assert.match(css, /trilho de lançamento: separado dos módulos/);
-  assert.match(css, /SELECT PROTOCOL \/\/ ARENA 67/, 'seletor de modo fora da identidade visual');
+  for (const seasonalShell of ['ARENA CONTROL', 'PASSE 67', 'MATCH // 67', 'LAUNCH // 67', 'OPERADOR EM CAMPO']) {
+    assert.ok(!hubMarkup.includes(seasonalShell), `moldura principal ainda depende da temporada: ${seasonalShell}`);
+  }
+  assert.ok(!hubMarkup.includes('id="mpBtn"'), 'botão GRUPO redundante ainda está no hub');
+  for (const mode of ['solo', 'coop', 'pvp']) assert.ok(hubMarkup.includes(`data-hub-mode="${mode}"`), `pré-seleção ausente: ${mode}`);
+  assert.match(css, /MEME ARENA SHELL · identidade permanente do menu principal/);
+  assert.match(css, /rail de adesivos: cinco silhuetas e cores inequívocas/);
+  assert.match(css, /MEME ARENA \/\/ ESCOLHA O MODO/, 'seletor de modo fora da identidade permanente');
+  assert.doesNotMatch(css, /#hub \.lobby-play\{[^}]*grid-column:2\/4/, 'JOGAR voltou a ocupar o centro da tela');
   assert.match(css, /@media\(max-width:540px\)/, 'hub sem adaptação para celular estreito');
   assert.match(meta, /selectHubMode\(mode, persist\)/);
   assert.match(meta, /launchHubMode\(\)/);
@@ -158,7 +163,7 @@ check('JOGAR roteia Solo, Coop e equipes com capacidades válidas', () => {
   assert.match(schema, /mode in \('coop','pvp','pvpve'\)/);
   assert.match(schema, /players between 1 and 12/);
 });
-check('pré-seleção do hub persiste e JOGAR usa o protocolo escolhido', () => {
+check('pré-seleção do hub persiste e JOGAR usa o modo escolhido', () => {
   const classes = () => {
     const values = new Set();
     return { values, toggle(name, on) { on ? values.add(name) : values.delete(name); } };
@@ -170,7 +175,7 @@ check('pré-seleção do hub persiste e JOGAR usa o protocolo escolhido', () => 
   const buttons = ['solo', 'coop', 'pvp'].map(node);
   const ids = Object.fromEntries([
     'hubModeCode', 'hubModeReadout', 'hubModeCapacity', 'hubModeTitle', 'hubMapName',
-    'hubModeFeature', 'hubModeHint', 'hubPlayModeLabel', 'hubSelectedMode',
+    'hubModeFeature', 'hubModeHint', 'hubPlayModeLabel',
     'hubModeCoopMeta', 'hubModePvpMeta', 'playBtnHub'
   ].map(id => [id, node()]));
   const card = node();
@@ -194,7 +199,7 @@ check('pré-seleção do hub persiste e JOGAR usa o protocolo escolhido', () => 
   run('src/metaui.js', context);
   fakeMA.MetaUI.selectHubMode('coop');
   assert.equal(saved, 'coop');
-  assert.equal(ids.hubSelectedMode.textContent, 'COOP PVE');
+  assert.equal(ids.hubPlayModeLabel.textContent, 'COOP PVE');
   assert.equal(card.dataset.mode, 'coop');
   assert.equal(buttons[1].attrs['aria-pressed'], 'true');
   fakeMA.MetaUI.launchHubMode();
@@ -372,7 +377,7 @@ check('service worker e manifesto incluem somente assets existentes', () => {
   const registrationVersion = read('src/utils.js').match(/serviceWorker\.register\('sw\.js\?v=(\d+)'/);
   assert.ok(registrationVersion, 'registro do service worker sem versão');
   assert.equal(registrationVersion[1], swVersion[1], 'registro e cache do service worker em versões diferentes');
-  for (const rel of ['termos.html', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'assets/skins/tung.glb', 'assets/skins/bombardiro.glb', 'assets/kaykit-city/citybits_texture.png', 'src/cityassets.js', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
+  for (const rel of ['termos.html', 'css/hub.css', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'assets/skins/tung.glb', 'assets/skins/bombardiro.glb', 'assets/kaykit-city/citybits_texture.png', 'src/cityassets.js', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
   for (const [, asset] of sw.matchAll(/'\.\/([^']*)'/g)) assert.ok(fs.existsSync(path.join(root, asset || '.')), `cache aponta para arquivo ausente: ${asset}`);
   const manifest = JSON.parse(read('manifest.webmanifest'));
   for (const asset of [...manifest.icons, ...manifest.screenshots]) assert.ok(fs.existsSync(path.join(root, asset.src)), `manifesto aponta para arquivo ausente: ${asset.src}`);

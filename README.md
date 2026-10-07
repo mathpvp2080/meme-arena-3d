@@ -57,7 +57,7 @@ sintetizados com WebAudio.
 | 🤖 **7 tipos de IA** | Perseguir, flanquear, orbitar, atirar, investir, teleportar e bombardear |
 | 📊 **4 dificuldades** | Normie, Meme Lord, Sigma e Brainrot |
 | 🏆 **Progressão** | Combo multiplicador, 7 ranks, recordes locais e estatísticas de fim de partida |
-| 🧭 **Lobby Arena Control 67** | Operador central, módulos laterais marcantes, modo pré-definido no próprio painel e trilho JOGAR dominante, além de conexão e progresso do álbum |
+| 🧭 **Lobby Meme Arena** | Identidade permanente em adesivos recortados, personagem central, menu lateral colorido e modo pré-definido acima do JOGAR compacto; apenas o fundo acompanha a temporada |
 | 📱 **Mobile** | Joystick virtual, botões de ação e layout responsivo |
 | 🔌 **Offline** | PWA com service worker — instala e joga sem internet |
 
