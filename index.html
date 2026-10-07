@@ -27,8 +27,8 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
 #bootFallback{position:fixed;left:50%;bottom:16px;translate:-50% 0;z-index:9;max-width:92vw;padding:8px 14px;
   border-radius:10px;background:rgba(8,10,38,.82);color:#cfe2ff;font-size:11px;letter-spacing:.08em;text-align:center}
 </style>
-<link rel="stylesheet" href="css/style.css?v=46">
-<link rel="stylesheet" href="css/season67.css?v=46">
+<link rel="stylesheet" href="css/style.css?v=47">
+<link rel="stylesheet" href="css/season67.css?v=47">
 </head>
 <body>
 <noscript><div id="bootFallback">Este jogo precisa de JavaScript ativado para iniciar.</div></noscript>
@@ -220,22 +220,31 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
       </section>
 
       <aside class="lobby-right">
-        <div class="queue-status"><span><i></i> PRONTO PARA JOGAR</span><small>ESCOLHA O MODO NA PRÓXIMA ETAPA</small></div>
-        <div class="mode-card" title="O mapa é sorteado ao iniciar cada partida">
-          <div class="mode-card-head"><span>CONFIGURAÇÃO DA PARTIDA</span><i>AUTOMÁTICA</i></div>
+        <div class="queue-status"><span><i></i> PROTOCOLO PRONTO</span><small id="hubModeHint">CLIQUE EM UM MODO PARA PRÉ-DEFINIR</small></div>
+        <div class="mode-card" data-mode="solo" title="Escolha o modo; o mapa será sorteado ao iniciar">
+          <div class="mode-card-head"><span>PROTOCOLO DA PARTIDA</span><i id="hubModeCode">01 DEFINIDO</i></div>
           <div class="mode-map-art">
             <div class="map-orbit" aria-hidden="true"><i></i><i></i><span id="hubMapIcon">6·7</span></div>
-            <div class="map-readout"><b>RANDOM POOL</b><small>06 ARENAS INDEXADAS</small></div>
+            <div class="map-readout"><b id="hubModeReadout">SOLO // RANDOM POOL</b><small id="hubModeCapacity">01 OPERADOR</small></div>
             <em>SORTEIO AO INICIAR</em>
           </div>
-          <b class="mode-shortcut-label">ROTAÇÃO DE ARENAS</b>
-          <small id="hubMapName">mapa definido quando a partida começar</small>
-          <div class="hub-mode-pills" aria-label="Modos disponíveis"><span>SOLO</span><span>COOP</span><span>EQUIPES</span></div>
-          <div class="hub-match-features"><span>⚡ Dificuldade automática</span><span>◇ Sem vantagem cosmética</span></div>
+          <b class="mode-shortcut-label" id="hubModeTitle">SOLO PVE</b>
+          <small id="hubMapName">arena aleatória · dificuldade pelo seu nível</small>
+          <div class="hub-mode-pills" role="group" aria-label="Modo pré-definido">
+            <button type="button" class="sel" data-hub-mode="solo" aria-pressed="true"><i>01</i><b>SOLO</b><small>PVE</small></button>
+            <button type="button" data-hub-mode="coop" aria-pressed="false"><i>02</i><b>COOP</b><small id="hubModeCoopMeta">2–6</small></button>
+            <button type="button" data-hub-mode="pvp" aria-pressed="false"><i>03</i><b>EQUIPES</b><small id="hubModePvpMeta">4–12</small></button>
+          </div>
+          <div class="hub-match-features"><span id="hubModeFeature">⚡ Dificuldade pelo nível</span><span>◇ Sem vantagem cosmética</span></div>
         </div>
-        <button id="mpBtn" class="lobby-multi locked"><span class="multi-mark">◈</span><b>GRUPO</b><small>CRIAR OU ENTRAR COM CÓDIGO</small></button>
-        <button id="playBtnHub" class="lobby-play"><span>▶</span><b>JOGAR</b><small>SOLO · COOP · PVP EM EQUIPES</small><kbd>ENTER</kbd></button>
       </aside>
+
+      <button id="playBtnHub" class="lobby-play lobby-launch" data-mode="solo">
+        <span class="launch-icon">▶</span>
+        <span class="launch-copy"><b>JOGAR</b><small id="hubPlayModeLabel">PROTOCOLO 01 // SOLO PVE</small></span>
+        <em class="launch-selection"><i>MODO PRÉ-DEFINIDO</i><strong id="hubSelectedMode">SOLO PVE</strong></em>
+        <kbd>ENTER</kbd>
+      </button>
     </main>
 
     <footer class="lobby-footer">
@@ -692,36 +701,36 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
   <div class="splash-foot">Arte própria, modelos licenciados e áudio original · Violência fantasiosa · Interação entre usuários · Apenas moeda virtual</div>
 </div>
 
-<script src="lib/three.min.js?v=46"></script>
-<script src="lib/GLTFLoader.js?v=46"></script>
-<script src="lib/SkeletonUtils.js?v=46"></script>
-<script src="src/utils.js?v=46"></script>
-<script src="src/config.js?v=46"></script>
-<script src="src/data.js?v=46"></script>
-<script src="src/maps.js?v=46"></script>
-<script src="src/items.js?v=46"></script>
-<script src="src/season.js?v=46"></script>
-<script src="src/audio.js?v=46"></script>
-<script src="src/faces.js?v=46"></script>
-<script src="src/textures.js?v=46"></script>
-<script src="src/cityassets.js?v=46"></script>
-<script src="src/world.js?v=46"></script>
-<script src="src/builds.js?v=46"></script>
-<script src="src/weapons3d.js?v=46"></script>
-<script src="src/armor3d.js?v=46"></script>
-<script src="src/skinmodels.js?v=46"></script>
-<script src="src/entities.js?v=46"></script>
-<script src="src/net.js?v=46"></script>
-<script src="src/profile.js?v=46"></script>
-<script src="src/ui.js?v=46"></script>
-<script src="src/pbuilds.js?v=46"></script>
-<script src="src/previews.js?v=46"></script>
-<script src="src/goals.js?v=46"></script>
-<script src="src/market.js?v=46"></script>
-<script src="src/multi.js?v=46"></script>
-<script src="src/mod.js?v=46"></script>
-<script src="src/mpui.js?v=46"></script>
-<script src="src/metaui.js?v=46"></script>
-<script src="src/game.js?v=46"></script>
+<script src="lib/three.min.js?v=47"></script>
+<script src="lib/GLTFLoader.js?v=47"></script>
+<script src="lib/SkeletonUtils.js?v=47"></script>
+<script src="src/utils.js?v=47"></script>
+<script src="src/config.js?v=47"></script>
+<script src="src/data.js?v=47"></script>
+<script src="src/maps.js?v=47"></script>
+<script src="src/items.js?v=47"></script>
+<script src="src/season.js?v=47"></script>
+<script src="src/audio.js?v=47"></script>
+<script src="src/faces.js?v=47"></script>
+<script src="src/textures.js?v=47"></script>
+<script src="src/cityassets.js?v=47"></script>
+<script src="src/world.js?v=47"></script>
+<script src="src/builds.js?v=47"></script>
+<script src="src/weapons3d.js?v=47"></script>
+<script src="src/armor3d.js?v=47"></script>
+<script src="src/skinmodels.js?v=47"></script>
+<script src="src/entities.js?v=47"></script>
+<script src="src/net.js?v=47"></script>
+<script src="src/profile.js?v=47"></script>
+<script src="src/ui.js?v=47"></script>
+<script src="src/pbuilds.js?v=47"></script>
+<script src="src/previews.js?v=47"></script>
+<script src="src/goals.js?v=47"></script>
+<script src="src/market.js?v=47"></script>
+<script src="src/multi.js?v=47"></script>
+<script src="src/mod.js?v=47"></script>
+<script src="src/mpui.js?v=47"></script>
+<script src="src/metaui.js?v=47"></script>
+<script src="src/game.js?v=47"></script>
 </body>
 </html>

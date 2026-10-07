@@ -7,6 +7,7 @@
     shopTab: 'weapon',
     invTab: 'all',
     albumTab: 'all',
+    hubMode: 'solo',
     busy: false,
 
     /* ------------------------------------------------------------ toast */
@@ -109,6 +110,73 @@
       this.screen('hub');
     },
 
+    /* O protocolo escolhido no painel do hub fica salvo. JOGAR usa essa
+       escolha diretamente, sem repetir o antigo botão GRUPO. */
+    selectHubMode(mode, persist) {
+      const specs = {
+        solo: {
+          code: '01', title: 'SOLO PVE', readout: 'SOLO // RANDOM POOL', capacity: '01 OPERADOR',
+          detail: 'arena aleatória · dificuldade pelo seu nível', feature: '⚡ Dificuldade pelo nível',
+          hint: 'JOGAR INICIA O SOLO PVE'
+        },
+        coop: {
+          code: '02', title: 'COOP PVE', readout: 'COOP // RANDOM POOL', capacity: '02–06 OPERADORES',
+          detail: 'arena aleatória · dificuldade pelo tamanho do grupo', feature: '⚡ Escala para 2–6 jogadores',
+          hint: 'JOGAR ABRE AS SALAS COOP'
+        },
+        pvp: {
+          code: '03', title: 'EQUIPES', readout: 'PVP // ARENA POOL', capacity: '04–12 OPERADORES',
+          detail: 'PvP ou PvPvE · equipes Rosa e Ciano', feature: '⚔ PvP puro ou PvPvE',
+          hint: 'JOGAR ABRE AS SALAS DE EQUIPES'
+        }
+      };
+      this.hubMode = specs[mode] ? mode : 'solo';
+      const spec = specs[this.hubMode];
+      const unlocked = !MA.Profile || !MA.Profile.canMultiplayer || MA.Profile.canMultiplayer();
+      const locked = this.hubMode !== 'solo' && !unlocked;
+      const put = (id, value) => { const el = $(id); if (el) el.textContent = value; };
+
+      document.querySelectorAll('[data-hub-mode]').forEach(btn => {
+        const selected = btn.dataset.hubMode === this.hubMode;
+        btn.classList.toggle('sel', selected);
+        btn.classList.toggle('locked', btn.dataset.hubMode !== 'solo' && !unlocked);
+        btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      });
+      const card = document.querySelector('#hub .mode-card');
+      if (card) card.dataset.mode = this.hubMode;
+      const launch = $('playBtnHub');
+      if (launch) {
+        launch.dataset.mode = this.hubMode;
+        launch.classList.toggle('locked-mode', locked);
+      }
+      put('hubModeCode', spec.code + ' DEFINIDO');
+      put('hubModeReadout', spec.readout);
+      put('hubModeCapacity', spec.capacity);
+      put('hubModeTitle', spec.title);
+      put('hubMapName', spec.detail);
+      put('hubModeFeature', spec.feature);
+      put('hubModeHint', locked ? 'LIBERA NO NÍVEL ' + MA.CONFIG.MULTIPLAYER_LEVEL : spec.hint);
+      put('hubPlayModeLabel', 'PROTOCOLO ' + spec.code + ' // ' + spec.title);
+      put('hubSelectedMode', locked ? 'BLOQUEADO · NV. ' + MA.CONFIG.MULTIPLAYER_LEVEL : spec.title);
+      put('hubModeCoopMeta', unlocked ? '2–6' : 'NV.' + MA.CONFIG.MULTIPLAYER_LEVEL);
+      put('hubModePvpMeta', unlocked ? '4–12' : 'NV.' + MA.CONFIG.MULTIPLAYER_LEVEL);
+      if (persist !== false && MA.store) MA.store.set('hubMode', this.hubMode);
+    },
+
+    launchHubMode() {
+      const mode = this.hubMode || (MA.store && MA.store.get('hubMode', 'solo')) || 'solo';
+      if (mode === 'solo') {
+        if (MA.Profile.equippedWeapons().length === 0) {
+          this.toast('⚠️ Compre e equipe uma arma antes de jogar.', 'bad');
+          this.openShop('weapon');
+          return;
+        }
+        if (MA._startSoloAuto) MA._startSoloAuto();
+        return;
+      }
+      MA.MPUI.open(mode === 'pvp' ? 'pvp' : 'coop');
+    },
+
     renderHub() {
       const p = MA.Profile.data;
       if (!p) return;
@@ -147,7 +215,6 @@
         ? '◇ SESSÃO TEMPORÁRIA · SEM SUPABASE'
         : rank.icon + ' ' + rank.name;
       if ($('hubMapIcon')) $('hubMapIcon').textContent = '6·7';
-      if ($('hubMapName')) $('hubMapName').textContent = 'mapa definido quando a partida começar';
       const sticker = MA.Profile.equippedSticker();
       const badge = $('hubStickerBadge');
       if (badge) {
@@ -184,14 +251,10 @@
         st('MELHOR ONDA', s.bestWave) + st('ABATES', MA.fmt(s.kills)) +
         st('CHEFES', s.bosses) + st('COMBO MÁX', 'x' + s.maxCombo);
 
-      /* trava do multiplayer */
-      const ok = MA.Profile.canMultiplayer();
-      const btn = $('mpBtn');
-      btn.classList.toggle('locked', !ok);
-      btn.innerHTML = ok
-        ? '<span class="multi-mark">◈</span><b>GRUPO</b><small>CRIAR OU ENTRAR COM CÓDIGO</small>'
-        : '<span class="multi-mark">◇</span><b>GRUPO BLOQUEADO</b><small>LIBERA NO NÍVEL ' + MA.CONFIG.MULTIPLAYER_LEVEL + '</small>';
-
+      /* O modo lateral é a única pré-seleção do hub; o acesso às salas
+         acontece pelo mesmo botão JOGAR. */
+      const savedMode = MA.store ? MA.store.get('hubMode', this.hubMode) : this.hubMode;
+      this.selectHubMode(savedMode, false);
       $('playBtnHub').classList.toggle('needweapon', wIdx.length === 0);
     },
 
@@ -606,7 +669,10 @@
 
     bind() {
       const on = (id, fn) => { const e = $(id); if (e) e.onclick = () => { MA.Audio.init(); MA.Audio.ui(); fn(); }; };
-      on('playBtnHub', () => this.screen('playmode'));
+      on('playBtnHub', () => this.launchHubMode());
+      document.querySelectorAll('[data-hub-mode]').forEach(btn => {
+        btn.onclick = () => { MA.Audio.init(); MA.Audio.ui(); this.selectHubMode(btn.dataset.hubMode); };
+      });
       on('playmodeClose', () => this.openHub());
       on('soloModeBtn', () => {
         if (MA.Profile.equippedWeapons().length === 0) {
@@ -623,7 +689,6 @@
       on('lootAgain', () => { if (this._lastBox) this.openSeasonBox(this._lastBox); });
       on('invBtn', () => this.openInventory());
       on('albumBtn', () => this.openAlbum());
-      on('mpBtn', () => MA.MPUI.open('coop'));
       on('mkBtn', () => { MA.Market.preencherGift(); MA.Market.abrir('comprar'); });
       on('glBtn', () => this.openGoals('daily'));
       on('glClose', () => this.openHub());

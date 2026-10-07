@@ -127,12 +127,18 @@ check('hub tem identidade própria Arena Control 67 e estados úteis', () => {
   for (const cls of ['queue-status', 'hub-mode-pills', 'hub-match-features', 'lobby-collection-progress', 'character-brand-bg', 'character-tech-frame', 'map-orbit', 'map-readout']) {
     assert.ok(index.includes(`class="${cls}`) || index.includes(` ${cls}`), `bloco visual ausente: ${cls}`);
   }
-  for (const signature of ['DROP // TEMPORADA', 'ARSENAL // COSMÉTICOS', 'VISUAL // LOADOUT', 'ROTAÇÃO DE ARENAS']) {
+  for (const signature of ['DROP // TEMPORADA', 'ARSENAL // COSMÉTICOS', 'VISUAL // LOADOUT', 'PROTOCOLO DA PARTIDA', 'MODO PRÉ-DEFINIDO']) {
     assert.ok(index.includes(signature), `assinatura visual ausente: ${signature}`);
   }
+  assert.ok(!index.includes('id="mpBtn"'), 'botão GRUPO redundante ainda está no hub');
+  for (const mode of ['solo', 'coop', 'pvp']) assert.ok(index.includes(`data-hub-mode="${mode}"`), `pré-seleção ausente: ${mode}`);
   assert.match(css, /ARENA CONTROL 67 · identidade própria do lobby/);
+  assert.match(css, /trilho de lançamento: separado dos módulos/);
   assert.match(css, /SELECT PROTOCOL \/\/ ARENA 67/, 'seletor de modo fora da identidade visual');
   assert.match(css, /@media\(max-width:540px\)/, 'hub sem adaptação para celular estreito');
+  assert.match(meta, /selectHubMode\(mode, persist\)/);
+  assert.match(meta, /launchHubMode\(\)/);
+  assert.match(meta, /MA\.store\.set\('hubMode'/);
   assert.match(meta, /hubOperatorId/);
   assert.match(meta, /SESSÃO LOCAL/);
   assert.match(meta, /ownedStickers/);
@@ -144,11 +150,58 @@ check('JOGAR roteia Solo, Coop e equipes com capacidades válidas', () => {
   assert.match(index, /id="playmode"/);
   for (const id of ['soloModeBtn', 'coopModeBtn', 'pvpModeBtn']) assert.match(index, new RegExp(`id="${id}"`));
   for (const mode of ['data-mode="coop"', 'data-mode="pvp"', 'data-mode="pvpve"']) assert.ok(index.includes(mode), `modo ausente: ${mode}`);
+  assert.match(meta, /on\('playBtnHub', \(\) => this\.launchHubMode\(\)\)/);
   assert.match(meta, /MA\._startSoloAuto\(\)/);
+  assert.match(meta, /MA\.MPUI\.open\(mode === 'pvp' \? 'pvp' : 'coop'\)/);
   assert.match(multi, /return competitive\(mode \|\| this\.mode\) \? 12 : 6/);
   assert.match(multi, /t\.pink >= 2 && t\.cyan >= 2/);
   assert.match(schema, /mode in \('coop','pvp','pvpve'\)/);
   assert.match(schema, /players between 1 and 12/);
+});
+check('pré-seleção do hub persiste e JOGAR usa o protocolo escolhido', () => {
+  const classes = () => {
+    const values = new Set();
+    return { values, toggle(name, on) { on ? values.add(name) : values.delete(name); } };
+  };
+  const node = (mode) => ({
+    dataset: mode ? { hubMode: mode } : {}, classList: classes(), textContent: '', attrs: {},
+    setAttribute(name, value) { this.attrs[name] = value; }
+  });
+  const buttons = ['solo', 'coop', 'pvp'].map(node);
+  const ids = Object.fromEntries([
+    'hubModeCode', 'hubModeReadout', 'hubModeCapacity', 'hubModeTitle', 'hubMapName',
+    'hubModeFeature', 'hubModeHint', 'hubPlayModeLabel', 'hubSelectedMode',
+    'hubModeCoopMeta', 'hubModePvpMeta', 'playBtnHub'
+  ].map(id => [id, node()]));
+  const card = node();
+  let saved = null, opened = null, soloStarted = false;
+  const fakeMA = {
+    $: id => ids[id] || null,
+    CONFIG: { MULTIPLAYER_LEVEL: 5 },
+    Profile: { canMultiplayer: () => true, equippedWeapons: () => [0] },
+    store: { get: (_key, fallback) => saved || fallback, set: (_key, value) => { saved = value; } },
+    MPUI: { open: mode => { opened = mode; } },
+    Audio: {},
+    _startSoloAuto: () => { soloStarted = true; }
+  };
+  const fakeDocument = {
+    querySelectorAll: selector => selector === '[data-hub-mode]' ? buttons : [],
+    querySelector: selector => selector === '#hub .mode-card' ? card : null,
+    createElement: () => node()
+  };
+  const fakeWindow = { MA: fakeMA };
+  const context = vm.createContext({ window: fakeWindow, document: fakeDocument, console, setTimeout, clearTimeout });
+  run('src/metaui.js', context);
+  fakeMA.MetaUI.selectHubMode('coop');
+  assert.equal(saved, 'coop');
+  assert.equal(ids.hubSelectedMode.textContent, 'COOP PVE');
+  assert.equal(card.dataset.mode, 'coop');
+  assert.equal(buttons[1].attrs['aria-pressed'], 'true');
+  fakeMA.MetaUI.launchHubMode();
+  assert.equal(opened, 'coop');
+  fakeMA.MetaUI.selectHubMode('solo');
+  fakeMA.MetaUI.launchHubMode();
+  assert.equal(soloStarted, true);
 });
 check('dificuldade automática usa nível, tamanho do Coop e ameaça PvPvE', () => {
   const game = read('src/game.js');
@@ -316,6 +369,9 @@ check('service worker e manifesto incluem somente assets existentes', () => {
   const indexVersions = new Set([...read('index.html').matchAll(/\?v=(\d+)/g)].map(m => m[1]));
   assert.equal(indexVersions.size, 1, `index.html mistura versões de cache: ${[...indexVersions].join(', ')}`);
   assert.equal([...indexVersions][0], swVersion[1], 'index.html e service worker em versões diferentes');
+  const registrationVersion = read('src/utils.js').match(/serviceWorker\.register\('sw\.js\?v=(\d+)'/);
+  assert.ok(registrationVersion, 'registro do service worker sem versão');
+  assert.equal(registrationVersion[1], swVersion[1], 'registro e cache do service worker em versões diferentes');
   for (const rel of ['termos.html', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'assets/skins/tung.glb', 'assets/skins/bombardiro.glb', 'assets/kaykit-city/citybits_texture.png', 'src/cityassets.js', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
   for (const [, asset] of sw.matchAll(/'\.\/([^']*)'/g)) assert.ok(fs.existsSync(path.join(root, asset || '.')), `cache aponta para arquivo ausente: ${asset}`);
   const manifest = JSON.parse(read('manifest.webmanifest'));
