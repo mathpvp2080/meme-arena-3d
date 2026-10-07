@@ -20,10 +20,10 @@ end;
 $$;
 
 insert into public.market_price_limits (item, min_price, max_price, tradable) values
-  ('skin:crash',          1670,  26700, true),
-  ('skin:mechred',         650,  10400, true),
-  ('skin:mechviolet',      1925,  46200, true),
-  ('skin:shadow',           6675, 267000, true),
+  ('skin:ouricoradio',     1050,  16800, true),
+  ('skin:abelhachefe',     2175,  52200, true),
+  ('skin:hywirl',          4425, 141600, true),
+  ('skin:glubturbo',       7175, 287000, true),
   ('armor:orbit6',          900,  14400, true),
   ('armor:prism7',         3925, 125600, true),
   ('weapon:boomerang',      725,  11600, true),

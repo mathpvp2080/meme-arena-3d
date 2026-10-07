@@ -74,7 +74,7 @@ Depois selecione o boneco e o acessório e exporte tudo junto como um `.glb`.
 
 ```js
 MA.SKIN_MODELS = {
-  'rookie': {
+  'cactopraia': {
     url: 'assets/skins/acessorio-bone.glb',
     mode: 'part', anchor: 'head',
     fit: false, keepPivot: true   // já nasce encaixado na cabeça
@@ -126,13 +126,13 @@ assets/skins/meu-boneco.glb
 ## 4. Registrar a skin
 
 Abra `src/skinmodels.js` e preencha `MA.SKIN_MODELS`. A chave é o **id da skin**
-em `src/items.js` (`rookie`, `gamer`, `lumber`, `striker`, ...).
+em `src/items.js` (`cactopraia`, `gatosus`, `peixefora`, `sapopix`, ...).
 
 ### Modelo inteiro (substitui o boneco)
 
 ```js
 MA.SKIN_MODELS = {
-  'rookie': {
+  'cactopraia': {
     url: 'assets/skins/meu-boneco.glb',
     mode: 'full',
     height: 2.62,   // altura final no jogo
@@ -147,7 +147,7 @@ MA.SKIN_MODELS = {
 
 ```js
 MA.SKIN_MODELS = {
-  'gamer': {
+  'gatosus': {
     url: 'assets/skins/acessorio-exemplo.glb',
     mode: 'part',
     anchor: 'hat',      // head | hat | body | back | handL | handR | gun

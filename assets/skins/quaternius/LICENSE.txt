@@ -1,0 +1,11 @@
+Ultimate Monsters
+Copyright / creator: Quaternius
+Official source: https://quaternius.com/packs/ultimatemonsters.html
+
+License: Creative Commons Zero v1.0 Universal (CC0 1.0)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+The official pack page identifies Ultimate Monsters as CC0 and permits use in
+personal and commercial projects. Attribution is not required by CC0. Meme
+Arena keeps this credit voluntarily and documents the exact retrieval and
+processing history in SOURCE.md.

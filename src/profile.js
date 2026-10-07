@@ -18,7 +18,7 @@
       d.inventory = d.inventory || [];
       d.equipped = d.equipped || {};
 
-      /* O catálogo Kenney substituiu integralmente as skins antigas. Mapeia
+      /* O elenco Quaternius substitui os dois catálogos anteriores. Mapeia
          inventário e equipamento sem apagar as compras já feitas pelo jogador. */
       const skinMap = MA.SKIN_ID_MIGRATION || {};
       d.inventory = Array.from(new Set(d.inventory.map(key => {
@@ -29,7 +29,7 @@
       d.equipped.skin = skinMap[previousSkin] || previousSkin;
       if (!MA.SKINS.some(s => s.id === d.equipped.skin)) {
         const starter = MA.SKINS.find(s => s.starter) || MA.SKINS[0];
-        d.equipped.skin = starter ? starter.id : 'rookie';
+        d.equipped.skin = starter ? starter.id : 'cactopraia';
       }
       d.equipped.armor = d.equipped.armor || 'hoodie';
       d.equipped.weapons = d.equipped.weapons || [];

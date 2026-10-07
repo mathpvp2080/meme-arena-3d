@@ -25,7 +25,7 @@
 
      Exemplo (descomente e troque pelo seu arquivo):
 
-     'rookie': {
+     'cactopraia': {
        url: 'assets/skins/meu-boneco.glb', // caminho dentro do projeto
        mode: 'full',                       // 'full' (boneco inteiro) ou 'part'
        height: 2.62,                       // altura final em unidades do jogo
@@ -34,7 +34,7 @@
        clip: 'idle'                        // animação do .glb (se houver)
      },
 
-     'gamer': {
+     'gatosus': {
        url: 'assets/skins/acessorio-exemplo.glb',
        mode: 'part',
        anchor: 'head',                 // head | hat | body | back | handL | handR | gun
@@ -42,24 +42,46 @@
        hide: ['head']                  // esconde a cabeça procedural
      }
      --------------------------------------------------------------------- */
-  /* Família jogável Kenney Blocky Characters 2.0. Os modelos originais olham
-     para +Z; meia-volta os alinha à frente do jogador no Meme Arena (-Z).
-     Todos compartilham proporção, 27 clips e a mesma estrutura de nós. */
-  const BLOCKY_FILES = {
-    rookie: 'b', gamer: 'c', lumber: 'a', striker: 'f', survivor: 'k',
-    scout: 'e', sheriff: 'j', professor: 'i', dojo: 'n', orcceo: 'l',
-    hunter: 'm', bogorc: 'o', executive: 'q', captain: 'p', crash: 'd',
-    mechred: 'g', mechviolet: 'h', shadow: 'r'
+  /* Elenco jogável Ultimate Monsters. Ao contrário do catálogo anterior,
+     esta seleção cruza rigs e famílias diferentes para evitar uma fileira de
+     corpos iguais com novas texturas. Os modelos olham para +Z; meia-volta os
+     alinha à frente do jogador no Meme Arena (-Z). */
+  const ULTIMATE_MONSTERS = {
+    cactopraia:      ['cacto-praia.glb', 'Idle'],
+    galinhacaos:     ['galinha-caos.glb', 'Idle'],
+    gatosus:         ['gato-sus.glb', 'Idle'],
+    peixefora:       ['peixe-fora.glb', 'Idle'],
+    pombocorreio:    ['pombo-correio.glb', 'Flying_Idle'],
+    cogubug:         ['cogumelo-bugado.glb', 'Idle'],
+    magogeleia:      ['mago-geleia.glb', 'Idle'],
+    yetibolso:       ['yeti-bolso.glb', 'Idle'],
+    coelhomaromba:   ['coelho-maromba.glb', 'Idle'],
+    sapopix:         ['sapo-pix.glb', 'Idle'],
+    alpacarei:       ['alpaca-rei.glb', 'Flying_Idle'],
+    dinocoach:       ['dino-coach.glb', 'Idle'],
+    etbombado:       ['et-bombado.glb', 'Idle'],
+    ninjameme:       ['ninja-meme.glb', 'Idle'],
+    lulalunar:       ['lula-lunar.glb', 'Flying_Idle'],
+    monstroboleto:   ['monstro-boleto.glb', 'Idle'],
+    reicogumelo:     ['rei-cogumelo.glb', 'Idle'],
+    passaropistola:  ['passaro-pistola.glb', 'Idle'],
+    dragaocaos:      ['dragao-caos.glb', 'Flying_Idle'],
+    cranio:          ['cranio-flutuante.glb', 'Flying_Idle'],
+    ouricoradio:     ['ourico-radioativo.glb', 'Idle'],
+    abelhachefe:     ['abelha-chefe.glb', 'Flying_Idle'],
+    hywirl:          ['hywirl.glb', 'Flying_Idle'],
+    glubturbo:       ['glub-turbo.glb', 'Flying_Idle']
   };
   MA.SKIN_MODELS = MA.SKIN_MODELS || {};
-  Object.keys(BLOCKY_FILES).forEach(id => {
+  Object.keys(ULTIMATE_MONSTERS).forEach(id => {
     if (MA.SKIN_MODELS[id]) return;
+    const model = ULTIMATE_MONSTERS[id];
     MA.SKIN_MODELS[id] = {
-      url: 'assets/skins/kenney-blocky/character-' + BLOCKY_FILES[id] + '.glb',
+      url: 'assets/skins/quaternius/' + model[0],
       mode: 'full',
       height: 2.62,
       rotY: Math.PI,
-      clip: 'idle',
+      clip: model[1],
       hide: 'all'
     };
   });
@@ -378,11 +400,17 @@
       const mixer = new THREE.AnimationMixer(model);
       const actions = Object.create(null);
       entry.animations.forEach(clip => {
-        if (clip && clip.name) actions[clip.name] = mixer.clipAction(clip);
+        if (!clip || !clip.name) return;
+        const action = mixer.clipAction(clip);
+        actions[clip.name] = action;
+        actions[clip.name.toLowerCase()] = action;
       });
       let current = null;
       const play = (name, fade) => {
-        const next = actions[name] || actions[sp.clip] || actions.idle || mixer.clipAction(entry.animations[0]);
+        const key = String(name || '').toLowerCase();
+        const preferred = String(sp.clip || '').toLowerCase();
+        const next = actions[name] || actions[key] || actions[sp.clip] || actions[preferred] ||
+          actions.idle || actions.flying_idle || mixer.clipAction(entry.animations[0]);
         if (!next || next === current) return false;
         const blend = typeof fade === 'number' ? Math.max(0, fade) : .12;
         next.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).play();
@@ -440,13 +468,15 @@
   }
 
   const STATE_CLIPS = {
-    idle: ['idle', 'static'],
-    walk: ['walk', 'sprint', 'idle'],
-    run: ['sprint', 'walk', 'idle'],
-    air: ['sprint', 'walk', 'idle'],
-    shoot: ['holding-right-shoot', 'holding-both-shoot', 'holding-right', 'idle'],
-    melee: ['attack-melee-right', 'attack-melee-left', 'idle'],
-    die: ['die', 'idle']
+    idle: ['idle', 'flying_idle', 'static'],
+    walk: ['walk', 'fast_flying', 'run', 'idle', 'flying_idle'],
+    run: ['run', 'fast_flying', 'walk', 'idle', 'flying_idle'],
+    air: ['jump_idle', 'jump', 'fast_flying', 'flying_idle', 'idle'],
+    shoot: ['punch', 'bite_front', 'headbutt', 'holding-right-shoot',
+      'holding-both-shoot', 'holding-right', 'idle', 'flying_idle'],
+    melee: ['bite_front', 'headbutt', 'punch', 'attack-melee-right',
+      'attack-melee-left', 'idle', 'flying_idle'],
+    die: ['death', 'die', 'idle', 'flying_idle']
   };
 
   /* target pode ser o resultado de createPlayer ou o Group diretamente. */

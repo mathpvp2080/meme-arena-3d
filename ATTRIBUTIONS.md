@@ -17,20 +17,20 @@ implica participação ou endosso ao jogo.
 - **Cópia da licença:** `assets/kaykit-city/LICENSE.txt`
 - **Data de acesso registrada:** 7 de outubro de 2026
 
-## Kenney Blocky Characters 2.0
+## Quaternius Ultimate Monsters
 
-- **Arquivos no projeto:** `assets/skins/kenney-blocky/character-a.glb` até `character-r.glb`
-- **Título na fonte:** Blocky Characters 2.0
-- **Autor:** Kenney
-- **Página oficial:** [kenney.nl/assets/blocky-characters](https://kenney.nl/assets/blocky-characters)
+- **Arquivos no projeto:** 24 GLBs autocontidos em `assets/skins/quaternius/`
+- **Título na fonte:** Ultimate Monsters
+- **Autor:** Quaternius
+- **Página oficial:** [quaternius.com/packs/ultimatemonsters.html](https://quaternius.com/packs/ultimatemonsters.html)
+- **Conteúdo oficial:** 50 modelos totalmente animados nos formatos glTF, FBX, OBJ e Blend.
 - **Licença:** [Creative Commons Zero 1.0 Universal (CC0 1.0)](https://creativecommons.org/publicdomain/zero/1.0/)
 - **Atribuição obrigatória:** não; crédito registrado voluntariamente.
-- **Quantidade utilizada:** 18 personagens completos, cada um com 27 animações.
-- **Origem dos GLBs autocontidos:** [Hidencod/tge-assets](https://github.com/Hidencod/tge-assets), caminho `packs/blocky-characters/`, commit `08f0c913f6783cc81f9f6105a7cdda8562b1c192`.
-- **Alteração na cópia intermediária:** textura compartilhada do pacote incorporada em cada GLB pelo espelho Tiny Game Engine; os derivados também são declarados CC0.
-- **Otimização feita pelo Meme Arena:** atlas incorporado reduzido de 1024×1024 para 256×256, preservando o mapeamento UV, para diminuir memória de GPU em celulares.
-- **Outras alterações no jogo:** nomes e descrições de catálogo, escala, rotação, sombras, seleção dos clipes de animação e integração com armas/efeitos.
-- **Registros preservados:** `assets/skins/kenney-blocky/LICENSE.txt` e `assets/skins/kenney-blocky/SOURCE.md`.
+- **Seleção usada:** animais, plantas, criaturas voadoras, blobs e monstros de geometrias e rigs diferentes; 24 aparências jogáveis no total.
+- **Cópias recuperadas:** [OuroborosCollective/Wasd](https://github.com/OuroborosCollective/Wasd), commit `1140770331b125fa4c6f8c95dd859d1ce472c54a`, e [Benson-LU77/Claude.guide](https://github.com/Benson-LU77/Claude.guide), commit `25b5bc22f997dfa4d3fea5c77fc2484f5d589264`.
+- **Transformações:** conversão para GLB, seleção de clipes, reamostragem, deduplicação, remoção de dados sem uso e quantização de normais/UVs/pesos. Oito atlas `big_*` foram reduzidos de 1024×1024 para 256×256; os demais atlas 32×32 foram preservados.
+- **Integração no jogo:** identidades próprias de loja, escala, rotação, sombras e ligação dos estados idle/corrida/salto/ataque/morte às animações disponíveis.
+- **Registros completos:** `assets/skins/quaternius/LICENSE.txt` e `assets/skins/quaternius/SOURCE.md`, incluindo o mapeamento de cada arquivo e os commits de recuperação.
 - **Data de acesso registrada:** 7 de outubro de 2026
 
 ## DOGE

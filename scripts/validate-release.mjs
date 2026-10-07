@@ -23,8 +23,8 @@ run('src/season.js', contentContext);
 run('src/goals.js', contentContext);
 const MA = contentWindow.MA;
 
-check('catálogo mantém 18 skins Kenney, 9 armaduras, 9 armas e 3 habilidades', () => {
-  assert.equal(MA.SKINS.length, 18);
+check('catálogo mantém 24 skins variadas, 9 armaduras, 9 armas e 3 habilidades', () => {
+  assert.equal(MA.SKINS.length, 24);
   assert.equal(MA.ARMORS.length, 9);
   assert.equal(MA.WEAPONS.length, 9);
   assert.equal(MA.ABILITIES.length, 3);
@@ -87,7 +87,7 @@ check('probabilidades da Caixa 67 totalizam 100%', () => {
 
 // Exercita a garantia local: seis rolagens sem item tornam a sétima sazonal.
 const rollProfile = {
-  data: { coins: 20000, level: 1, xp: 0, inventory: ['skin:rookie','armor:hoodie'], stats: {} },
+  data: { coins: 20000, level: 1, xp: 0, inventory: ['skin:cactopraia','armor:hoodie'], stats: {} },
   addCoins(n) { this.data.coins += n; }, addXp() { return 0; },
   owns(type, id) { return this.data.inventory.includes(`${type}:${id}`); },
   grant(type, id) { this.data.inventory.push(`${type}:${id}`); },
@@ -247,51 +247,120 @@ check('modelos 3D registrados apontam para arquivos existentes', () => {
     }
   }
 });
-check('catálogo jogável foi integralmente substituído pelos 18 modelos Kenney', () => {
-  const oldIds = ['chill','hacker','doge','rizzler','sigma','clown','ghost','demon',
+check('catálogo jogável reúne 24 modelos Quaternius e migra os dois elencos anteriores', () => {
+  const originalIds = ['chill','hacker','doge','rizzler','sigma','clown','ghost','demon',
     'gigachad','king','sixtyseven','sixorbit','sevenbreak','duo67'];
-  const skinIds = MA.SKINS.map(s => s.id);
-  assert.equal(skinIds.length, 18);
-  oldIds.forEach(id => assert.ok(!skinIds.includes(id), `skin antiga ainda publicada: ${id}`));
-  assert.equal(Object.keys(MA.SKIN_MODELS || {}).length, 18);
-  assert.deepEqual(Object.keys(MA.SKIN_ID_MIGRATION || {}).sort(), oldIds.slice().sort());
+  const rejectedIds = ['rookie','gamer','lumber','striker','survivor','scout','sheriff',
+    'professor','dojo','orcceo','hunter','bogorc','executive','captain','crash',
+    'mechred','mechviolet','shadow'];
+  const expectedIds = ['cactopraia','galinhacaos','gatosus','peixefora','pombocorreio',
+    'cogubug','magogeleia','yetibolso','coelhomaromba','sapopix','alpacarei',
+    'dinocoach','etbombado','ninjameme','lulalunar','monstroboleto','reicogumelo',
+    'passaropistola','dragaocaos','cranio','ouricoradio','abelhachefe','hywirl','glubturbo'];
+  const skinIds = MA.SKINS.map(skin => skin.id);
+  assert.equal(Array.from(skinIds).sort().join(','), expectedIds.slice().sort().join(','));
+  [...originalIds, ...rejectedIds].forEach(id => assert.ok(!skinIds.includes(id), `skin anterior ainda publicada: ${id}`));
+  assert.equal(Object.keys(MA.SKIN_MODELS || {}).length, 24);
+  assert.deepEqual(Object.keys(MA.SKIN_ID_MIGRATION || {}).sort(), [...originalIds, ...rejectedIds].sort());
+  assert.equal(MA.SKINS.filter(skin => skin.starter).map(skin => skin.id).join(','), 'cactopraia');
+  assert.equal(MA.SKINS.filter(skin => skin.seasonal).length, 4);
 
+  const urls = new Set();
   for (const skin of MA.SKINS) {
     const spec = MA.SKIN_MODELS[skin.id];
-    assert.ok(spec, `modelo Kenney ausente: ${skin.id}`);
-    assert.match(spec.url, /^assets\/skins\/kenney-blocky\/character-[a-r]\.glb$/);
+    assert.ok(spec, `modelo Quaternius ausente: ${skin.id}`);
+    assert.match(spec.url, /^assets\/skins\/quaternius\/[a-z0-9-]+\.glb$/);
     assert.equal(spec.mode, 'full');
     assert.equal(spec.height, 2.62);
     assert.equal(spec.rotY, Math.PI);
-    assert.equal(spec.clip, 'idle');
+    assert.ok(['Idle','Flying_Idle'].includes(spec.clip), `${skin.id}: idle não reconhecido`);
     assert.equal(spec.hide, 'all');
+    urls.add(spec.url);
+    assert.ok(skin.name.length >= 6 && skin.desc.length >= 40, `${skin.id}: identidade de loja incompleta`);
+  }
+  assert.equal(urls.size, 24, 'duas skins apontam para o mesmo modelo');
+});
+check('perfil local preserva compras e equipamento dos dois catálogos anteriores', () => {
+  run('src/profile.js', contentContext);
+  const migrated = MA.Profile.set({
+    level: 12, xp: 44, coins: 9876,
+    inventory: ['skin:chill','skin:rookie','skin:mechred','skin:shadow','armor:hoodie'],
+    equipped: { skin: 'shadow', armor: 'hoodie', weapons: [], ability: '' },
+    stats: {}
+  });
+  assert.equal(migrated.inventory.filter(item => item === 'skin:cactopraia').length, 1, 'duplicata não consolidada');
+  assert.ok(migrated.inventory.includes('skin:abelhachefe'), 'compra Kenney não migrou');
+  assert.ok(migrated.inventory.includes('skin:cranio'), 'skin equipada não foi preservada');
+  assert.ok(!migrated.inventory.some(item => /skin:(chill|rookie|mechred|shadow)$/.test(item)), 'ID antigo sobrou no inventário');
+  assert.equal(migrated.equipped.skin, 'cranio');
+  assert.equal(migrated.coins, 9876, 'moedas foram alteradas');
+  assert.equal(migrated.level, 12, 'nível foi alterado');
+});
+check('limites SQL das 24 skins coincidem com o catálogo do cliente', () => {
+  const schema = read('supabase/schema_multiplayer.sql');
+  const deploy = read('supabase/DEPLOY_LAUNCH.sql');
+  for (const skin of MA.SKINS) {
+    const bounds = MA.marketPriceBounds(skin);
+    const pattern = new RegExp(`\\('skin:${skin.id}',\\s*${bounds.min},\\s*${bounds.max},\\s*${skin.starter ? 'false' : 'true'}\\)`);
+    assert.match(schema, pattern, `${skin.id}: limite ausente no schema multiplayer`);
+    assert.match(deploy, pattern, `${skin.id}: limite ausente no deploy consolidado`);
   }
 });
-check('GLBs Kenney são autocontidos, leves e oferecem os 27 clips esperados', () => {
-  const expectedClips = ['static','idle','walk','sprint','die','holding-right-shoot','attack-melee-right'];
+check('GLBs Quaternius têm geometrias variadas, animações e orçamento móvel controlado', () => {
+  const geometrySignatures = new Set();
+  const families = new Set();
   let totalBytes = 0;
-  for (const letter of 'abcdefghijklmnopqr') {
-    const rel = `assets/skins/kenney-blocky/character-${letter}.glb`;
+  let totalTriangles = 0;
+  for (const skin of MA.SKINS) {
+    const rel = MA.SKIN_MODELS[skin.id].url;
     const glb = fs.readFileSync(path.join(root, rel));
     totalBytes += glb.length;
+    assert.ok(glb.length < 450000, `${rel}: arquivo acima de 450 KB`);
     const jsonLength = glb.readUInt32LE(12);
     assert.equal(glb.toString('ascii', 16, 20), 'JSON', `${rel}: primeiro chunk não é JSON`);
     const doc = JSON.parse(glb.toString('utf8', 20, 20 + jsonLength).replace(/[\u0000\s]+$/g, ''));
-    assert.equal((doc.animations || []).length, 27, `${rel}: quantidade de clips inesperada`);
-    const names = (doc.animations || []).map(a => a.name);
-    expectedClips.forEach(name => assert.ok(names.includes(name), `${rel}: clip ausente ${name}`));
+    assert.ok((doc.images || []).length === 1, `${rel}: deveria usar um atlas`);
     assert.ok((doc.images || []).every(image => Number.isInteger(image.bufferView) && !image.uri), `${rel}: textura não incorporada`);
     assert.ok((doc.buffers || []).every(buffer => !buffer.uri), `${rel}: buffer externo inesperado`);
+    assert.ok((doc.extensionsRequired || []).includes('KHR_mesh_quantization'), `${rel}: quantização não declarada`);
+    const names = (doc.animations || []).map(animation => animation.name);
+    assert.ok(names.some(name => /^(Idle|Flying_Idle)$/.test(name)), `${rel}: idle ausente`);
+    assert.ok(names.some(name => /^(Walk|Run|Fast_Flying)$/.test(name)), `${rel}: deslocamento ausente`);
+    assert.ok(names.some(name => /^(Bite_Front|Punch|Headbutt)$/.test(name)), `${rel}: ataque ausente`);
+    assert.ok(names.includes('Death'), `${rel}: morte ausente`);
+    if (names.includes('Flying_Idle')) families.add('flying');
+    else if (names.includes('Run')) families.add('big');
+    else families.add('blob');
+
+    let vertices = 0;
+    let triangles = 0;
+    let primitives = 0;
+    for (const mesh of doc.meshes || []) for (const primitive of mesh.primitives || []) {
+      primitives++;
+      const position = doc.accessors[primitive.attributes.POSITION];
+      vertices += position.count;
+      const count = primitive.indices === undefined ? position.count : doc.accessors[primitive.indices].count;
+      triangles += Math.floor(count / 3);
+    }
+    assert.ok(primitives >= 1 && primitives <= 3, `${rel}: ${primitives} draw calls`);
+    assert.ok(triangles >= 1000 && triangles <= 9000, `${rel}: ${triangles} triângulos`);
+    totalTriangles += triangles;
+    geometrySignatures.add(`${vertices}:${triangles}:${(doc.nodes || []).length}:${(doc.meshes || []).length}`);
+
     const binHeader = 20 + jsonLength;
     assert.equal(glb.toString('ascii', binHeader + 4, binHeader + 8), 'BIN\0', `${rel}: chunk binário ausente`);
     const imageView = doc.bufferViews[doc.images[0].bufferView];
     const pngStart = binHeader + 8 + (imageView.byteOffset || 0);
-    assert.equal(glb.readUInt32BE(pngStart + 16), 256, `${rel}: atlas deveria ter 256 px`);
-    assert.equal(glb.readUInt32BE(pngStart + 20), 256, `${rel}: atlas deveria ter 256 px`);
-    assert.ok(glb.length < 160000, `${rel}: arquivo acima do orçamento leve`);
+    const width = glb.readUInt32BE(pngStart + 16);
+    const height = glb.readUInt32BE(pngStart + 20);
+    assert.ok(width <= 256 && height <= 256, `${rel}: atlas ${width}x${height} acima do orçamento`);
   }
-  assert.ok(totalBytes < 2200000, `pacote jogável muito grande: ${totalBytes} bytes`);
+  assert.deepEqual([...families].sort(), ['big','blob','flying']);
+  assert.ok(geometrySignatures.size >= 20, `pouca variedade geométrica: ${geometrySignatures.size}/24 assinaturas`);
+  assert.ok(totalBytes < 5200000, `pacote jogável muito grande: ${totalBytes} bytes`);
+  assert.ok(totalTriangles < 130000, `elenco excede orçamento poligonal: ${totalTriangles}`);
   assert.match(read('src/skinmodels.js'), /setState\(target, state, fade\)/);
+  assert.match(read('src/skinmodels.js'), /flying_idle/);
   assert.match(read('src/game.js'), /MA\.SkinModels\.setState\(player, skinState\)/);
   assert.match(read('src/multi.js'), /MA\.SkinModels\.setState\(p\.obj, moving \? 'run' : 'idle'\)/);
 });
@@ -371,18 +440,22 @@ check('modelos CC BY têm atribuição visível e registro permanente', () => {
   assert.match(index, /CalnnHotCake/);
   assert.match(index, /徹水/);
 });
-check('pacote Kenney preserva licença, fonte intermediária e crédito visível', () => {
+check('pacote Quaternius preserva autor, licença, fontes e transformações', () => {
   const notices = read('ATTRIBUTIONS.md');
-  const source = read('assets/skins/kenney-blocky/SOURCE.md');
-  const license = read('assets/skins/kenney-blocky/LICENSE.txt');
-  for (const credit of ['Kenney', 'Blocky Characters 2.0', 'CC0 1.0', '08f0c913f6783cc81f9f6105a7cdda8562b1c192']) {
-    assert.ok(index.includes(credit) || notices.includes(credit) || source.includes(credit) || license.includes(credit), `crédito Kenney ausente: ${credit}`);
+  const source = read('assets/skins/quaternius/SOURCE.md');
+  const license = read('assets/skins/quaternius/LICENSE.txt');
+  for (const credit of ['Quaternius', 'Ultimate Monsters', 'CC0 1.0',
+    '1140770331b125fa4c6f8c95dd859d1ce472c54a',
+    '25b5bc22f997dfa4d3fea5c77fc2484f5d589264']) {
+    assert.ok(index.includes(credit) || notices.includes(credit) || source.includes(credit) || license.includes(credit), `crédito Quaternius ausente: ${credit}`);
   }
-  assert.match(license, /Creative Commons Zero/);
-  assert.match(source, /kenney\.nl\/assets\/blocky-characters/);
-  assert.match(index, /18 personagens jogáveis por <b>Kenney<\/b>/);
-  assert.match(notices, /textura compartilhada do pacote incorporada em cada GLB/);
-  assert.match(notices, /1024×1024 para 256×256/);
+  assert.match(license, /Creative Commons Zero|CC0 1\.0/);
+  assert.match(source, /quaternius\.com\/packs\/ultimatemonsters\.html/);
+  assert.match(source, /1024×1024 para 256×256/);
+  assert.match(source, /glTF-Transform/);
+  assert.match(index, /24 personagens jogáveis por <b>Quaternius<\/b>/);
+  assert.match(notices, /OuroborosCollective\/Wasd/);
+  assert.match(notices, /Benson-LU77\/Claude\.guide/);
 });
 check('mapa urbano KayKit preserva modelos, licença CC0 e crédito', () => {
   const notices = read('ATTRIBUTIONS.md');
@@ -429,9 +502,8 @@ check('service worker e manifesto incluem somente assets existentes', () => {
   assert.ok(registrationVersion, 'registro do service worker sem versão');
   assert.equal(registrationVersion[1], swVersion[1], 'registro e cache do service worker em versões diferentes');
   for (const rel of ['termos.html', 'css/hub.css', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'assets/skins/tung.glb', 'assets/skins/bombardiro.glb', 'assets/kaykit-city/citybits_texture.png', 'src/cityassets.js', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
-  for (const letter of 'abcdefghijklmnopqr') {
-    const rel = `assets/skins/kenney-blocky/character-${letter}.glb`;
-    assert.ok(sw.includes(rel), `${rel} fora do cache`);
+  for (const spec of Object.values(MA.SKIN_MODELS || {})) {
+    assert.ok(sw.includes(spec.url), `${spec.url} fora do cache`);
   }
   for (const [, asset] of sw.matchAll(/'\.\/([^']*)'/g)) assert.ok(fs.existsSync(path.join(root, asset || '.')), `cache aponta para arquivo ausente: ${asset}`);
   const manifest = JSON.parse(read('manifest.webmanifest'));
@@ -498,15 +570,16 @@ check('patch SQL contém limpeza restrita e RPCs sazonais', () => {
   assert.match(sql, /revoke all on function public\.season67_open_box/);
   assert.ok(!/create policy "dono anuncia"/.test(sql), 'escrita direta no mercado ainda permitida');
 });
-check('migração SQL troca skins sem apagar compras ou alterar NPCs', () => {
-  const patch = read('supabase/patch_kenney_skins.sql');
-  for (const pair of [['chill','rookie'], ['doge','lumber'], ['king','executive'],
-    ['sixtyseven','crash'], ['sixorbit','mechred'], ['sevenbreak','mechviolet'], ['duo67','shadow']]) {
+check('migração SQL troca ambos os catálogos sem apagar compras ou alterar NPCs', () => {
+  const patch = read('supabase/patch_quaternius_skins.sql');
+  for (const pair of [['chill','cactopraia'], ['doge','gatosus'], ['king','reicogumelo'],
+    ['rookie','cactopraia'], ['lumber','gatosus'], ['executive','reicogumelo'],
+    ['crash','ouricoradio'], ['mechred','abelhachefe'], ['mechviolet','hywirl'], ['shadow','cranio']]) {
     assert.ok(patch.includes(`'skin:${pair[0]}'`) && patch.includes(`'skin:${pair[1]}'`), `migração ausente: ${pair.join(' → ')}`);
   }
   assert.match(patch, /jsonb_array_elements_text/);
   assert.match(patch, /update public\.market_listings/);
-  assert.match(patch, /new\.inventory := '\["skin:rookie","armor:hoodie"\]'/);
+  assert.match(patch, /new\.inventory := '\["skin:cactopraia","armor:hoodie"\]'/);
   assert.ok(!patch.includes('MA.ENEMY_MODELS'));
 });
 check('CSP não depende de script inline e dados sociais são escapados', () => {

@@ -5,6 +5,13 @@ Depois registre o id da skin em `src/skinmodels.js` (`MA.SKIN_MODELS`).
 
 Guia completo: ../../docs/SKINS_CUSTOM.md
 
+## quaternius/
+
+Contém as 24 aparências jogáveis animadas do pacote Ultimate Monsters, de
+Quaternius (CC0 1.0). A licença, fontes de recuperação, commits, transformações
+e o mapeamento de cada modelo estão em `quaternius/LICENSE.txt` e
+`quaternius/SOURCE.md`.
+
 ## base-boneco.glb
 Modelo base do jogo (proporções exatas) para você importar no Blender e editar.
 Regenerar: `npm install && npm run export:base`.

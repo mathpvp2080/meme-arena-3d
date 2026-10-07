@@ -1,14 +1,14 @@
 # Revisão preliminar de propriedade intelectual
 
-**Data:** 4 de outubro de 2026. Este documento é uma triagem técnica, não um parecer jurídico.
+**Atualizado em:** 7 de outubro de 2026. Este documento é uma triagem técnica, não um parecer jurídico.
 
 ## Temporada 67
 
-A temporada utiliza os algarismos **6**, **7** e **67** como conceito cultural. As artes, interface, efeitos e áudio foram criados para o projeto e não copiam foto, música, voz, vídeo ou personagem da tendência. As quatro skins sazonais usam modelos CC0 documentados do pacote Kenney Blocky Characters 2.0. Entre os temas avaliados, este é o núcleo de menor risco do lançamento.
+A temporada utiliza os algarismos **6**, **7** e **67** como conceito cultural. As artes, interface, efeitos e áudio foram criados para o projeto e não copiam foto, música, voz, vídeo ou personagem da tendência. As quatro skins sazonais usam modelos CC0 documentados do pacote Quaternius Ultimate Monsters. Entre os temas avaliados, este é o núcleo de menor risco do lançamento.
 
 Itens da temporada:
 
-- Dublê de Respawn, Mecha Rubi, Mecha Violeta e Ninja Sem Sinal (modelos Kenney CC0, nomes e integração do projeto);
+- Ouriço Radioativo, Abelha-Chefe, Hipnose Ambulante e Glub Turbo (modelos Quaternius CC0, nomes e integração do projeto);
 - Protocolo 6·7, Colete Órbita 6 e Bastião Prisma 7;
 - Pulso Seis-Sete, Bumerangue do Loop, Orbe Gravitacional 6 e Lâmina Prisma 7;
 - Repulsão 6, Passo 7 e Sobrecarga 67;
@@ -16,7 +16,7 @@ Itens da temporada:
 
 ## Referências restantes que precisam de revisão
 
-O antigo catálogo de skins jogáveis foi integralmente substituído por 18 personagens Kenney sob CC0 1.0. NPCs, nomes de mapas, bordões e outras associações comerciais ainda podem envolver direitos de terceiros. Antes de monetização ou divulgação comercial ampla, revisar pelo menos:
+O antigo catálogo de skins jogáveis foi integralmente substituído por 24 personagens animados do pacote Quaternius Ultimate Monsters sob CC0 1.0. NPCs, nomes de mapas, bordões e outras associações comerciais ainda podem envolver direitos de terceiros. Antes de monetização ou divulgação comercial ampla, revisar pelo menos:
 
 | Grupo | Referências no projeto | Ação recomendada |
 |---|---|---|

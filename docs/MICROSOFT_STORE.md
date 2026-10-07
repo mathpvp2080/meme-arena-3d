@@ -173,7 +173,7 @@ O QUE TEM NO JOGO
   versões de elite com coroa dourada.
 • 5 chefes com três fases cada, invocação de lacaios e ataques especiais.
 • 20 melhorias permanentes — a cada onda vencida você escolhe uma de três cartas.
-• 18 skins animadas, 9 armaduras, 9 armas e 3 habilidades com modelos e mecânicas próprias.
+• 24 skins animadas e variadas, 9 armaduras, 9 armas e 3 habilidades com modelos e mecânicas próprias.
 • Temporada 67 com caixas de moeda virtual, chances visíveis, garantia da 7ª
   abertura, fragmentos de duplicata e recompensas aleatórias de chefe.
 • Modo Brainrot: encha a barra durante o combate e ative a ultimate.

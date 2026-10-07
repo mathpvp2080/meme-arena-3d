@@ -18,7 +18,7 @@
     nextStartsAt: '2026-11-29T00:00:00-03:00',
     odds: { coins: 42, xp: 23, boost: 17, item: 18 },
     itemKeys: [
-      'skin:crash', 'skin:mechred', 'skin:mechviolet', 'skin:shadow',
+      'skin:ouricoradio', 'skin:abelhachefe', 'skin:hywirl', 'skin:glubturbo',
       'armor:protocol67', 'armor:orbit6', 'armor:prism7',
       'weapon:pulse67', 'weapon:boomerang', 'weapon:gravity6', 'weapon:prism7',
       'ability:repulse6', 'ability:blink7', 'ability:overclock67'
@@ -37,7 +37,7 @@
   MA.SEASON = SEASON;
 
   /* Conteúdo sazonal. As quatro skins sazonais também pertencem ao pacote
-     Kenney e já são declaradas no catálogo principal; armaduras e armas ainda
+     Quaternius e já são declaradas no catálogo principal; armaduras e armas ainda
      são construções próprias da Temporada 67. */
   if (!MA.ARMORS.some(a => a.id === 'protocol67')) {
     MA.ARMORS.push({

@@ -126,7 +126,7 @@
         id: cid,
         uid: (MA.Net.user && MA.Net.user.id) || null,
         name: p.username, level: p.level,
-        skin: (p.equipped && p.equipped.skin) || 'rookie',
+        skin: (p.equipped && p.equipped.skin) || 'cactopraia',
         armor: (p.equipped && p.equipped.armor) || 'hoodie',
         sticker: (p.equipped && p.equipped.sticker) || '', team: null
       };
@@ -410,7 +410,7 @@
           MA.syncWeaponModel(p.obj);
         }
         MA.animateWeaponModel(p.obj, dt, false);
-        /* pernas procedurais ou clips do pacote Kenney quando anda */
+        /* pernas procedurais ou clipes próprios do modelo quando anda */
         const moving = p.tPos && p.pos.distanceToSquared(p.tPos) > .004;
         p.bob = (p.bob || 0) + dt * (moving ? 11 : 3);
         const sw = Math.sin(p.bob) * (moving ? .5 : .06);

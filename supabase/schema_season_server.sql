@@ -16,10 +16,10 @@ create table if not exists public.season67_items (
 );
 
 insert into public.season67_items (item,item_type,name,icon,rarity,weight) values
-  ('skin:crash',            'skin',    'Dublê de Respawn',      '⚠',  'mythic',     4),
-  ('skin:mechred',          'skin',    'Mecha Rubi',            '🤖', 'rare',      34),
-  ('skin:mechviolet',       'skin',    'Mecha Violeta',         '🤖', 'epic',      17),
-  ('skin:shadow',           'skin',    'Ninja Sem Sinal',       '🥷', 'mythic',     4),
+  ('skin:ouricoradio',       'skin',    'Ouriço Radioativo',     '☢',  'rare',      34),
+  ('skin:abelhachefe',       'skin',    'Abelha-Chefe',           '🐝', 'epic',      17),
+  ('skin:hywirl',            'skin',    'Hipnose Ambulante',      '🌀', 'legendary',  8),
+  ('skin:glubturbo',         'skin',    'Glub Turbo',             '👾', 'mythic',     4),
   ('armor:protocol67',      'armor',   'Protocolo 6·7',        '🛡', 'legendary',  8),
   ('armor:orbit6',          'armor',   'Colete Órbita 6',      '🛡', 'rare',      34),
   ('armor:prism7',          'armor',   'Bastião Prisma 7',     '🛡', 'legendary',  8),
@@ -35,7 +35,8 @@ on conflict (item) do update set
   rarity=excluded.rarity,weight=excluded.weight;
 
 delete from public.season67_items where item in (
-  'skin:sixtyseven','skin:sixorbit','skin:sevenbreak','skin:duo67'
+  'skin:sixtyseven','skin:sixorbit','skin:sevenbreak','skin:duo67',
+  'skin:crash','skin:mechred','skin:mechviolet','skin:shadow'
 );
 
 alter table public.season67_items enable row level security;

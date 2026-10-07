@@ -91,7 +91,7 @@ create table if not exists public.market_listings (
   id          bigserial primary key,
   seller_id   uuid not null references auth.users (id) on delete cascade,
   seller_name text not null,
-  item        text not null,            -- 'skin:lumber' | 'weapon:laser' | 'armor:pixel'
+  item        text not null,            -- 'skin:gatosus' | 'weapon:laser' | 'armor:pixel'
   price       int  not null,
   sold        boolean not null default false,
   buyer_name  text,
@@ -115,24 +115,30 @@ create table if not exists public.market_price_limits (
 );
 
 insert into public.market_price_limits (item, min_price, max_price, tradable) values
-  ('skin:rookie',          25,    300, false),
-  ('skin:gamer',          450,   7200, true),
-  ('skin:lumber',         600,   9600, true),
-  ('skin:striker',        700,  11200, true),
-  ('skin:survivor',       875,  14000, true),
-  ('skin:scout',         1125,  27000, true),
-  ('skin:sheriff',       1300,  31200, true),
-  ('skin:professor',     1500,  36000, true),
-  ('skin:dojo',          1800,  43200, true),
-  ('skin:orcceo',        2375,  76000, true),
-  ('skin:hunter',        3000,  96000, true),
-  ('skin:bogorc',        3750, 120000, true),
-  ('skin:executive',     6250, 250000, true),
-  ('skin:captain',       7500, 300000, true),
-  ('skin:crash',         1670,  26700, true),
-  ('skin:mechred',        650,  10400, true),
-  ('skin:mechviolet',    1925,  46200, true),
-  ('skin:shadow',        6675, 267000, true),
+  ('skin:cactopraia',       25,    300, false),
+  ('skin:galinhacaos',     225,   2700, true),
+  ('skin:gatosus',         400,   6400, true),
+  ('skin:peixefora',       550,   8800, true),
+  ('skin:pombocorreio',    700,  11200, true),
+  ('skin:cogubug',         850,  13600, true),
+  ('skin:magogeleia',     1125,  27000, true),
+  ('skin:yetibolso',      1300,  31200, true),
+  ('skin:coelhomaromba',  1700,  40800, true),
+  ('skin:sapopix',        1900,  45600, true),
+  ('skin:alpacarei',      2125,  51000, true),
+  ('skin:dinocoach',      2375,  76000, true),
+  ('skin:etbombado',      2625,  84000, true),
+  ('skin:ninjameme',      2875,  92000, true),
+  ('skin:lulalunar',      3625, 116000, true),
+  ('skin:monstroboleto',  4000, 128000, true),
+  ('skin:reicogumelo',    4500, 144000, true),
+  ('skin:passaropistola', 5000, 200000, true),
+  ('skin:dragaocaos',     6000, 240000, true),
+  ('skin:cranio',         7000, 280000, true),
+  ('skin:ouricoradio',    1050,  16800, true),
+  ('skin:abelhachefe',    2175,  52200, true),
+  ('skin:hywirl',         4425, 141600, true),
+  ('skin:glubturbo',      7175, 287000, true),
   ('armor:hoodie',        25,    300, false),
   ('armor:cardboard',    225,   2700, true),
   ('armor:pixel',        650,  10400, true),
@@ -162,7 +168,11 @@ on conflict (item) do update set
 delete from public.market_price_limits where item in (
   'skin:chill','skin:hacker','skin:doge','skin:rizzler','skin:sigma',
   'skin:clown','skin:ghost','skin:demon','skin:gigachad','skin:king',
-  'skin:sixtyseven','skin:sixorbit','skin:sevenbreak','skin:duo67'
+  'skin:sixtyseven','skin:sixorbit','skin:sevenbreak','skin:duo67',
+  'skin:rookie','skin:gamer','skin:lumber','skin:striker','skin:survivor',
+  'skin:scout','skin:sheriff','skin:professor','skin:dojo','skin:orcceo',
+  'skin:hunter','skin:bogorc','skin:executive','skin:captain','skin:crash',
+  'skin:mechred','skin:mechviolet','skin:shadow'
 );
 
 alter table public.market_price_limits enable row level security;

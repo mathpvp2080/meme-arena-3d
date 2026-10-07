@@ -18,7 +18,7 @@ Sobreviva a ondas infinitas de memes, escolha perks, derrube chefes gigantes.
 ## 🎮 Sobre
 
 A internet colapsou e o **Brainrot** vazou dos servidores: os memes ganharam forma 3D.
-Escolha um dos lutadores Blocky, monte o equipamento e segure a arena.
+Escolha entre animais, plantas e monstros absurdos, monte o equipamento e segure a arena.
 
 ### Temporada 1 · 67
 
@@ -27,8 +27,8 @@ Escolha um dos lutadores Blocky, monte o equipamento e segure a arena.
 - **Caixa 67** e **Cofre 67**, comprados somente com moedas virtuais. As chances ficam
   visíveis na loja e a 7ª abertura sem equipamento garante um item sazonal.
 - Conteúdo exclusivo: **4 skins, 3 armaduras, 4 armas e 3 habilidades**, incluindo
-  Dublê de Respawn, Mecha Rubi, Mecha Violeta e Ninja Sem Sinal. As skins usam
-  modelos CC0 do pacote Kenney Blocky Characters 2.0.
+  Ouriço Radioativo, Abelha-Chefe, Hipnose Ambulante e Glub Turbo. As skins usam
+  modelos CC0 do pacote Quaternius Ultimate Monsters.
 - **Impulso 67** concede +67% de moedas e XP na próxima partida; duplicatas viram
   fragmentos e 67 fragmentos forjam um item sazonal que ainda falta.
 - O mercado usa limites mínimo e máximo **específicos por item**, e o jogador escolhe
@@ -37,11 +37,12 @@ Escolha um dos lutadores Blocky, monte o equipamento e segure a arena.
   arte da trend; ambientes, efeitos e sons são autorais. Os modelos 3D externos
   são identificados e creditados conforme suas licenças.
 
-As 18 skins jogáveis usam modelos GLB animados do pacote Kenney Blocky Characters
-2.0; o corpo procedural permanece apenas como fallback de carregamento. Equipamentos,
-efeitos e os visuais de reserva dos NPCs continuam gerados por código. Os quatro
-inimigos ativos usam seus próprios GLBs creditados. A entrada e o lobby usam duas artes
-autorais da Temporada 67; a trilha e os efeitos são sintetizados com WebAudio.
+As 24 skins jogáveis usam modelos GLB animados do pacote Quaternius Ultimate
+Monsters: animais, plantas, criaturas voadoras, blobs e monstros com silhuetas
+variadas. O corpo procedural permanece apenas como fallback de carregamento.
+Equipamentos, efeitos e os visuais de reserva dos NPCs continuam gerados por código.
+Os quatro inimigos ativos usam seus próprios GLBs creditados. A entrada e o lobby usam
+duas artes autorais da Temporada 67; a trilha e os efeitos são sintetizados com WebAudio.
 
 ## ✨ Funcionalidades
 
@@ -164,14 +165,14 @@ Three.js é distribuído sob a licença MIT (© three.js authors).
   termina com a sessão e nunca cria usuário no Supabase.
 - Para publicar o backend, aplique [`supabase/schema.sql`](supabase/schema.sql), depois
   [`supabase/DEPLOY_LAUNCH.sql`](supabase/DEPLOY_LAUNCH.sql) e, em bancos que já
-  possuíam o catálogo antigo, [`supabase/patch_kenney_skins.sql`](supabase/patch_kenney_skins.sql).
-- **Todo jogador começa igual**: skin *Novato do Lobby* do pacote Kenney,
+  possuíam um catálogo anterior, [`supabase/patch_quaternius_skins.sql`](supabase/patch_quaternius_skins.sql).
+- **Todo jogador começa igual**: skin *Cacto de Praia* do pacote Quaternius,
   armadura *Moletom Básico* e **600 moedas** — o bastante para comprar a arma
   inicial (Laser de Doge, 450).
 - **Nível e XP** até o nível 60. Ganhe XP e moedas a cada partida (pontos,
   abates, ondas e chefes, multiplicados pela dificuldade).
-- **Loja e inventário** com 18 skins completas e animadas do pacote Kenney
-  Blocky Characters 2.0, 9 armaduras, 9 armas, 3 habilidades e caixas sazonais.
+- **Loja e inventário** com 24 skins completas e animadas do pacote Quaternius
+  Ultimate Monsters, 9 armaduras, 9 armas, 3 habilidades e caixas sazonais.
   As armaduras dão **+HP** e **redução de dano**.
 - **Inventário** para equipar (até 3 armas ao mesmo tempo) e **vender** itens
   por 50% do preço.
@@ -210,8 +211,8 @@ A licença e a fonte estão preservadas em `assets/kaykit-city/` e em
 
 ## 🌐 Multiplayer (Etapa 3 — parte 1)
 
-Libera no **nível 5**. O botão **JOGAR** abre uma escolha clara entre Solo,
-Coop e equipes; o botão **GRUPO** continua sendo um atalho para as salas.
+Libera no **nível 5**. A aba de modo do lobby pré-seleciona Solo, Coop ou
+Equipes; o botão **JOGAR** inicia o modo escolhido ou abre a sala correspondente.
 
 - **Solo PvE** — um jogador contra as hordas; dificuldade automática pelo nível da conta.
 - **Coop PvE** — 2–6 jogadores na mesma equipe; resistência e ritmo das hordas
