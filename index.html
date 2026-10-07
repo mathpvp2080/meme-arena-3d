@@ -27,8 +27,8 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
 #bootFallback{position:fixed;left:50%;bottom:16px;translate:-50% 0;z-index:9;max-width:92vw;padding:8px 14px;
   border-radius:10px;background:rgba(8,10,38,.82);color:#cfe2ff;font-size:11px;letter-spacing:.08em;text-align:center}
 </style>
-<link rel="stylesheet" href="css/style.css?v=44">
-<link rel="stylesheet" href="css/season67.css?v=44">
+<link rel="stylesheet" href="css/style.css?v=45">
+<link rel="stylesheet" href="css/season67.css?v=45">
 </head>
 <body>
 <noscript><div id="bootFallback">Este jogo precisa de JavaScript ativado para iniciar.</div></noscript>
@@ -173,7 +173,8 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
       </div>
 
       <div class="lobby-top-actions">
-        <div class="hubwallet"><span class="coin-mark" aria-hidden="true">●</span><b id="hubCoins">0</b></div>
+        <div id="hubNetworkState" class="hub-network" title="Estado da conexão"><i></i><span>LOCAL</span></div>
+        <div class="hubwallet" title="Saldo de moedas"><span class="coin-mark" aria-hidden="true">●</span><b id="hubCoins">0</b></div>
         <button id="glBtn" class="lobby-round purple" title="Metas" aria-label="Metas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v3c0 3-1.6 5-4 6-2.4-1-4-3-4-6V4Z"/><path d="M8 6H4c0 3 1.4 5 4.5 5M16 6h4c0 3-1.4 5-4.5 5M12 13v4M8 20h8M9 17h6"/></svg><span id="glDot" class="dot hid"></span></button>
         <button id="hubSettings" class="lobby-round blue" title="Opções" aria-label="Opções"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.8"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></button>
       </div>
@@ -181,13 +182,17 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
 
     <main class="lobby-main">
       <nav class="lobby-left" aria-label="Coleção e conta">
-        <div class="lobby-nav-label">MENU</div>
+        <div class="lobby-nav-label"><span>CENTRAL</span><small>COLEÇÃO E PROGRESSO</small></div>
         <button id="seasonBtn" class="lobby-tile acid"><span class="tile-number">67</span><b>CAIXAS</b><small>temporada</small></button>
         <button id="shopBtn" class="lobby-tile pink"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><b>LOJA</b><small>itens especiais</small></button>
         <button id="invBtn" class="lobby-tile cyan"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 4 2 4-2 5 3-3 4v9H6v-9L3 8l5-3Z"/><path d="M9 6.5c.5 1.5 1.5 2.2 3 2.2s2.5-.7 3-2.2"/></svg></span><b>PERSONALIZAR</b><small>visual e arsenal</small></button>
         <button id="albumBtn" class="lobby-tile orange"><span>🃏</span><b>ÁLBUM</b><small>mapas e NPCs</small></button>
         <button id="mkBtn" class="lobby-tile violet"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h8l8 8-8 8-8-8V4Z"/><circle cx="8.5" cy="8.5" r="1.5"/></svg></span><b>MERCADO</b><small>comprar e revender</small></button>
-        <button id="logoutBtn" class="lobby-exit">↪ SAIR</button>
+        <div class="lobby-collection-progress" title="Progresso do álbum de figurinhas">
+          <div><span>ÁLBUM</span><b id="hubStickerProgress">0 / 14</b></div>
+          <div class="collection-track"><i id="hubStickerFill"></i></div>
+        </div>
+        <button id="logoutBtn" class="lobby-exit">↪ ENCERRAR SESSÃO</button>
       </nav>
 
       <section class="lobby-character" aria-label="Personagem equipado">
@@ -209,14 +214,17 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
       </section>
 
       <aside class="lobby-right">
+        <div class="queue-status"><span><i></i> PRONTO PARA JOGAR</span><small>ESCOLHA O MODO NA PRÓXIMA ETAPA</small></div>
         <div class="mode-card" title="O mapa é sorteado ao iniciar cada partida">
-          <div class="mode-card-head"><span>NOVA PARTIDA</span><i>AUTO</i></div>
-          <div class="mode-map-art"><span id="hubMapIcon">🎲</span></div>
+          <div class="mode-card-head"><span>CONFIGURAÇÃO DA PARTIDA</span><i>AUTOMÁTICA</i></div>
+          <div class="mode-map-art"><span id="hubMapIcon">🎲</span><em>SORTEIO AO INICIAR</em></div>
           <b class="mode-shortcut-label">MAPA ALEATÓRIO</b>
           <small id="hubMapName">todos os mapas disponíveis</small>
+          <div class="hub-mode-pills" aria-label="Modos disponíveis"><span>SOLO</span><span>COOP</span><span>EQUIPES</span></div>
+          <div class="hub-match-features"><span>⚡ Dificuldade automática</span><span>◇ Sem vantagem cosmética</span></div>
         </div>
-        <button id="mpBtn" class="lobby-multi locked">🔒 GRUPO</button>
-        <button id="playBtnHub" class="lobby-play"><span>▶</span><b>JOGAR</b><small>COMEÇAR PARTIDA</small></button>
+        <button id="mpBtn" class="lobby-multi locked"><span class="multi-mark">◈</span><b>GRUPO</b><small>CRIAR OU ENTRAR COM CÓDIGO</small></button>
+        <button id="playBtnHub" class="lobby-play"><span>▶</span><b>JOGAR</b><small>SOLO · COOP · PVP EM EQUIPES</small><kbd>ENTER</kbd></button>
       </aside>
     </main>
 
@@ -674,36 +682,36 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
   <div class="splash-foot">Arte própria, modelos licenciados e áudio original · Violência fantasiosa · Interação entre usuários · Apenas moeda virtual</div>
 </div>
 
-<script src="lib/three.min.js?v=44"></script>
-<script src="lib/GLTFLoader.js?v=44"></script>
-<script src="lib/SkeletonUtils.js?v=44"></script>
-<script src="src/utils.js?v=44"></script>
-<script src="src/config.js?v=44"></script>
-<script src="src/data.js?v=44"></script>
-<script src="src/maps.js?v=44"></script>
-<script src="src/items.js?v=44"></script>
-<script src="src/season.js?v=44"></script>
-<script src="src/audio.js?v=44"></script>
-<script src="src/faces.js?v=44"></script>
-<script src="src/textures.js?v=44"></script>
-<script src="src/cityassets.js?v=44"></script>
-<script src="src/world.js?v=44"></script>
-<script src="src/builds.js?v=44"></script>
-<script src="src/weapons3d.js?v=44"></script>
-<script src="src/armor3d.js?v=44"></script>
-<script src="src/skinmodels.js?v=44"></script>
-<script src="src/entities.js?v=44"></script>
-<script src="src/net.js?v=44"></script>
-<script src="src/profile.js?v=44"></script>
-<script src="src/ui.js?v=44"></script>
-<script src="src/pbuilds.js?v=44"></script>
-<script src="src/previews.js?v=44"></script>
-<script src="src/goals.js?v=44"></script>
-<script src="src/market.js?v=44"></script>
-<script src="src/multi.js?v=44"></script>
-<script src="src/mod.js?v=44"></script>
-<script src="src/mpui.js?v=44"></script>
-<script src="src/metaui.js?v=44"></script>
-<script src="src/game.js?v=44"></script>
+<script src="lib/three.min.js?v=45"></script>
+<script src="lib/GLTFLoader.js?v=45"></script>
+<script src="lib/SkeletonUtils.js?v=45"></script>
+<script src="src/utils.js?v=45"></script>
+<script src="src/config.js?v=45"></script>
+<script src="src/data.js?v=45"></script>
+<script src="src/maps.js?v=45"></script>
+<script src="src/items.js?v=45"></script>
+<script src="src/season.js?v=45"></script>
+<script src="src/audio.js?v=45"></script>
+<script src="src/faces.js?v=45"></script>
+<script src="src/textures.js?v=45"></script>
+<script src="src/cityassets.js?v=45"></script>
+<script src="src/world.js?v=45"></script>
+<script src="src/builds.js?v=45"></script>
+<script src="src/weapons3d.js?v=45"></script>
+<script src="src/armor3d.js?v=45"></script>
+<script src="src/skinmodels.js?v=45"></script>
+<script src="src/entities.js?v=45"></script>
+<script src="src/net.js?v=45"></script>
+<script src="src/profile.js?v=45"></script>
+<script src="src/ui.js?v=45"></script>
+<script src="src/pbuilds.js?v=45"></script>
+<script src="src/previews.js?v=45"></script>
+<script src="src/goals.js?v=45"></script>
+<script src="src/market.js?v=45"></script>
+<script src="src/multi.js?v=45"></script>
+<script src="src/mod.js?v=45"></script>
+<script src="src/mpui.js?v=45"></script>
+<script src="src/metaui.js?v=45"></script>
+<script src="src/game.js?v=45"></script>
 </body>
 </html>

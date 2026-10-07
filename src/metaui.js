@@ -121,6 +121,15 @@
       $('hubXpFill').style.width = (MA.Profile.xpProgress() * 100) + '%';
       $('hubXpTxt').textContent = MA.fmt(p.xp) + ' / ' + MA.fmt(need) + ' XP';
       $('hubCoins').textContent = MA.fmt(p.coins);
+      const network = $('hubNetworkState');
+      if (network) {
+        const online = !!(MA.Net.online && !MA.Net.isGuest);
+        network.classList.toggle('online', online);
+        network.innerHTML = '<i></i><span>' + (online ? 'ONLINE' : 'SESSÃO LOCAL') + '</span>';
+      }
+      const ownedStickers = (MA.STICKERS || []).filter(s => MA.Profile.owns('sticker', s.id)).length;
+      if ($('hubStickerProgress')) $('hubStickerProgress').textContent = ownedStickers + ' / ' + (MA.STICKERS || []).length;
+      if ($('hubStickerFill')) $('hubStickerFill').style.width = ((MA.STICKERS || []).length ? ownedStickers / MA.STICKERS.length * 100 : 0) + '%';
       $('hubSkin').textContent = skin.face;
       $('hubSkin').title = skin.name;
       $('hubArmor').textContent = '🛡️ ' + armor.name;
@@ -178,8 +187,8 @@
       const btn = $('mpBtn');
       btn.classList.toggle('locked', !ok);
       btn.innerHTML = ok
-        ? '<span class="multi-mark">◈</span> GRUPO'
-        : '<span class="multi-mark">◇</span> GRUPO <em>nível ' + MA.CONFIG.MULTIPLAYER_LEVEL + '</em>';
+        ? '<span class="multi-mark">◈</span><b>GRUPO</b><small>CRIAR OU ENTRAR COM CÓDIGO</small>'
+        : '<span class="multi-mark">◇</span><b>GRUPO BLOQUEADO</b><small>LIBERA NO NÍVEL ' + MA.CONFIG.MULTIPLAYER_LEVEL + '</small>';
 
       $('playBtnHub').classList.toggle('needweapon', wIdx.length === 0);
     },
@@ -673,6 +682,17 @@
         t.onclick = () => { MA.Audio.ui(); this.openInventory(t.dataset.tab); });
       document.querySelectorAll('#album .tab').forEach(t =>
         t.onclick = () => { MA.Audio.ui(); this.openAlbum(t.dataset.tab); });
+
+      if (!this._hubKeyboardBound) {
+        this._hubKeyboardBound = true;
+        document.addEventListener('keydown', ev => {
+          const target = ev.target && ev.target.tagName;
+          if (ev.code !== 'Enter' || target === 'INPUT' || target === 'TEXTAREA' || target === 'SELECT') return;
+          const hub = $('hub');
+          if (!hub || hub.classList.contains('hid')) return;
+          ev.preventDefault(); $('playBtnHub').click();
+        });
+      }
 
       if (MA.Season && !this._seasonTimer) {
         this._seasonTimer = setInterval(() => {

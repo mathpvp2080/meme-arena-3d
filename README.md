@@ -57,6 +57,7 @@ sintetizados com WebAudio.
 | 🤖 **7 tipos de IA** | Perseguir, flanquear, orbitar, atirar, investir, teleportar e bombardear |
 | 📊 **4 dificuldades** | Normie, Meme Lord, Sigma e Brainrot |
 | 🏆 **Progressão** | Combo multiplicador, 7 ranks, recordes locais e estatísticas de fim de partida |
+| 🧭 **Lobby** | Interface responsiva com CTA principal, navegação compacta, estado de conexão e progresso do álbum |
 | 📱 **Mobile** | Joystick virtual, botões de ação e layout responsivo |
 | 🔌 **Offline** | PWA com service worker — instala e joga sem internet |
 

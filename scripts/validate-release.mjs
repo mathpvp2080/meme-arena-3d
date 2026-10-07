@@ -118,6 +118,20 @@ check('todos os assets locais do HTML existem', () => {
     assert.ok(fs.existsSync(path.join(root, ref)), `arquivo ausente: ${ref}`);
   }
 });
+check('hub principal tem hierarquia profissional e estados úteis', () => {
+  const css = read('css/season67.css');
+  const meta = read('src/metaui.js');
+  for (const id of ['hubNetworkState', 'hubStickerProgress', 'hubStickerFill', 'playBtnHub']) {
+    assert.match(index, new RegExp(`id="${id}"`), `controle ausente no hub: ${id}`);
+  }
+  for (const cls of ['queue-status', 'hub-mode-pills', 'hub-match-features', 'lobby-collection-progress']) {
+    assert.ok(index.includes(`class="${cls}`) || index.includes(` ${cls}`), `bloco visual ausente: ${cls}`);
+  }
+  assert.match(css, /HUB PROFISSIONAL · revisão de hierarquia e navegação/);
+  assert.match(css, /@media\(max-width:540px\)/, 'hub sem adaptação para celular estreito');
+  assert.match(meta, /SESSÃO LOCAL/);
+  assert.match(meta, /ownedStickers/);
+});
 check('JOGAR roteia Solo, Coop e equipes com capacidades válidas', () => {
   const meta = read('src/metaui.js');
   const multi = read('src/multi.js');
