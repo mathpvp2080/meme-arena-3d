@@ -29,19 +29,20 @@ check('catálogo mantém 14 skins, 9 armaduras, 9 armas e 3 habilidades', () => 
   assert.equal(MA.ABILITIES.length, 3);
 });
 check('IDs são únicos dentro de cada categoria', () => {
-  for (const [name, list] of Object.entries({ skins: MA.SKINS, armors: MA.ARMORS, weapons: MA.WEAPONS, abilities: MA.ABILITIES })) {
+  for (const [name, list] of Object.entries({ skins: MA.SKINS, armors: MA.ARMORS, weapons: MA.WEAPONS, abilities: MA.ABILITIES, memes: MA.MEMES, bosses: MA.BOSSES })) {
     assert.equal(new Set(list.map(x => x.id)).size, list.length, `IDs duplicados em ${name}`);
   }
 });
-check('elenco de NPCs contém somente os cinco papéis com modelo 3D', () => {
+check('elenco ativo contém somente os quatro NPCs e suas versões chefes', () => {
   assert.equal(MA.MEMES.map(x => x.id).join(','), 'doge,tralala,tung,bombard');
-  assert.equal(MA.BOSSES.map(x => x.id).join(','), 'bombaboss');
+  assert.equal(MA.BOSSES.map(x => x.id).join(','), 'dogeboss,tralaboss,tungboss,bombaboss');
   assert.equal(MA.MEMES.map(x => x.tier).join(','), '1,2,3,4');
 });
-check('Bombardiro retorna e escala corretamente com um único chefe', () => {
-  const encounters = [5, 10, 15, 25].map(MA.bossEncounter);
-  assert.ok(encounters.every(x => x.def && x.def.id === 'bombaboss'));
-  assert.equal(encounters.map(x => x.extra).join(','), '0,1,2,4');
+check('quatro chefes se alternam e escalam a cada nova rotação', () => {
+  const encounters = [5, 10, 15, 20, 25, 30, 35, 40, 45].map(MA.bossEncounter);
+  assert.equal(encounters.map(x => x.def && x.def.id).join(','),
+    'dogeboss,tralaboss,tungboss,bombaboss,dogeboss,tralaboss,tungboss,bombaboss,dogeboss');
+  assert.equal(encounters.map(x => x.extra).join(','), '0,0,0,0,1,1,1,1,2');
   assert.match(read('src/game.js'), /MA\.bossEncounter\(n\)/, 'jogo não usa o seletor validado');
 });
 check('pool sazonal tem 14 referências válidas e exclusivas de caixa', () => {
@@ -164,6 +165,31 @@ check('Tung Tung substitui o NPC procedural com escala e frente alinhadas', () =
   assert.ok(spec.height > 0, 'Tung Tung sem escala ajustada');
   assert.equal(spec.rotY, -Math.PI / 2, 'Tung Tung não está voltado para +Z');
   assert.equal(spec.hide, 'all', 'Tung Tung deve substituir o modelo procedural');
+});
+check('cada novo NPC reutiliza seu GLB em uma versão chefe maior', () => {
+  const pairs = [
+    ['doge', 'dogeboss', 'assets/skins/doge.glb'],
+    ['tralala', 'tralaboss', 'assets/skins/tralalero.glb'],
+    ['tung', 'tungboss', 'assets/skins/tung.glb'],
+    ['bombard', 'bombaboss', 'assets/skins/bombardiro.glb']
+  ];
+  for (const [regularId, bossId, url] of pairs) {
+    const regular = MA.ENEMY_MODELS && MA.ENEMY_MODELS[regularId];
+    const boss = MA.ENEMY_MODELS && MA.ENEMY_MODELS[bossId];
+    assert.ok(regular && boss, `par de modelos ausente: ${regularId}/${bossId}`);
+    assert.equal(regular.url, url);
+    assert.equal(boss.url, url);
+    assert.equal(boss.mode, 'full');
+    assert.equal(boss.hide, 'all');
+    assert.ok(boss.height > regular.height, `${bossId} deveria ser maior que ${regularId}`);
+    assert.ok(boss.hudY > boss.height, `barra do ${bossId} deveria ficar acima do modelo`);
+  }
+  const builds = read('src/builds.js');
+  const faces = read('src/faces.js');
+  for (const id of ['dogeboss', 'tralaboss', 'tungboss', 'bombaboss']) {
+    assert.match(builds, new RegExp(`${id}\\(c\\)`), `fallback 3D ausente: ${id}`);
+    assert.match(faces, new RegExp(`${id}\\(x, S, def\\)`), `fallback de rosto ausente: ${id}`);
+  }
 });
 check('Bombardiro usa o GLB animado no NPC normal e no chefe', () => {
   const normal = MA.ENEMY_MODELS && MA.ENEMY_MODELS.bombard;

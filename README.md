@@ -47,7 +47,7 @@ sintetizados com WebAudio.
 | | |
 |---|---|
 | 🧟 **4 inimigos** | Doge Corrompido, Tralalero Tralala, Tung Tung Sahur e Bombardiro Crocodilo |
-| 👹 **1 chefe** | Bombardiro Crocodilo retorna mais forte a cada 5 ondas |
+| 👹 **4 chefes** | Versões gigantes de Doge, Tralalero, Tung Tung e Bombardiro, em rotação a cada 5 ondas |
 | 🔫 **9 armas** | Laser, shotgun, bumerangue, RPG, orbe gravitacional, minigun, prisma, railgun e Pulso 67 |
 | ✦ **3 habilidades** | Repulsão 6, Passo 7 e Sobrecarga 67 com mecânicas e recargas próprias |
 | 🃏 **20 perks** | Escolha 1 de 3 cartas a cada onda. Comuns, raras e épicas. Acumulam entre si |
@@ -178,9 +178,10 @@ Three.js é distribuído sob a licença MIT (© three.js authors).
 
 - **Quatro inimigos com GLB próprio**: Doge Corrompido, Tralalero Tralala,
   Tung Tung Sahur e Bombardiro Crocodilo.
-- **Bombardiro chefe** reutiliza o modelo animado em escala maior, retorna a
-  cada cinco ondas e preserva as fases e os ataques de chefe.
-- **Fallback procedural** mantém cada um jogável se o carregamento do modelo
+- **Quatro chefes gigantes** reutilizam os mesmos modelos em escala maior:
+  Doge Supremo, Tralalero Colossal, Tung Tung Titã e Bombardiro Crocodilo.
+  Eles se alternam a cada cinco ondas e ficam mais fortes a cada nova rotação.
+- **Fallback procedural** mantém cada inimigo e chefe jogável se o carregamento
   externo falhar; barra de vida, brilho, colisão e IA permanecem separados do visual.
 - **5 mapas** que mudam céu, chão, névoa, luzes, obstáculos e cartazes:
 

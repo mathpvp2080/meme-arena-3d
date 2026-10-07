@@ -11,7 +11,7 @@ implica participação ou endosso ao jogo.
 - **Autor:** 徹水
 - **Fonte:** [Poly Pizza](https://poly.pizza/m/5I9ouA0S-WG)
 - **Licença informada na fonte:** Creative Commons Attribution (CC BY)
-- **Alterações no jogo:** redimensionamento, rotação, reposicionamento e integração como cabeça da skin Doge Dourado e como NPC flutuante Doge Corrompido.
+- **Alterações no jogo:** redimensionamento, rotação, reposicionamento e integração como cabeça da skin Doge Dourado, como NPC flutuante Doge Corrompido e como chefe Doge Corrompido Supremo.
 - **Data de acesso registrada:** 6 de outubro de 2026
 
 ## Tralalero Tralala
@@ -23,7 +23,7 @@ implica participação ou endosso ao jogo.
 - **Licença informada na fonte:** Creative Commons Attribution (CC BY)
 - **Data de publicação exibida na fonte:** 11 de dezembro de 2025
 - **Formato original informado:** FBX / glTF
-- **Alterações no jogo:** redimensionamento, rotação, reposicionamento e integração como aparência do NPC Tralalero existente.
+- **Alterações no jogo:** redimensionamento, rotação, reposicionamento e integração como aparência do NPC Tralalero e do chefe Tralalero Colossal.
 - **Data de acesso registrada:** 6 de outubro de 2026
 
 ## Tung Tung Tung Sahur
@@ -35,7 +35,7 @@ implica participação ou endosso ao jogo.
 - **Licença informada na fonte:** Creative Commons Attribution (CC BY)
 - **Data de publicação exibida na fonte:** 11 de dezembro de 2025
 - **Formato original informado:** FBX / glTF
-- **Alterações no jogo:** redimensionamento, rotação, reposicionamento e integração como aparência do NPC Tung Tung Sahur existente.
+- **Alterações no jogo:** redimensionamento, rotação, reposicionamento e integração como aparência do NPC Tung Tung Sahur e do chefe Tung Tung Titã.
 - **Data de acesso registrada:** 6 de outubro de 2026
 
 ## Bombardiro Crocodilo

@@ -83,6 +83,31 @@
       rotY: -Math.PI / 2,
       hide: 'all'
     },
+    dogeboss: {
+      url: 'assets/skins/doge.glb',
+      mode: 'full',
+      height: 4.2,
+      y: 0.9,
+      rotY: Math.PI / 2,
+      hudY: 5.85,
+      hide: 'all'
+    },
+    tralaboss: {
+      url: 'assets/skins/tralalero.glb',
+      mode: 'full',
+      height: 4.8,
+      rotY: -Math.PI / 2,
+      hudY: 5.7,
+      hide: 'all'
+    },
+    tungboss: {
+      url: 'assets/skins/tung.glb',
+      mode: 'full',
+      height: 5.5,
+      rotY: -Math.PI / 2,
+      hudY: 6.4,
+      hide: 'all'
+    },
     bombard: {
       url: 'assets/skins/bombardiro.glb',
       mode: 'full',

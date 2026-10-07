@@ -499,9 +499,19 @@
       x.globalAlpha = 1;
     },
 
+    dogeboss(x, S, def) {
+      F.doge(x, S, def);
+      [-1, 1].forEach(s => { circ(x, S / 2 + s * S * .18, S * .39, S * .03, '#ff2d2d'); });
+    },
+
     tralaboss(x, S, def) {
       F.tralala(x, S, def);
       [-1, 1].forEach(s => { circ(x, S / 2 + s * S * .20, S * .33, S * .034, '#ff2d2d'); });
+    },
+
+    tungboss(x, S, def) {
+      F.tung(x, S, def);
+      [-1, 1].forEach(s => { circ(x, S / 2 + s * S * .17, S * .39, S * .028, '#ff2d2d'); });
     },
 
     bombaboss(x, S, def) {

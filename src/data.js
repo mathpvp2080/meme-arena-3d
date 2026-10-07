@@ -14,19 +14,22 @@
     { id:'bombard', name:'Bombardiro Croc.',   emoji:'🐊', color:'#5f8f4f', ring:'#23401c', hp:84, spd:4.0, dmg:21, pts:330, ai:'bomber', scale:1.22, tier:4, taunt:'bombardiro!' }
   ];
 
-  /* Bombardiro é o único chefe ativo e retorna mais forte a cada cinco ondas. */
+  /* Cada inimigo atualizado também possui uma versão chefe com o mesmo GLB. */
   MA.BOSSES = [
-    { id:'bombaboss', name:'BOMBARDIRO CROCODILO', emoji:'🐊', color:'#5f8f4f', ring:'#1b3315', hp:3000, spd:4.4, dmg:38, pts:10000, taunt:'bombardiro crocodilo' }
+    { id:'dogeboss',   name:'DOGE CORROMPIDO SUPREMO', emoji:'🐕', color:'#f2c14e', ring:'#9a6b00', hp:900,  spd:5.4, dmg:26, pts:3000,  taunt:'much boss, very danger' },
+    { id:'tralaboss',  name:'TRALALERO COLOSSAL',      emoji:'🦈', color:'#3fb9ff', ring:'#062f5e', hp:1600, spd:5.0, dmg:32, pts:5000,  taunt:'tralalero supremo' },
+    { id:'tungboss',   name:'TUNG TUNG TITÃ',           emoji:'🪵', color:'#a9743f', ring:'#4a2a0c', hp:2300, spd:4.0, dmg:36, pts:7500,  taunt:'tung tung tung tung' },
+    { id:'bombaboss',  name:'BOMBARDIRO CROCODILO',    emoji:'🐊', color:'#5f8f4f', ring:'#1b3315', hp:3000, spd:4.4, dmg:38, pts:10000, taunt:'bombardiro crocodilo' }
   ];
 
-  /* Resolve a onda de chefe sem depender do tamanho do elenco. Com apenas um
-     chefe, Bombardiro retorna a cada cinco ondas e recebe um ciclo extra. */
+  /* Um chefe aparece a cada cinco ondas. Depois dos quatro, a rotação começa
+     novamente com um ciclo extra de força. */
   MA.bossEncounter = wave => {
     const turn = Math.max(1, Math.floor(Number(wave) / 5));
-    const index = Math.min(turn - 1, MA.BOSSES.length - 1);
+    const index = (turn - 1) % MA.BOSSES.length;
     return {
       def: MA.BOSSES[index],
-      extra: Math.max(0, turn - MA.BOSSES.length)
+      extra: Math.floor((turn - 1) / MA.BOSSES.length)
     };
   };
 
