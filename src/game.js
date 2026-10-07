@@ -1175,6 +1175,13 @@
     MA.animateWeaponModel(player, dt, mouseDown || touchFire);
     player.aura.rotation.z += dt * 1.6;
 
+    /* Animação do modelo jogável completo. O fallback procedural continua
+       usando o balanço de braços/pernas calculado acima. */
+    if (MA.SkinModels) {
+      const skinState = !player.onGround ? 'air' : (mouseDown || touchFire) ? 'shoot' : moving ? 'run' : 'idle';
+      MA.SkinModels.setState(player, skinState);
+    }
+
     /* acessórios de skin */
     const ud = player.obj.userData;
     if (ud.panim) ud.panim.forEach(fn => { try { fn(G.time, dt); } catch (e) { /* ignora */ } });
@@ -2178,6 +2185,7 @@
           player.aura.rotation.z += dt * .75;
           player.aura.material.opacity = .26 + Math.sin(menuT * 2.8) * .08;
           MA.animateWeaponModel(player, dt, false);
+          if (MA.SkinModels) MA.SkinModels.setState(player, 'idle');
           const ud = player.obj.userData;
           if (ud.panim) ud.panim.forEach(fn => { try { fn(G.time, dt); } catch (e) { /* ignora */ } });
           camera.position.set(0, 2.65, -7.7);

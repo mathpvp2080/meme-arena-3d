@@ -1,5 +1,5 @@
 -- ============================================================
--- MEME ARENA 3D — PATCH DA COLEÇÃO 6 / 7 / 67
+-- MEME ARENA 3D — PATCH DA COLEÇÃO SAZONAL 67
 --
 -- Use este arquivo quando schema_multiplayer.sql já foi aplicado antes.
 -- Ele não recria tabelas e não apaga anúncios ou perfis: apenas registra
@@ -20,9 +20,10 @@ end;
 $$;
 
 insert into public.market_price_limits (item, min_price, max_price, tradable) values
-  ('skin:sixorbit',         650,  10400, true),
-  ('skin:sevenbreak',      1925,  46200, true),
-  ('skin:duo67',           6675, 267000, true),
+  ('skin:crash',          1670,  26700, true),
+  ('skin:mechred',         650,  10400, true),
+  ('skin:mechviolet',      1925,  46200, true),
+  ('skin:shadow',           6675, 267000, true),
   ('armor:orbit6',          900,  14400, true),
   ('armor:prism7',         3925, 125600, true),
   ('weapon:boomerang',      725,  11600, true),

@@ -17,6 +17,22 @@ implica participação ou endosso ao jogo.
 - **Cópia da licença:** `assets/kaykit-city/LICENSE.txt`
 - **Data de acesso registrada:** 7 de outubro de 2026
 
+## Kenney Blocky Characters 2.0
+
+- **Arquivos no projeto:** `assets/skins/kenney-blocky/character-a.glb` até `character-r.glb`
+- **Título na fonte:** Blocky Characters 2.0
+- **Autor:** Kenney
+- **Página oficial:** [kenney.nl/assets/blocky-characters](https://kenney.nl/assets/blocky-characters)
+- **Licença:** [Creative Commons Zero 1.0 Universal (CC0 1.0)](https://creativecommons.org/publicdomain/zero/1.0/)
+- **Atribuição obrigatória:** não; crédito registrado voluntariamente.
+- **Quantidade utilizada:** 18 personagens completos, cada um com 27 animações.
+- **Origem dos GLBs autocontidos:** [Hidencod/tge-assets](https://github.com/Hidencod/tge-assets), caminho `packs/blocky-characters/`, commit `08f0c913f6783cc81f9f6105a7cdda8562b1c192`.
+- **Alteração na cópia intermediária:** textura compartilhada do pacote incorporada em cada GLB pelo espelho Tiny Game Engine; os derivados também são declarados CC0.
+- **Otimização feita pelo Meme Arena:** atlas incorporado reduzido de 1024×1024 para 256×256, preservando o mapeamento UV, para diminuir memória de GPU em celulares.
+- **Outras alterações no jogo:** nomes e descrições de catálogo, escala, rotação, sombras, seleção dos clipes de animação e integração com armas/efeitos.
+- **Registros preservados:** `assets/skins/kenney-blocky/LICENSE.txt` e `assets/skins/kenney-blocky/SOURCE.md`.
+- **Data de acesso registrada:** 7 de outubro de 2026
+
 ## DOGE
 
 - **Arquivo no projeto:** `assets/skins/doge.glb`
@@ -24,7 +40,7 @@ implica participação ou endosso ao jogo.
 - **Autor:** 徹水
 - **Fonte:** [Poly Pizza](https://poly.pizza/m/5I9ouA0S-WG)
 - **Licença informada na fonte:** Creative Commons Attribution (CC BY)
-- **Alterações no jogo:** redimensionamento, rotação, reposicionamento e integração como cabeça da skin Doge Dourado, como NPC flutuante Doge Corrompido e como chefe Doge Corrompido Supremo.
+- **Alterações no jogo:** redimensionamento, rotação, reposicionamento e integração como NPC flutuante Doge Corrompido e como chefe Doge Corrompido Supremo. O modelo não faz parte do novo catálogo de skins jogáveis.
 - **Data de acesso registrada:** 6 de outubro de 2026
 
 ## Tralalero Tralala

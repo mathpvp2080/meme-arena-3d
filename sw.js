@@ -1,8 +1,10 @@
 /* MEME ARENA 3D — service worker (offline-first) */
-const CACHE = 'meme-arena-3d-v48';
+const CACHE = 'meme-arena-3d-v49';
 const ASSETS = [
   './', './index.html', './css/style.css', './css/season67.css', './css/hub.css', './manifest.webmanifest', './privacidade.html', './termos.html',
-  './assets/favicon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/splash-season67.jpg', './assets/hub-season67.jpg', './assets/screens/00-season67.jpg', './assets/skins/doge.glb', './assets/skins/tralalero.glb', './assets/skins/tung.glb', './assets/skins/bombardiro.glb', './lib/three.min.js', './lib/GLTFLoader.js', './lib/SkeletonUtils.js',
+  './assets/favicon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/splash-season67.jpg', './assets/hub-season67.jpg', './assets/screens/00-season67.jpg', './assets/skins/doge.glb', './assets/skins/tralalero.glb', './assets/skins/tung.glb', './assets/skins/bombardiro.glb',
+  './assets/skins/kenney-blocky/character-a.glb', './assets/skins/kenney-blocky/character-b.glb', './assets/skins/kenney-blocky/character-c.glb', './assets/skins/kenney-blocky/character-d.glb', './assets/skins/kenney-blocky/character-e.glb', './assets/skins/kenney-blocky/character-f.glb', './assets/skins/kenney-blocky/character-g.glb', './assets/skins/kenney-blocky/character-h.glb', './assets/skins/kenney-blocky/character-i.glb', './assets/skins/kenney-blocky/character-j.glb', './assets/skins/kenney-blocky/character-k.glb', './assets/skins/kenney-blocky/character-l.glb', './assets/skins/kenney-blocky/character-m.glb', './assets/skins/kenney-blocky/character-n.glb', './assets/skins/kenney-blocky/character-o.glb', './assets/skins/kenney-blocky/character-p.glb', './assets/skins/kenney-blocky/character-q.glb', './assets/skins/kenney-blocky/character-r.glb',
+  './lib/three.min.js', './lib/GLTFLoader.js', './lib/SkeletonUtils.js',
   './src/utils.js', './src/config.js', './src/data.js', './src/maps.js', './src/items.js', './src/season.js',
   './src/audio.js', './src/faces.js', './src/textures.js', './src/cityassets.js', './src/world.js', './src/builds.js', './src/weapons3d.js', './src/armor3d.js', './src/skinmodels.js', './src/entities.js',
   './src/net.js', './src/profile.js', './src/ui.js', './src/pbuilds.js', './src/previews.js', './src/goals.js', './src/market.js', './src/multi.js', './src/mod.js', './src/mpui.js', './src/metaui.js', './src/game.js',

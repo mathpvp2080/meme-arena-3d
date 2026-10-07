@@ -16,10 +16,10 @@ create table if not exists public.season67_items (
 );
 
 insert into public.season67_items (item,item_type,name,icon,rarity,weight) values
-  ('skin:sixtyseven',       'skin',    'Corredor 67',          '67', 'mythic',     4),
-  ('skin:sixorbit',         'skin',    'Seis em Órbita',       '6',  'rare',      34),
-  ('skin:sevenbreak',       'skin',    'Sete Quebra-Loop',     '7',  'epic',      17),
-  ('skin:duo67',            'skin',    'Fusão 67',             '67', 'mythic',     4),
+  ('skin:crash',            'skin',    'Dublê de Respawn',      '⚠',  'mythic',     4),
+  ('skin:mechred',          'skin',    'Mecha Rubi',            '🤖', 'rare',      34),
+  ('skin:mechviolet',       'skin',    'Mecha Violeta',         '🤖', 'epic',      17),
+  ('skin:shadow',           'skin',    'Ninja Sem Sinal',       '🥷', 'mythic',     4),
   ('armor:protocol67',      'armor',   'Protocolo 6·7',        '🛡', 'legendary',  8),
   ('armor:orbit6',          'armor',   'Colete Órbita 6',      '🛡', 'rare',      34),
   ('armor:prism7',          'armor',   'Bastião Prisma 7',     '🛡', 'legendary',  8),
@@ -33,6 +33,10 @@ insert into public.season67_items (item,item_type,name,icon,rarity,weight) value
 on conflict (item) do update set
   item_type=excluded.item_type,name=excluded.name,icon=excluded.icon,
   rarity=excluded.rarity,weight=excluded.weight;
+
+delete from public.season67_items where item in (
+  'skin:sixtyseven','skin:sixorbit','skin:sevenbreak','skin:duo67'
+);
 
 alter table public.season67_items enable row level security;
 drop policy if exists "catalogo sazonal leitura" on public.season67_items;

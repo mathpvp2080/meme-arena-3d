@@ -48,8 +48,8 @@ begin
   new.level := 1;
   new.xp := 0;
   new.coins := 600;
-  new.inventory := '["skin:chill","armor:hoodie"]'::jsonb;
-  new.equipped := '{"skin":"chill","armor":"hoodie","weapons":[],"ability":""}'::jsonb;
+  new.inventory := '["skin:rookie","armor:hoodie"]'::jsonb;
+  new.equipped := '{"skin":"rookie","armor":"hoodie","weapons":[],"ability":""}'::jsonb;
   new.stats := '{}'::jsonb;
   return new;
 end;

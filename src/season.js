@@ -18,7 +18,7 @@
     nextStartsAt: '2026-11-29T00:00:00-03:00',
     odds: { coins: 42, xp: 23, boost: 17, item: 18 },
     itemKeys: [
-      'skin:sixtyseven', 'skin:sixorbit', 'skin:sevenbreak', 'skin:duo67',
+      'skin:crash', 'skin:mechred', 'skin:mechviolet', 'skin:shadow',
       'armor:protocol67', 'armor:orbit6', 'armor:prism7',
       'weapon:pulse67', 'weapon:boomerang', 'weapon:gravity6', 'weapon:prism7',
       'ability:repulse6', 'ability:blink7', 'ability:overclock67'
@@ -36,19 +36,9 @@
   };
   MA.SEASON = SEASON;
 
-  /* Conteúdo sazonal. Os valores price servem como avaliação de inventário e
-     base do mercado; a origem é sempre Caixa 67 ou drop aleatório de chefe. */
-  if (!MA.SKINS.some(s => s.id === 'sixtyseven')) {
-    MA.SKINS.push({
-      id: 'sixtyseven', name: 'Corredor 67', rarity: 'mythic', price: 6700, level: 1,
-      desc: 'Herói party-game com touca espacial, traje azul-magenta e energia ciano.',
-      face: '67', skinTone: '#e7aa7c', body: 0x6572ff, hood: 0xff4fbd,
-      arms: 0x2de2ff, legs: 0x343066, hat: 'none', hatColor: 0xff4fbd,
-      aura: 0xff4fbd, extra: 'none', seasonal: true, season: '67', boxOnly: true,
-      marketMin: 1670, marketMax: 26700
-    });
-  }
-
+  /* Conteúdo sazonal. As quatro skins sazonais também pertencem ao pacote
+     Kenney e já são declaradas no catálogo principal; armaduras e armas ainda
+     são construções próprias da Temporada 67. */
   if (!MA.ARMORS.some(a => a.id === 'protocol67')) {
     MA.ARMORS.push({
       id: 'protocol67', name: 'Protocolo 6·7', rarity: 'legendary', price: 8670, level: 1,

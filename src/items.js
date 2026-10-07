@@ -11,78 +11,113 @@
   };
 
   /* ------------------------------------------------------------- SKINS --
-     Cada skin descreve como o boneco do jogador é montado em 3D.
-     hat: none | cap | crown | halo | horns | bucket
-     extra: none | cape | wings | jetpack | scarf                        */
+     Catálogo jogável integralmente substituído pela família Blocky Characters
+     2.0, de Kenney. Os campos de cor abaixo mantêm um fallback procedural caso
+     um GLB não carregue; os modelos completos ficam em src/skinmodels.js. */
   MA.SKINS = [
-    { id:'chill', name:'Chill Guy', rarity:'common', price:0, level:1, starter:true,
-      desc:'O clássico. Moletom azul, boné rosa e zero preocupações.',
-      face:'😎', skinTone:'#efba88', body:0x6273dc, hood:0x4858b3, arms:0x7587e8, legs:0x393b72,
-      hat:'cap', hatColor:0xff5bbf, aura:0x2de2ff, extra:'none' },
+    { id:'rookie', name:'Novato do Lobby', rarity:'common', price:0, level:1, starter:true,
+      desc:'Chegou agora, mas já entrou sorrindo e pronto para a primeira partida.',
+      face:'🙂', skinTone:'#8f563b', body:0xc83f4c, hood:0x9d293b, arms:0xc83f4c, legs:0x3154a4,
+      hat:'none', hatColor:0x000000, aura:0x2de2ff, extra:'none' },
 
-    { id:'hacker', name:'Hacker Anônimo', rarity:'rare', price:1800, level:3,
-      desc:'Moletom preto, código verde escorrendo. "Estou dentro."',
-      face:'🕶️', skinTone:'#cfd8e3', body:0x12161c, hood:0x0b0e12, arms:0x1a2029, legs:0x0e1116,
-      hat:'none', hatColor:0x000000, aura:0x39ff88, extra:'scarf', extraColor:0x39ff88 },
+    { id:'gamer', name:'Controle Humano', rarity:'rare', price:1800, level:3,
+      desc:'Camiseta de controle, concentração máxima e zero vontade de sair da fila.',
+      face:'🎮', skinTone:'#e8b58b', body:0x38a86b, hood:0x26784f, arms:0x38a86b, legs:0x9a6047,
+      hat:'none', hatColor:0x000000, aura:0x39ff88, extra:'none' },
 
-    { id:'doge', name:'Doge Dourado', rarity:'rare', price:2400, level:4,
-      desc:'Much style. Very wow. Such shiba.',
-      face:'🐕', skinTone:'#f2c14e', body:0xd9a441, hood:0xb3832b, arms:0xe8b85c, legs:0x8a6520,
-      hat:'none', hatColor:0x000000, aura:0xffe600, extra:'none' },
+    { id:'lumber', name:'Lenhador de Wi-Fi', rarity:'rare', price:2400, level:4,
+      desc:'Sobrevive no mato, no lag e em qualquer servidor com uma barra de sinal.',
+      face:'🪓', skinTone:'#e0a36e', body:0x9a563c, hood:0x6f3928, arms:0xb9704b, legs:0x2e8b62,
+      hat:'none', hatColor:0x000000, aura:0x7be38d, extra:'none' },
 
-    { id:'rizzler', name:'Rizzler', rarity:'epic', price:4500, level:7,
-      desc:'Carisma em nível industrial. Sobrancelha permanentemente erguida.',
-      face:'😏', skinTone:'#e8b07a', body:0x5a3fd6, hood:0x3d2a9e, arms:0x6f55e8, legs:0x2b1d6e,
-      hat:'none', hatColor:0x7a5bff, aura:0x7a5bff, extra:'cape', extraColor:0x4a2fc0 },
+    { id:'striker', name:'Camisa 10 do Lobby', rarity:'rare', price:2800, level:5,
+      desc:'Entra em campo, dribla o ping e comemora antes da partida começar.',
+      face:'⚽', skinTone:'#74442d', body:0x32a86c, hood:0x1f7350, arms:0xf5f5f5, legs:0x3154a4,
+      hat:'none', hatColor:0x000000, aura:0x55ff9a, extra:'none' },
 
-    { id:'sigma', name:'Sigma Grindset', rarity:'epic', price:5200, level:9,
-      desc:'Acorda às 4h59. Banho gelado. Não fala com NPCs.',
-      face:'🗿', skinTone:'#b9c4cc', body:0x1d2129, hood:0x12151a, arms:0x272c36, legs:0x0f1216,
-      hat:'none', hatColor:0x000000, aura:0x00e5ff, extra:'cape', extraColor:0x0a0d12 },
+    { id:'survivor', name:'Sobrevivente do Spawn', rarity:'rare', price:3500, level:6,
+      desc:'Já caiu em mapas piores. A faixa no ombro guarda histórias e munição.',
+      face:'🧭', skinTone:'#9b6548', body:0x37936b, hood:0x26654d, arms:0x37936b, legs:0x36455c,
+      hat:'none', hatColor:0x000000, aura:0x48d597, extra:'none' },
 
-    { id:'clown', name:'Palhaço do Lobby', rarity:'rare', price:2800, level:5,
-      desc:'Honk honk. Pra quem joga mal mas com estilo.',
-      face:'🤡', skinTone:'#ffe3d6', body:0xff3b5c, hood:0xffd400, arms:0x3bc9ff, legs:0x9b4dff,
-      hat:'bucket', hatColor:0x39ff88, aura:0xff3b5c, extra:'none' },
+    { id:'scout', name:'Exploradora do Ping', rarity:'epic', price:4500, level:7,
+      desc:'Localiza atalhos, loot e a rota exata para fugir da conexão ruim.',
+      face:'🧭', skinTone:'#d99b73', body:0x9b65ff, hood:0x6840b8, arms:0xb584ff, legs:0x8b593e,
+      hat:'none', hatColor:0x000000, aura:0x9b65ff, extra:'none' },
 
-    { id:'ghost', name:'Fantasma do Chat', rarity:'epic', price:6000, level:11,
-      desc:'Vê tudo, nunca comenta. Levemente translúcido.',
-      face:'👻', skinTone:'#eaf2ff', body:0xdfe9ff, hood:0xc4d3f0, arms:0xeaf2ff, legs:0xc4d3f0,
-      hat:'halo', hatColor:0xffffff, aura:0xaad4ff, extra:'none', ghost:true },
+    { id:'sheriff', name:'Xerife do Servidor', rarity:'epic', price:5200, level:9,
+      desc:'Mantém a ordem no chat e carrega o distintivo mais quadrado da arena.',
+      face:'⭐', skinTone:'#e0ae7e', body:0x29477f, hood:0x1d315b, arms:0x29477f, legs:0x27354f,
+      hat:'none', hatColor:0x000000, aura:0x2de2ff, extra:'none' },
 
-    { id:'demon', name:'Demônio do Ratio', rarity:'legendary', price:9500, level:15,
-      desc:'Aparece quando você perde uma discussão na internet.',
-      face:'😈', skinTone:'#b8324f', body:0x5a0d1c, hood:0x3a0512, arms:0x7d1428, legs:0x2a0309,
-      hat:'horns', hatColor:0x2a0309, aura:0xff2d6f, extra:'wings', extraColor:0x3a0512 },
+    { id:'professor', name:'Professor AFK', rarity:'epic', price:6000, level:11,
+      desc:'Calculou todas as probabilidades e decidiu esperar parado no lugar certo.',
+      face:'🧪', skinTone:'#e7c09a', body:0xdceeff, hood:0xb7d4ef, arms:0xdceeff, legs:0x705240,
+      hat:'none', hatColor:0x000000, aura:0xaad4ff, extra:'none' },
 
-    { id:'gigachad', name:'Gigachad', rarity:'legendary', price:12000, level:20,
-      desc:'Mandíbula capaz de cortar vidro. Não fala, apenas existe.',
-      face:'🗿', skinTone:'#cdd6dd', body:0x9aa6b0, hood:0x78848e, arms:0xb6c0c8, legs:0x5f6a73,
-      hat:'none', hatColor:0x000000, aura:0xffffff, extra:'none', bulky:true },
+    { id:'dojo', name:'Mestre do Dojo', rarity:'epic', price:7200, level:12,
+      desc:'Faixa vermelha, pose gelada e disciplina para não culpar o controle.',
+      face:'🥋', skinTone:'#f0e7df', body:0x20a56b, hood:0x16754f, arms:0x20a56b, legs:0xf1f1e8,
+      hat:'none', hatColor:0x000000, aura:0xff4f6d, extra:'none' },
 
-    { id:'king', name:'Rei do Brainrot', rarity:'mythic', price:25000, level:30,
-      desc:'A skin final. Ouro, coroa e capa. Você venceu a internet.',
-      face:'👑', skinTone:'#ffd98a', body:0xd4a017, hood:0xb8860b, arms:0xffd700, legs:0x8a6508,
-      hat:'crown', hatColor:0xffd700, aura:0xffc42e, extra:'cape', extraColor:0xb8860b, metal:true },
+    { id:'orcceo', name:'Orc Executivo', rarity:'legendary', price:9500, level:15,
+      desc:'Transforma caos em planilha e toda derrota em reunião de desempenho.',
+      face:'👹', skinTone:'#40a86b', body:0x283b51, hood:0x172536, arms:0x283b51, legs:0x8b593e,
+      hat:'none', hatColor:0x000000, aura:0x39ff88, extra:'none' },
 
-    { id:'sixorbit', name:'Seis em Órbita', rarity:'rare', price:2600, level:5,
-      desc:'Um personagem literalmente moldado como o algarismo 6, com aro ciano e membros curtos.',
-      face:'6', skinTone:'#e9ae7d', body:0x327fda, hood:0x174a91, arms:0x4da9ee, legs:0x173760,
-      hat:'none', hatColor:0x2de2ff, aura:0x2de2ff, extra:'none', numeric:true,
+    { id:'hunter', name:'Caçador do Lag', rarity:'legendary', price:12000, level:20,
+      desc:'Segue rastros de pacote perdido e nunca deixa uma barra vermelha escapar.',
+      face:'🎯', skinTone:'#9b6548', body:0x3d8c66, hood:0x2c674c, arms:0x3d8c66, legs:0x3a4659,
+      hat:'none', hatColor:0x000000, aura:0xffc42e, extra:'none' },
+
+    { id:'bogorc', name:'Orc do Pântano', rarity:'legendary', price:15000, level:23,
+      desc:'Verde, enorme e irritado porque alguém pisou no pântano dele novamente.',
+      face:'🧌', skinTone:'#24a96b', body:0x2cb879, hood:0x178051, arms:0x2cb879, legs:0x6c778c,
+      hat:'none', hatColor:0x000000, aura:0x39ff88, extra:'none', bulky:true },
+
+    { id:'executive', name:'CEO do Lobby', rarity:'mythic', price:25000, level:30,
+      desc:'Terno impecável, gravata vermelha e controle acionário de todas as filas.',
+      face:'💼', skinTone:'#805039', body:0x161b27, hood:0x0d111a, arms:0x161b27, legs:0x253050,
+      hat:'none', hatColor:0x000000, aura:0xff4f4f, extra:'none' },
+
+    { id:'captain', name:'Capitão do Cubo', rarity:'mythic', price:30000, level:30,
+      desc:'Casaco azul, medalhas invisíveis e autoridade máxima sobre cada bloco.',
+      face:'🫡', skinTone:'#d99b73', body:0x3f55a8, hood:0x293a7c, arms:0xf4f4ef, legs:0x8b593e,
+      hat:'none', hatColor:0x000000, aura:0x6572ff, extra:'none' },
+
+    { id:'crash', name:'Dublê de Respawn', rarity:'mythic', price:6700, level:1,
+      desc:'Boneco de impacto certificado para cair, levantar e testar tudo outra vez.',
+      face:'⚠️', skinTone:'#ffd14b', body:0xffc42e, hood:0xe49a16, arms:0xffc42e, legs:0x222b39,
+      hat:'none', hatColor:0x000000, aura:0xffc42e, extra:'none',
+      seasonal:true, season:'67', boxOnly:true, marketMin:1670, marketMax:26700 },
+
+    { id:'mechred', name:'Mecha Rubi', rarity:'rare', price:2600, level:5,
+      desc:'Unidade blindada de núcleo vermelho, calibrada para confusão competitiva.',
+      face:'🤖', skinTone:'#697386', body:0x657080, hood:0x3f4858, arms:0x657080, legs:0x465064,
+      hat:'none', hatColor:0xff405c, aura:0xff405c, extra:'none', metal:true,
       seasonal:true, season:'67', boxOnly:true, marketMin:650, marketMax:10400 },
 
-    { id:'sevenbreak', name:'Sete Quebra-Loop', rarity:'epic', price:7700, level:11,
-      desc:'O próprio algarismo 7 ganhou braços, pernas e uma face prismática de energia magenta.',
-      face:'7', skinTone:'#d89b76', body:0x713ed4, hood:0x3d1e87, arms:0x9b65ff, legs:0x25194d,
-      hat:'none', hatColor:0xff4fbd, aura:0xff4fbd, extra:'none', numeric:true,
+    { id:'mechviolet', name:'Mecha Violeta', rarity:'epic', price:7700, level:11,
+      desc:'Protótipo de núcleo violeta que transforma cada movimento em sinal de perigo.',
+      face:'🤖', skinTone:'#697386', body:0x657080, hood:0x3f4858, arms:0x657080, legs:0x465064,
+      hat:'none', hatColor:0x9b65ff, aura:0x9b65ff, extra:'none', metal:true,
       seasonal:true, season:'67', boxOnly:true, marketMin:1925, marketMax:46200 },
 
-    { id:'duo67', name:'Fusão 67', rarity:'mythic', price:26700, level:27,
-      desc:'Os algarismos 6 e 7 formam um único corpo, unidos por um núcleo e uma órbita sincronizada.',
-      face:'67', skinTone:'#edb184', body:0x29316f, hood:0x151a43, arms:0x6572ff, legs:0x171a3f,
-      hat:'none', hatColor:0xf5f7ff, aura:0x9b65ff, extra:'none', numeric:true,
-      seasonal:true, season:'67', boxOnly:true, metal:true, marketMin:6675, marketMax:267000 }
+    { id:'shadow', name:'Ninja Sem Sinal', rarity:'mythic', price:26700, level:27,
+      desc:'Some antes do carregamento terminar e reaparece atrás do último adversário.',
+      face:'🥷', skinTone:'#d6ad87', body:0x252b38, hood:0x151a23, arms:0x252b38, legs:0x151a23,
+      hat:'none', hatColor:0x000000, aura:0xff4f6d, extra:'none',
+      seasonal:true, season:'67', boxOnly:true, marketMin:6675, marketMax:267000 }
   ];
+
+  /* Preserva compras e a skin equipada quando um perfil criado com o catálogo
+     anterior entra na nova versão. NPCs usam outro catálogo e não passam aqui. */
+  MA.SKIN_ID_MIGRATION = Object.freeze({
+    chill: 'rookie', hacker: 'gamer', doge: 'lumber', rizzler: 'scout',
+    sigma: 'sheriff', clown: 'striker', ghost: 'professor', demon: 'orcceo',
+    gigachad: 'hunter', king: 'executive', sixtyseven: 'crash',
+    sixorbit: 'mechred', sevenbreak: 'mechviolet', duo67: 'shadow'
+  });
 
   /* --------------------------------------------------------- ARMADURAS -- */
   MA.ARMORS = [

@@ -111,15 +111,15 @@
     hoodie(c) {
       const cloth = M(c.skin.body, { rough: .94, metal: .02 });
       const dark = M(MA.shade(c.skin.body, -38), { rough: .9, metal: .04 });
-      if (c.skin.id !== 'chill') {
+      if (c.skin.id !== 'rookie') {
         const hem = C(.50 * c.bulk, .50 * c.bulk, .11, dark, 24);
         add(c, hem, [0, .69, 0]);
       }
-      if (c.skin.id !== 'chill') paired(s => {
+      if (c.skin.id !== 'rookie') paired(s => {
         const cuff = C(.225 * c.bulk, .225 * c.bulk, .12, dark, 18);
         attach(s < 0 ? c.armL : c.armR, cuff, [0, -.34, 0]);
       });
-      if (c.skin.id !== 'chill') {
+      if (c.skin.id !== 'rookie') {
         const pocket = S(.38, cloth, 22);
         add(c, pocket, [0, 1.02, -.55], null, [1.04, .48, .22]);
         const seam = Cap(.018, .48, dark);

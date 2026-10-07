@@ -25,36 +25,44 @@
 
      Exemplo (descomente e troque pelo seu arquivo):
 
-     'chill': {
-       url: 'assets/skins/chill.glb',  // caminho dentro do projeto
-       mode: 'full',                   // 'full' (boneco inteiro) ou 'part'
-       height: 2.62,                   // altura final em unidades do jogo
-       rotY: 0,                        // gire se o modelo nascer de costas
-       y: 0,                           // ajuste fino de altura
-       clip: 'idle'                    // animação do .glb (se houver)
+     'rookie': {
+       url: 'assets/skins/meu-boneco.glb', // caminho dentro do projeto
+       mode: 'full',                       // 'full' (boneco inteiro) ou 'part'
+       height: 2.62,                       // altura final em unidades do jogo
+       rotY: 0,                            // gire se o modelo nascer de costas
+       y: 0,                               // ajuste fino de altura
+       clip: 'idle'                        // animação do .glb (se houver)
      },
 
-     'doge': {
-       url: 'assets/skins/doge-cabeca.glb',
+     'gamer': {
+       url: 'assets/skins/acessorio-exemplo.glb',
        mode: 'part',
        anchor: 'head',                 // head | hat | body | back | handL | handR | gun
        size: 1.05,                     // tamanho alvo da peça
        hide: ['head']                  // esconde a cabeça procedural
      }
      --------------------------------------------------------------------- */
-  MA.SKIN_MODELS = MA.SKIN_MODELS || {
-    /* O arquivo foi modelado olhando para -X. A rotação alinha o focinho à
-       frente do jogo (-Z), e o tamanho mantém a cabeça proporcional ao corpo. */
-    doge: {
-      url: 'assets/skins/doge.glb',
-      mode: 'part',
-      anchor: 'head',
-      size: 1.15,
-      y: 0.03,
-      rotY: -Math.PI / 2,
-      hide: ['head']
-    }
+  /* Família jogável Kenney Blocky Characters 2.0. Os modelos originais olham
+     para +Z; meia-volta os alinha à frente do jogador no Meme Arena (-Z).
+     Todos compartilham proporção, 27 clips e a mesma estrutura de nós. */
+  const BLOCKY_FILES = {
+    rookie: 'b', gamer: 'c', lumber: 'a', striker: 'f', survivor: 'k',
+    scout: 'e', sheriff: 'j', professor: 'i', dojo: 'n', orcceo: 'l',
+    hunter: 'm', bogorc: 'o', executive: 'q', captain: 'p', crash: 'd',
+    mechred: 'g', mechviolet: 'h', shadow: 'r'
   };
+  MA.SKIN_MODELS = MA.SKIN_MODELS || {};
+  Object.keys(BLOCKY_FILES).forEach(id => {
+    if (MA.SKIN_MODELS[id]) return;
+    MA.SKIN_MODELS[id] = {
+      url: 'assets/skins/kenney-blocky/character-' + BLOCKY_FILES[id] + '.glb',
+      mode: 'full',
+      height: 2.62,
+      rotY: Math.PI,
+      clip: 'idle',
+      hide: 'all'
+    };
+  });
 
   /* Modelos completos que substituem NPCs procedurais de src/builds.js.
      Os inimigos olham para +Z: o DOGE nasce voltado para -X e gira +90°;
@@ -364,12 +372,35 @@
       (a.parent || ctx.g).add(holder);
     }
 
-    /* animações próprias do arquivo (idle, run, ...) */
+    /* Animações próprias do arquivo. Além de iniciar no idle, guardamos todas
+       as ações para o jogo alternar suavemente entre parado, corrida e tiro. */
     if (entry.animations && entry.animations.length) {
       const mixer = new THREE.AnimationMixer(model);
-      const clip = (sp.clip && THREE.AnimationClip.findByName(entry.animations, sp.clip)) || entry.animations[0];
-      if (clip) mixer.clipAction(clip).play();
+      const actions = Object.create(null);
+      entry.animations.forEach(clip => {
+        if (clip && clip.name) actions[clip.name] = mixer.clipAction(clip);
+      });
+      let current = null;
+      const play = (name, fade) => {
+        const next = actions[name] || actions[sp.clip] || actions.idle || mixer.clipAction(entry.animations[0]);
+        if (!next || next === current) return false;
+        const blend = typeof fade === 'number' ? Math.max(0, fade) : .12;
+        next.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).play();
+        if (current && blend > 0) {
+          current.fadeOut(blend);
+          next.fadeIn(blend);
+        } else if (current) current.stop();
+        current = next;
+        animator.state = name;
+        return true;
+      };
+      const animator = { mixer, actions, state: '', play };
       ctx.g.userData.skinMixer = mixer;
+      ctx.g.userData.skinAnimator = animator;
+      play(sp.clip || 'idle', 0);
+      /* Aplica o primeiro frame também nas miniaturas renderizadas uma única
+         vez, que não chegam a passar pelo loop normal do jogo. */
+      mixer.update(0);
       if (ctx.anim) ctx.anim((t, dt) => mixer.update(dt));
     }
     if (sp.spin && ctx.anim) ctx.anim((t, dt) => { holder.rotation.y += dt * .8; });
@@ -408,8 +439,28 @@
     return false;
   }
 
+  const STATE_CLIPS = {
+    idle: ['idle', 'static'],
+    walk: ['walk', 'sprint', 'idle'],
+    run: ['sprint', 'walk', 'idle'],
+    air: ['sprint', 'walk', 'idle'],
+    shoot: ['holding-right-shoot', 'holding-both-shoot', 'holding-right', 'idle'],
+    melee: ['attack-melee-right', 'attack-melee-left', 'idle'],
+    die: ['die', 'idle']
+  };
+
+  /* target pode ser o resultado de createPlayer ou o Group diretamente. */
+  function setState(target, state, fade) {
+    const group = target && (target.obj || target.g || target);
+    const animator = group && group.userData && group.userData.skinAnimator;
+    if (!animator) return false;
+    const choices = STATE_CLIPS[state] || [state, 'idle'];
+    const clip = choices.find(name => animator.actions[name]);
+    return clip ? animator.play(clip, fade) : false;
+  }
+
   MA.SkinModels = {
-    specFor, enemySpecFor, apply, applyEnemy, preload, load, hasLoaded,
+    specFor, enemySpecFor, apply, applyEnemy, preload, load, hasLoaded, setState,
     register(id, spec) { MA.SKIN_MODELS[id] = spec; return load(normalize(spec).url); },
     registerEnemy(id, spec) { MA.ENEMY_MODELS[id] = spec; return load(normalize(spec).url); },
     get loaded() { return cache; }

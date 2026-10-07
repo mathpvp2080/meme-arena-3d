@@ -251,6 +251,7 @@
       color: 0xffffff,
       map: MA.Tex.face(Object.assign({}, skin, {
         id: 'skin:' + skin.id,
+        emoji: skin.face,
         color: skin.skinTone,
         ring: MA.shade(skin.skinTone, -55),
         noRing: true

@@ -17,7 +17,20 @@
       if (!d) return;
       d.inventory = d.inventory || [];
       d.equipped = d.equipped || {};
-      d.equipped.skin = d.equipped.skin || 'chill';
+
+      /* O catálogo Kenney substituiu integralmente as skins antigas. Mapeia
+         inventário e equipamento sem apagar as compras já feitas pelo jogador. */
+      const skinMap = MA.SKIN_ID_MIGRATION || {};
+      d.inventory = Array.from(new Set(d.inventory.map(key => {
+        const match = /^skin:(.+)$/.exec(key);
+        return match && skinMap[match[1]] ? 'skin:' + skinMap[match[1]] : key;
+      })));
+      const previousSkin = d.equipped.skin || '';
+      d.equipped.skin = skinMap[previousSkin] || previousSkin;
+      if (!MA.SKINS.some(s => s.id === d.equipped.skin)) {
+        const starter = MA.SKINS.find(s => s.starter) || MA.SKINS[0];
+        d.equipped.skin = starter ? starter.id : 'rookie';
+      }
       d.equipped.armor = d.equipped.armor || 'hoodie';
       d.equipped.weapons = d.equipped.weapons || [];
       d.equipped.ability = d.equipped.ability || '';

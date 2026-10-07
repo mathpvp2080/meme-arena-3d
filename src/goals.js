@@ -40,7 +40,7 @@
       tipo: 'stat', chave: 'kills', alvo: 1000, coins: 1500, xp: 1200, tier: 3 },
     { id: 'kills_5000', icon: '🔥', name: 'Fim da Era Brainrot', desc: 'Delete 5.000 memes no total.',
       tipo: 'stat', chave: 'kills', alvo: 5000, coins: 6000, xp: 5000, tier: 4,
-      item: { type: 'skin', id: 'king' } },
+      item: { type: 'skin', id: 'executive' } },
 
     /* --- resistência --- */
     { id: 'wave_10', icon: '🏄', name: 'Surfista de Ondas', desc: 'Chegue à onda 10 numa partida.',
@@ -89,7 +89,7 @@
       tipo: 'count', chave: 'hardboss', alvo: 1, coins: 1500, xp: 1200, tier: 3 },
     { id: 'daily_7', icon: '📅', name: 'Rotina de Campeão', desc: 'Complete missões diárias em 7 dias.',
       tipo: 'count', chave: 'dailydays', alvo: 7, coins: 3000, xp: 2500, tier: 4,
-      item: { type: 'skin', id: 'gigachad' } }
+      item: { type: 'skin', id: 'hunter' } }
   ];
 
   /* ------------------------------------------------- modelos de missão

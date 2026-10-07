@@ -95,7 +95,7 @@ create table if not exists public.market_listings (
   id          bigserial primary key,
   seller_id   uuid not null references auth.users (id) on delete cascade,
   seller_name text not null,
-  item        text not null,            -- 'skin:doge' | 'weapon:laser' | 'armor:pixel'
+  item        text not null,            -- 'skin:lumber' | 'weapon:laser' | 'armor:pixel'
   price       int  not null,
   sold        boolean not null default false,
   buyer_name  text,
@@ -119,20 +119,24 @@ create table if not exists public.market_price_limits (
 );
 
 insert into public.market_price_limits (item, min_price, max_price, tradable) values
-  ('skin:chill',          25,    300, false),
-  ('skin:hacker',        450,   7200, true),
-  ('skin:doge',          600,   9600, true),
-  ('skin:rizzler',      1125,  27000, true),
-  ('skin:sigma',        1300,  31200, true),
-  ('skin:clown',         700,  11200, true),
-  ('skin:ghost',        1500,  36000, true),
-  ('skin:demon',        2375,  76000, true),
-  ('skin:gigachad',     3000,  96000, true),
-  ('skin:king',         6250, 250000, true),
-  ('skin:sixtyseven',   1670,  26700, true),
-  ('skin:sixorbit',      650,  10400, true),
-  ('skin:sevenbreak',   1925,  46200, true),
-  ('skin:duo67',        6675, 267000, true),
+  ('skin:rookie',          25,    300, false),
+  ('skin:gamer',          450,   7200, true),
+  ('skin:lumber',         600,   9600, true),
+  ('skin:striker',        700,  11200, true),
+  ('skin:survivor',       875,  14000, true),
+  ('skin:scout',         1125,  27000, true),
+  ('skin:sheriff',       1300,  31200, true),
+  ('skin:professor',     1500,  36000, true),
+  ('skin:dojo',          1800,  43200, true),
+  ('skin:orcceo',        2375,  76000, true),
+  ('skin:hunter',        3000,  96000, true),
+  ('skin:bogorc',        3750, 120000, true),
+  ('skin:executive',     6250, 250000, true),
+  ('skin:captain',       7500, 300000, true),
+  ('skin:crash',         1670,  26700, true),
+  ('skin:mechred',        650,  10400, true),
+  ('skin:mechviolet',    1925,  46200, true),
+  ('skin:shadow',        6675, 267000, true),
   ('armor:hoodie',        25,    300, false),
   ('armor:cardboard',    225,   2700, true),
   ('armor:pixel',        650,  10400, true),
@@ -158,6 +162,12 @@ on conflict (item) do update set
   min_price = excluded.min_price,
   max_price = excluded.max_price,
   tradable = excluded.tradable;
+
+delete from public.market_price_limits where item in (
+  'skin:chill','skin:hacker','skin:doge','skin:rizzler','skin:sigma',
+  'skin:clown','skin:ghost','skin:demon','skin:gigachad','skin:king',
+  'skin:sixtyseven','skin:sixorbit','skin:sevenbreak','skin:duo67'
+);
 
 alter table public.market_price_limits enable row level security;
 drop policy if exists "limites do mercado leitura" on public.market_price_limits;
@@ -531,8 +541,8 @@ begin
   new.level := 1;
   new.xp := 0;
   new.coins := 600;
-  new.inventory := '["skin:chill","armor:hoodie"]'::jsonb;
-  new.equipped := '{"skin":"chill","armor":"hoodie","weapons":[],"ability":""}'::jsonb;
+  new.inventory := '["skin:rookie","armor:hoodie"]'::jsonb;
+  new.equipped := '{"skin":"rookie","armor":"hoodie","weapons":[],"ability":""}'::jsonb;
   new.stats := '{}'::jsonb;
   return new;
 end;
@@ -834,10 +844,10 @@ create table if not exists public.season67_items (
 );
 
 insert into public.season67_items (item,item_type,name,icon,rarity,weight) values
-  ('skin:sixtyseven',       'skin',    'Corredor 67',          '67', 'mythic',     4),
-  ('skin:sixorbit',         'skin',    'Seis em Órbita',       '6',  'rare',      34),
-  ('skin:sevenbreak',       'skin',    'Sete Quebra-Loop',     '7',  'epic',      17),
-  ('skin:duo67',            'skin',    'Fusão 67',             '67', 'mythic',     4),
+  ('skin:crash',            'skin',    'Dublê de Respawn',      '⚠',  'mythic',     4),
+  ('skin:mechred',          'skin',    'Mecha Rubi',            '🤖', 'rare',      34),
+  ('skin:mechviolet',       'skin',    'Mecha Violeta',         '🤖', 'epic',      17),
+  ('skin:shadow',           'skin',    'Ninja Sem Sinal',       '🥷', 'mythic',     4),
   ('armor:protocol67',      'armor',   'Protocolo 6·7',        '🛡', 'legendary',  8),
   ('armor:orbit6',          'armor',   'Colete Órbita 6',      '🛡', 'rare',      34),
   ('armor:prism7',          'armor',   'Bastião Prisma 7',     '🛡', 'legendary',  8),
@@ -851,6 +861,10 @@ insert into public.season67_items (item,item_type,name,icon,rarity,weight) value
 on conflict (item) do update set
   item_type=excluded.item_type,name=excluded.name,icon=excluded.icon,
   rarity=excluded.rarity,weight=excluded.weight;
+
+delete from public.season67_items where item in (
+  'skin:sixtyseven','skin:sixorbit','skin:sevenbreak','skin:duo67'
+);
 
 alter table public.season67_items enable row level security;
 drop policy if exists "catalogo sazonal leitura" on public.season67_items;

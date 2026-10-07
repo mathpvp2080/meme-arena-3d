@@ -23,8 +23,8 @@ run('src/season.js', contentContext);
 run('src/goals.js', contentContext);
 const MA = contentWindow.MA;
 
-check('catálogo mantém 14 skins, 9 armaduras, 9 armas e 3 habilidades', () => {
-  assert.equal(MA.SKINS.length, 14);
+check('catálogo mantém 18 skins Kenney, 9 armaduras, 9 armas e 3 habilidades', () => {
+  assert.equal(MA.SKINS.length, 18);
   assert.equal(MA.ARMORS.length, 9);
   assert.equal(MA.WEAPONS.length, 9);
   assert.equal(MA.ABILITIES.length, 3);
@@ -87,7 +87,7 @@ check('probabilidades da Caixa 67 totalizam 100%', () => {
 
 // Exercita a garantia local: seis rolagens sem item tornam a sétima sazonal.
 const rollProfile = {
-  data: { coins: 20000, level: 1, xp: 0, inventory: ['skin:chill','armor:hoodie'], stats: {} },
+  data: { coins: 20000, level: 1, xp: 0, inventory: ['skin:rookie','armor:hoodie'], stats: {} },
   addCoins(n) { this.data.coins += n; }, addXp() { return 0; },
   owns(type, id) { return this.data.inventory.includes(`${type}:${id}`); },
   grant(type, id) { this.data.inventory.push(`${type}:${id}`); },
@@ -247,15 +247,53 @@ check('modelos 3D registrados apontam para arquivos existentes', () => {
     }
   }
 });
-check('DOGE usa o modelo customizado com escala e frente alinhadas', () => {
-  const spec = MA.SKIN_MODELS && MA.SKIN_MODELS.doge;
-  assert.ok(spec, 'registro da skin DOGE ausente');
-  assert.equal(spec.url, 'assets/skins/doge.glb');
-  assert.equal(spec.mode, 'part');
-  assert.equal(spec.anchor, 'head');
-  assert.ok(spec.size > 0, 'DOGE sem escala ajustada');
-  assert.equal(spec.rotY, -Math.PI / 2, 'DOGE não está voltado para -Z');
-  assert.equal(Array.from(spec.hide || []).join(','), 'head', 'DOGE deve substituir a cabeça procedural');
+check('catálogo jogável foi integralmente substituído pelos 18 modelos Kenney', () => {
+  const oldIds = ['chill','hacker','doge','rizzler','sigma','clown','ghost','demon',
+    'gigachad','king','sixtyseven','sixorbit','sevenbreak','duo67'];
+  const skinIds = MA.SKINS.map(s => s.id);
+  assert.equal(skinIds.length, 18);
+  oldIds.forEach(id => assert.ok(!skinIds.includes(id), `skin antiga ainda publicada: ${id}`));
+  assert.equal(Object.keys(MA.SKIN_MODELS || {}).length, 18);
+  assert.deepEqual(Object.keys(MA.SKIN_ID_MIGRATION || {}).sort(), oldIds.slice().sort());
+
+  for (const skin of MA.SKINS) {
+    const spec = MA.SKIN_MODELS[skin.id];
+    assert.ok(spec, `modelo Kenney ausente: ${skin.id}`);
+    assert.match(spec.url, /^assets\/skins\/kenney-blocky\/character-[a-r]\.glb$/);
+    assert.equal(spec.mode, 'full');
+    assert.equal(spec.height, 2.62);
+    assert.equal(spec.rotY, Math.PI);
+    assert.equal(spec.clip, 'idle');
+    assert.equal(spec.hide, 'all');
+  }
+});
+check('GLBs Kenney são autocontidos, leves e oferecem os 27 clips esperados', () => {
+  const expectedClips = ['static','idle','walk','sprint','die','holding-right-shoot','attack-melee-right'];
+  let totalBytes = 0;
+  for (const letter of 'abcdefghijklmnopqr') {
+    const rel = `assets/skins/kenney-blocky/character-${letter}.glb`;
+    const glb = fs.readFileSync(path.join(root, rel));
+    totalBytes += glb.length;
+    const jsonLength = glb.readUInt32LE(12);
+    assert.equal(glb.toString('ascii', 16, 20), 'JSON', `${rel}: primeiro chunk não é JSON`);
+    const doc = JSON.parse(glb.toString('utf8', 20, 20 + jsonLength).replace(/[\u0000\s]+$/g, ''));
+    assert.equal((doc.animations || []).length, 27, `${rel}: quantidade de clips inesperada`);
+    const names = (doc.animations || []).map(a => a.name);
+    expectedClips.forEach(name => assert.ok(names.includes(name), `${rel}: clip ausente ${name}`));
+    assert.ok((doc.images || []).every(image => Number.isInteger(image.bufferView) && !image.uri), `${rel}: textura não incorporada`);
+    assert.ok((doc.buffers || []).every(buffer => !buffer.uri), `${rel}: buffer externo inesperado`);
+    const binHeader = 20 + jsonLength;
+    assert.equal(glb.toString('ascii', binHeader + 4, binHeader + 8), 'BIN\0', `${rel}: chunk binário ausente`);
+    const imageView = doc.bufferViews[doc.images[0].bufferView];
+    const pngStart = binHeader + 8 + (imageView.byteOffset || 0);
+    assert.equal(glb.readUInt32BE(pngStart + 16), 256, `${rel}: atlas deveria ter 256 px`);
+    assert.equal(glb.readUInt32BE(pngStart + 20), 256, `${rel}: atlas deveria ter 256 px`);
+    assert.ok(glb.length < 160000, `${rel}: arquivo acima do orçamento leve`);
+  }
+  assert.ok(totalBytes < 2200000, `pacote jogável muito grande: ${totalBytes} bytes`);
+  assert.match(read('src/skinmodels.js'), /setState\(target, state, fade\)/);
+  assert.match(read('src/game.js'), /MA\.SkinModels\.setState\(player, skinState\)/);
+  assert.match(read('src/multi.js'), /MA\.SkinModels\.setState\(p\.obj, moving \? 'run' : 'idle'\)/);
 });
 check('DOGE substitui o NPC procedural como cabeça flutuante', () => {
   const spec = MA.ENEMY_MODELS && MA.ENEMY_MODELS.doge;
@@ -333,6 +371,19 @@ check('modelos CC BY têm atribuição visível e registro permanente', () => {
   assert.match(index, /CalnnHotCake/);
   assert.match(index, /徹水/);
 });
+check('pacote Kenney preserva licença, fonte intermediária e crédito visível', () => {
+  const notices = read('ATTRIBUTIONS.md');
+  const source = read('assets/skins/kenney-blocky/SOURCE.md');
+  const license = read('assets/skins/kenney-blocky/LICENSE.txt');
+  for (const credit of ['Kenney', 'Blocky Characters 2.0', 'CC0 1.0', '08f0c913f6783cc81f9f6105a7cdda8562b1c192']) {
+    assert.ok(index.includes(credit) || notices.includes(credit) || source.includes(credit) || license.includes(credit), `crédito Kenney ausente: ${credit}`);
+  }
+  assert.match(license, /Creative Commons Zero/);
+  assert.match(source, /kenney\.nl\/assets\/blocky-characters/);
+  assert.match(index, /18 personagens jogáveis por <b>Kenney<\/b>/);
+  assert.match(notices, /textura compartilhada do pacote incorporada em cada GLB/);
+  assert.match(notices, /1024×1024 para 256×256/);
+});
 check('mapa urbano KayKit preserva modelos, licença CC0 e crédito', () => {
   const notices = read('ATTRIBUTIONS.md');
   const city = read('src/cityassets.js');
@@ -378,6 +429,10 @@ check('service worker e manifesto incluem somente assets existentes', () => {
   assert.ok(registrationVersion, 'registro do service worker sem versão');
   assert.equal(registrationVersion[1], swVersion[1], 'registro e cache do service worker em versões diferentes');
   for (const rel of ['termos.html', 'css/hub.css', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'assets/skins/tung.glb', 'assets/skins/bombardiro.glb', 'assets/kaykit-city/citybits_texture.png', 'src/cityassets.js', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
+  for (const letter of 'abcdefghijklmnopqr') {
+    const rel = `assets/skins/kenney-blocky/character-${letter}.glb`;
+    assert.ok(sw.includes(rel), `${rel} fora do cache`);
+  }
   for (const [, asset] of sw.matchAll(/'\.\/([^']*)'/g)) assert.ok(fs.existsSync(path.join(root, asset || '.')), `cache aponta para arquivo ausente: ${asset}`);
   const manifest = JSON.parse(read('manifest.webmanifest'));
   for (const asset of [...manifest.icons, ...manifest.screenshots]) assert.ok(fs.existsSync(path.join(root, asset.src)), `manifesto aponta para arquivo ausente: ${asset.src}`);
@@ -442,6 +497,17 @@ check('patch SQL contém limpeza restrita e RPCs sazonais', () => {
   assert.match(sql, /normalize_profile_insert/);
   assert.match(sql, /revoke all on function public\.season67_open_box/);
   assert.ok(!/create policy "dono anuncia"/.test(sql), 'escrita direta no mercado ainda permitida');
+});
+check('migração SQL troca skins sem apagar compras ou alterar NPCs', () => {
+  const patch = read('supabase/patch_kenney_skins.sql');
+  for (const pair of [['chill','rookie'], ['doge','lumber'], ['king','executive'],
+    ['sixtyseven','crash'], ['sixorbit','mechred'], ['sevenbreak','mechviolet'], ['duo67','shadow']]) {
+    assert.ok(patch.includes(`'skin:${pair[0]}'`) && patch.includes(`'skin:${pair[1]}'`), `migração ausente: ${pair.join(' → ')}`);
+  }
+  assert.match(patch, /jsonb_array_elements_text/);
+  assert.match(patch, /update public\.market_listings/);
+  assert.match(patch, /new\.inventory := '\["skin:rookie","armor:hoodie"\]'/);
+  assert.ok(!patch.includes('MA.ENEMY_MODELS'));
 });
 check('CSP não depende de script inline e dados sociais são escapados', () => {
   assert.match(index, /Content-Security-Policy/);
