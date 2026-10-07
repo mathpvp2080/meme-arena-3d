@@ -118,17 +118,22 @@ check('todos os assets locais do HTML existem', () => {
     assert.ok(fs.existsSync(path.join(root, ref)), `arquivo ausente: ${ref}`);
   }
 });
-check('hub principal tem hierarquia profissional e estados úteis', () => {
+check('hub tem identidade própria Arena Control 67 e estados úteis', () => {
   const css = read('css/season67.css');
   const meta = read('src/metaui.js');
-  for (const id of ['hubNetworkState', 'hubStickerProgress', 'hubStickerFill', 'playBtnHub']) {
+  for (const id of ['hubNetworkState', 'hubStickerProgress', 'hubStickerFill', 'hubOperatorId', 'playBtnHub']) {
     assert.match(index, new RegExp(`id="${id}"`), `controle ausente no hub: ${id}`);
   }
-  for (const cls of ['queue-status', 'hub-mode-pills', 'hub-match-features', 'lobby-collection-progress']) {
+  for (const cls of ['queue-status', 'hub-mode-pills', 'hub-match-features', 'lobby-collection-progress', 'character-brand-bg', 'character-tech-frame', 'map-orbit', 'map-readout']) {
     assert.ok(index.includes(`class="${cls}`) || index.includes(` ${cls}`), `bloco visual ausente: ${cls}`);
   }
-  assert.match(css, /HUB PROFISSIONAL · revisão de hierarquia e navegação/);
+  for (const signature of ['DROP // TEMPORADA', 'ARSENAL // COSMÉTICOS', 'VISUAL // LOADOUT', 'ROTAÇÃO DE ARENAS']) {
+    assert.ok(index.includes(signature), `assinatura visual ausente: ${signature}`);
+  }
+  assert.match(css, /ARENA CONTROL 67 · identidade própria do lobby/);
+  assert.match(css, /SELECT PROTOCOL \/\/ ARENA 67/, 'seletor de modo fora da identidade visual');
   assert.match(css, /@media\(max-width:540px\)/, 'hub sem adaptação para celular estreito');
+  assert.match(meta, /hubOperatorId/);
   assert.match(meta, /SESSÃO LOCAL/);
   assert.match(meta, /ownedStickers/);
 });

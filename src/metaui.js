@@ -117,6 +117,8 @@
       const need = MA.Profile.xpToNext();
 
       $('hubName').textContent = p.username;
+      const operatorCode = Array.from(p.username || 'NPC').reduce((n, ch) => ((n * 31) + ch.charCodeAt(0)) % 10000, 67);
+      if ($('hubOperatorId')) $('hubOperatorId').textContent = 'MA-' + String(operatorCode).padStart(4, '0');
       $('hubLevel').textContent = p.level;
       $('hubXpFill').style.width = (MA.Profile.xpProgress() * 100) + '%';
       $('hubXpTxt').textContent = MA.fmt(p.xp) + ' / ' + MA.fmt(need) + ' XP';
@@ -144,8 +146,8 @@
       if ($('hubRank')) $('hubRank').textContent = MA.Net.isGuest
         ? '◇ SESSÃO TEMPORÁRIA · SEM SUPABASE'
         : rank.icon + ' ' + rank.name;
-      if ($('hubMapIcon')) $('hubMapIcon').textContent = '🎲';
-      if ($('hubMapName')) $('hubMapName').textContent = 'todos os mapas disponíveis';
+      if ($('hubMapIcon')) $('hubMapIcon').textContent = '6·7';
+      if ($('hubMapName')) $('hubMapName').textContent = 'mapa definido quando a partida começar';
       const sticker = MA.Profile.equippedSticker();
       const badge = $('hubStickerBadge');
       if (badge) {
