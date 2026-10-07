@@ -32,19 +32,22 @@ Você é o **Chill Guy**, o último com dopamina suficiente pra resistir. Segure
   fragmentos e 67 fragmentos forjam um item sazonal que ainda falta.
 - O mercado usa limites mínimo e máximo **específicos por item**, e o jogador escolhe
   o valor do anúncio dentro dessa faixa.
-- A temporada usa o conceito numérico do meme. Não inclui música, voz, foto,
-  personagem ou arte da trend; todos os visuais, efeitos e sons são originais.
+- A temporada usa o conceito numérico do meme. Não inclui música, voz, foto ou
+  arte da trend; ambientes, efeitos e sons são autorais. Os modelos 3D externos
+  são identificados e creditados conforme suas licenças.
 
-Personagens, equipamentos e efeitos 3D são **gerados proceduralmente** com geometrias
-primitivas e texturas em `<canvas>`. A entrada e o lobby usam duas artes autorais da
-Temporada 67; a trilha e os efeitos são sintetizados com WebAudio.
+Jogadores, equipamentos, efeitos e os visuais de reserva dos NPCs são gerados
+proceduralmente com geometrias primitivas e texturas em `<canvas>`. Os quatro inimigos
+ativos usam modelos GLB creditados, com fallback procedural se um arquivo falhar. A
+entrada e o lobby usam duas artes autorais da Temporada 67; a trilha e os efeitos são
+sintetizados com WebAudio.
 
 ## ✨ Funcionalidades
 
 | | |
 |---|---|
-| 🧟 **16 inimigos** | Trollface, Amogus, Pepe, Skibidi Toilet, Doge, Rizzler, Nyan Cat, Bluescreen, Ohio, Stonks, Sigma, Grimace, Tralalero, Tung Tung, Bombardiro, Goofy Ahh |
-| 👹 **5 chefes** | Com **3 fases**, barragens em leque, investidas com onda de impacto e invocação de lacaios |
+| 🧟 **4 inimigos** | Doge Corrompido, Tralalero Tralala, Tung Tung Sahur e Bombardiro Crocodilo |
+| 👹 **1 chefe** | Bombardiro Crocodilo retorna mais forte a cada 5 ondas |
 | 🔫 **9 armas** | Laser, shotgun, bumerangue, RPG, orbe gravitacional, minigun, prisma, railgun e Pulso 67 |
 | ✦ **3 habilidades** | Repulsão 6, Passo 7 e Sobrecarga 67 com mecânicas e recargas próprias |
 | 🃏 **20 perks** | Escolha 1 de 3 cartas a cada onda. Comuns, raras e épicas. Acumulam entre si |
@@ -173,13 +176,12 @@ Three.js é distribuído sob a licença MIT (© three.js authors).
 
 ## 🎭 NPCs e mapas (Etapa 2)
 
-- **Rostos desenhados à mão** (canvas, sem imagem externa) para os 16 memes e
-  os 5 chefes — nada de emoji genérico. O rosto fica num "adesivo" virado pra
-  frente, então sempre dá pra reconhecer quem está vindo.
-- **Silhueta própria para cada meme**: o Skibidi sai de um vaso sanitário, o
-  Tung Tung carrega um taco, o Bombardiro tem asas e hélices girando, o Nyan
-  Cat é uma torrada com rastro de arco-íris, o Bluescreen é um monitor CRT, o
-  Grimace é um copo de milkshake, o Amogus tem viseira e mochila...
+- **Quatro inimigos com GLB próprio**: Doge Corrompido, Tralalero Tralala,
+  Tung Tung Sahur e Bombardiro Crocodilo.
+- **Bombardiro chefe** reutiliza o modelo animado em escala maior, retorna a
+  cada cinco ondas e preserva as fases e os ataques de chefe.
+- **Fallback procedural** mantém cada um jogável se o carregamento do modelo
+  externo falhar; barra de vida, brilho, colisão e IA permanecem separados do visual.
 - **5 mapas** que mudam céu, chão, névoa, luzes, obstáculos e cartazes:
 
 | Mapa | Libera no nível |

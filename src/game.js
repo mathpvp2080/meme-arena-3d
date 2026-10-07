@@ -263,9 +263,9 @@
     const d = G.diff;
 
     if (n % 5 === 0) {
-      const idx = Math.min(Math.floor(n / 5) - 1, MA.BOSSES.length - 1);
-      const extra = Math.max(0, Math.floor(n / 5) - MA.BOSSES.length);
-      const def = MA.BOSSES[idx];
+      const encounter = MA.bossEncounter(n);
+      const extra = encounter.extra;
+      const def = encounter.def;
       const boss = MA.createEnemy(scene, def, {
         boss: true,
         hpScale: d.ehp * (1 + extra * .75) * (1 + n * .035),

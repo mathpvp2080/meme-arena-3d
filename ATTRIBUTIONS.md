@@ -38,6 +38,19 @@ implica participação ou endosso ao jogo.
 - **Alterações no jogo:** redimensionamento, rotação, reposicionamento e integração como aparência do NPC Tung Tung Sahur existente.
 - **Data de acesso registrada:** 6 de outubro de 2026
 
+## Bombardiro Crocodilo
+
+- **Arquivo no projeto:** `assets/skins/bombardiro.glb`
+- **Título na fonte:** Bombardiro Crocodilo
+- **Autor:** shtran
+- **Fonte:** [Sketchfab](https://sketchfab.com/3d-models/bombardiro-crocodilo-0dae807a3ff3443d9ed2cd303482f21a)
+- **Licença informada na fonte:** [Creative Commons Attribution 4.0 (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)
+- **Data de publicação exibida na fonte:** 13 de maio de 2025
+- **Dados técnicos exibidos na fonte:** 3,6 mil triângulos e 1,8 mil vértices.
+- **Descrição da fonte:** modelo feito a partir da imagem original do meme Brainrot.
+- **Alterações no jogo:** redimensionamento, reposicionamento, animação de voo e integração como o NPC Bombardiro normal e como o chefe Bombardiro, em escalas diferentes.
+- **Data de acesso registrada:** 6 de outubro de 2026
+
 > As capturas fornecidas da Poly Pizza identificam a licença como “Creative
 > Commons Attribution”, sem mostrar o número da versão. Por isso, este registro
 > preserva exatamente a identificação exibida na fonte, sem presumir uma versão.

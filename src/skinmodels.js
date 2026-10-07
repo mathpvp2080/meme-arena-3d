@@ -58,7 +58,8 @@
 
   /* Modelos completos que substituem NPCs procedurais de src/builds.js.
      Os inimigos olham para +Z: o DOGE nasce voltado para -X e gira +90°;
-     Tralalero e Tung Tung nascem em +X e giram -90°. */
+     Tralalero e Tung Tung nascem em +X e giram -90°; Bombardiro já nasce
+     voltado para +Z e inclui sua animação de voo. */
   MA.ENEMY_MODELS = MA.ENEMY_MODELS || {
     doge: {
       url: 'assets/skins/doge.glb',
@@ -80,6 +81,26 @@
       mode: 'full',
       height: 2.8,
       rotY: -Math.PI / 2,
+      hide: 'all'
+    },
+    bombard: {
+      url: 'assets/skins/bombardiro.glb',
+      mode: 'full',
+      height: 1.3,
+      y: 0.65,
+      rotY: 0,
+      hudY: 2.45,
+      clip: 'bombardiro|flying',
+      hide: 'all'
+    },
+    bombaboss: {
+      url: 'assets/skins/bombardiro.glb',
+      mode: 'full',
+      height: 3.4,
+      y: 1.3,
+      rotY: 0,
+      hudY: 5.45,
+      clip: 'bombardiro|flying',
       hide: 'all'
     }
   };
@@ -115,6 +136,7 @@
       keepPivot: !!spec.keepPivot,
       x: spec.x || 0, y: spec.y || 0, z: spec.z || 0,
       rotX: spec.rotX || 0, rotY: spec.rotY || 0, rotZ: spec.rotZ || 0,
+      hudY: typeof spec.hudY === 'number' ? spec.hudY : null,
       hide: spec.hide === undefined ? (mode === 'full' ? 'all' : []) : spec.hide,
       clip: spec.clip || '',
       shadow: spec.shadow !== false,
@@ -305,6 +327,9 @@
     if (sp.mode === 'full') {
       hideProcedural(ctx, sp.hide);
       ctx.g.add(holder);
+      /* Modelos voadores ou muito largos podem ter proporção diferente do
+         boneco procedural; permite manter a barra logo acima do GLB. */
+      if (ctx.hb && sp.hudY !== null) ctx.hb.position.y = sp.hudY;
     } else {
       const a = anchorOf(ctx, sp.anchor);
       if (sp.hide && sp.hide !== 'all') hideProcedural(ctx, sp.hide);

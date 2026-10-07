@@ -33,6 +33,17 @@ check('IDs são únicos dentro de cada categoria', () => {
     assert.equal(new Set(list.map(x => x.id)).size, list.length, `IDs duplicados em ${name}`);
   }
 });
+check('elenco de NPCs contém somente os cinco papéis com modelo 3D', () => {
+  assert.equal(MA.MEMES.map(x => x.id).join(','), 'doge,tralala,tung,bombard');
+  assert.equal(MA.BOSSES.map(x => x.id).join(','), 'bombaboss');
+  assert.equal(MA.MEMES.map(x => x.tier).join(','), '1,2,3,4');
+});
+check('Bombardiro retorna e escala corretamente com um único chefe', () => {
+  const encounters = [5, 10, 15, 25].map(MA.bossEncounter);
+  assert.ok(encounters.every(x => x.def && x.def.id === 'bombaboss'));
+  assert.equal(encounters.map(x => x.extra).join(','), '0,1,2,4');
+  assert.match(read('src/game.js'), /MA\.bossEncounter\(n\)/, 'jogo não usa o seletor validado');
+});
 check('pool sazonal tem 14 referências válidas e exclusivas de caixa', () => {
   assert.equal(MA.SEASON.itemKeys.length, 14);
   for (const key of MA.SEASON.itemKeys) {
@@ -154,9 +165,23 @@ check('Tung Tung substitui o NPC procedural com escala e frente alinhadas', () =
   assert.equal(spec.rotY, -Math.PI / 2, 'Tung Tung não está voltado para +Z');
   assert.equal(spec.hide, 'all', 'Tung Tung deve substituir o modelo procedural');
 });
+check('Bombardiro usa o GLB animado no NPC normal e no chefe', () => {
+  const normal = MA.ENEMY_MODELS && MA.ENEMY_MODELS.bombard;
+  const boss = MA.ENEMY_MODELS && MA.ENEMY_MODELS.bombaboss;
+  for (const [name, spec] of [['normal', normal], ['chefe', boss]]) {
+    assert.ok(spec, `registro do Bombardiro ${name} ausente`);
+    assert.equal(spec.url, 'assets/skins/bombardiro.glb');
+    assert.equal(spec.mode, 'full');
+    assert.equal(spec.rotY, 0, `Bombardiro ${name} não está voltado para +Z`);
+    assert.equal(spec.clip, 'bombardiro|flying');
+    assert.equal(spec.hide, 'all');
+    assert.ok(spec.height > 0 && spec.y > 0 && spec.hudY > spec.y, `escala/voo/HUD inválido no ${name}`);
+  }
+  assert.ok(boss.height > normal.height, 'chefe Bombardiro deveria ser maior');
+});
 check('modelos CC BY têm atribuição visível e registro permanente', () => {
   const notices = read('ATTRIBUTIONS.md');
-  for (const value of ['徹水', 'CalnnHotCake', '5I9ouA0S-WG', 'wQErnZDU4ed', 'Q6SvoDhhwA', 'Creative Commons Attribution']) {
+  for (const value of ['徹水', 'CalnnHotCake', 'shtran', '5I9ouA0S-WG', 'wQErnZDU4ed', 'Q6SvoDhhwA', '0dae807a3ff3443d9ed2cd303482f21a', 'creativecommons.org/licenses/by/4.0/', '13 de maio de 2025', 'Creative Commons Attribution']) {
     assert.ok(index.includes(value) || notices.includes(value), `crédito ausente: ${value}`);
   }
   assert.match(index, /CRÉDITOS DOS MODELOS 3D/);
@@ -188,7 +213,7 @@ check('service worker e manifesto incluem somente assets existentes', () => {
   const indexVersions = new Set([...read('index.html').matchAll(/\?v=(\d+)/g)].map(m => m[1]));
   assert.equal(indexVersions.size, 1, `index.html mistura versões de cache: ${[...indexVersions].join(', ')}`);
   assert.equal([...indexVersions][0], swVersion[1], 'index.html e service worker em versões diferentes');
-  for (const rel of ['termos.html', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'assets/skins/tung.glb', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
+  for (const rel of ['termos.html', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'assets/skins/tung.glb', 'assets/skins/bombardiro.glb', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
   for (const [, asset] of sw.matchAll(/'\.\/([^']*)'/g)) assert.ok(fs.existsSync(path.join(root, asset || '.')), `cache aponta para arquivo ausente: ${asset}`);
   const manifest = JSON.parse(read('manifest.webmanifest'));
   for (const asset of [...manifest.icons, ...manifest.screenshots]) assert.ok(fs.existsSync(path.join(root, asset.src)), `manifesto aponta para arquivo ausente: ${asset.src}`);

@@ -110,6 +110,6 @@ window.MA = window.MA || {};
 
   /* Registro externo ao HTML permite uma CSP sem script inline. */
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=40').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=42').catch(() => {}));
   }
 })(window.MA);

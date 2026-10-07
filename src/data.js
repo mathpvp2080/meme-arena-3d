@@ -5,32 +5,30 @@
   /* ---------------------------------------------------------- inimigos --
      ai: chase | flank | orbit | ranged | charge | teleport | bomber
      tier: a partir de qual onda pode aparecer                              */
+  /* O elenco ativo contém somente NPCs com modelo 3D externo aprovado. Os
+     tiers foram redistribuídos para apresentar um novo inimigo gradualmente. */
   MA.MEMES = [
-    { id:'troll',   name:'Trollface',          emoji:'😈', color:'#e8e8e8', ring:'#111111', hp:30,  spd:4.2, dmg:9,  pts:100, ai:'chase',    scale:1.00, tier:1, taunt:'Problem?' },
-    { id:'sus',     name:'Amogus',             emoji:'🔺', color:'#ff2d55', ring:'#8b0020', hp:26,  spd:5.4, dmg:11, pts:130, ai:'flank',    scale:0.95, tier:1, taunt:'SUS!' },
-    { id:'pepe',    name:'Pepe Raivoso',       emoji:'🐸', color:'#4bd34b', ring:'#1d6b1d', hp:46,  spd:3.4, dmg:14, pts:150, ai:'chase',    scale:1.15, tier:1, taunt:'REEEE' },
-    { id:'doge',    name:'Doge Corrompido',    emoji:'🐕', color:'#f2c14e', ring:'#9a6b00', hp:34,  spd:6.0, dmg:8,  pts:140, ai:'orbit',    scale:0.90, tier:2, taunt:'much hostile' },
-    { id:'skibidi', name:'Skibidi Toilet',     emoji:'🚽', color:'#dcdcdc', ring:'#5a7fa0', hp:62,  spd:3.0, dmg:16, pts:200, ai:'charge',   scale:1.25, tier:2, taunt:'skibidi dop dop' },
-    { id:'rizz',    name:'Rizzler',            emoji:'😏', color:'#7a5bff', ring:'#2d0f8f', hp:40,  spd:4.6, dmg:12, pts:170, ai:'flank',    scale:1.05, tier:2, taunt:'W rizz' },
-    { id:'nyan',    name:'Nyan Cat',           emoji:'🌈', color:'#ff7ad9', ring:'#ff0090', hp:22,  spd:7.4, dmg:7,  pts:160, ai:'orbit',    scale:0.85, tier:3, taunt:'nyan nyan nyan' },
-    { id:'crash',   name:'Bluescreen',         emoji:'💀', color:'#2a6bff', ring:'#001e66', hp:56,  spd:3.8, dmg:15, pts:190, ai:'ranged',   scale:1.10, tier:3, taunt:'ERROR 0x00' },
-    { id:'ohio',    name:'Só Em Ohio',         emoji:'🌽', color:'#ffc42e', ring:'#7a4a00', hp:48,  spd:5.0, dmg:13, pts:210, ai:'teleport', scale:1.00, tier:3, taunt:'only in Ohio' },
-    { id:'stonks',  name:'Stonks Man',         emoji:'📈', color:'#9fb3c8', ring:'#2e4a66', hp:74,  spd:2.8, dmg:18, pts:230, ai:'ranged',   scale:1.20, tier:4, taunt:'NOT STONKS' },
-    { id:'sigma',   name:'Sigma Grindset',     emoji:'🕶️', color:'#2b2b38', ring:'#00e5ff', hp:70,  spd:5.2, dmg:17, pts:260, ai:'flank',    scale:1.10, tier:4, taunt:'5AM club' },
-    { id:'grimace', name:'Grimace Shake',      emoji:'🥤', color:'#8e2dc4', ring:'#4a0073', hp:88,  spd:3.2, dmg:20, pts:270, ai:'charge',   scale:1.30, tier:4, taunt:'drink it' },
-    { id:'tralala', name:'Tralalero Tralala',  emoji:'🦈', color:'#3fb9ff', ring:'#0b3f7a', hp:66,  spd:6.2, dmg:16, pts:290, ai:'orbit',    scale:1.10, tier:5, taunt:'tralalero tralala' },
-    { id:'tung',    name:'Tung Tung Sahur',    emoji:'🪵', color:'#a9743f', ring:'#4a2a0c', hp:96,  spd:3.6, dmg:22, pts:310, ai:'charge',   scale:1.28, tier:5, taunt:'tung tung tung' },
-    { id:'bombard', name:'Bombardiro Croc.',   emoji:'🐊', color:'#5f8f4f', ring:'#23401c', hp:84,  spd:4.0, dmg:21, pts:330, ai:'bomber',   scale:1.22, tier:6, taunt:'bombardiro!' },
-    { id:'goofy',   name:'Goofy Ahh NPC',      emoji:'🤪', color:'#ff8a3d', ring:'#9c3b00', hp:58,  spd:6.6, dmg:14, pts:280, ai:'teleport', scale:0.95, tier:6, taunt:'goofy ahh' }
+    { id:'doge',    name:'Doge Corrompido',    emoji:'🐕', color:'#f2c14e', ring:'#9a6b00', hp:34, spd:6.0, dmg:8,  pts:140, ai:'orbit',  scale:0.90, tier:1, taunt:'much hostile' },
+    { id:'tralala', name:'Tralalero Tralala',  emoji:'🦈', color:'#3fb9ff', ring:'#0b3f7a', hp:66, spd:6.2, dmg:16, pts:290, ai:'orbit',  scale:1.10, tier:2, taunt:'tralalero tralala' },
+    { id:'tung',    name:'Tung Tung Sahur',    emoji:'🪵', color:'#a9743f', ring:'#4a2a0c', hp:96, spd:3.6, dmg:22, pts:310, ai:'charge', scale:1.28, tier:3, taunt:'tung tung tung' },
+    { id:'bombard', name:'Bombardiro Croc.',   emoji:'🐊', color:'#5f8f4f', ring:'#23401c', hp:84, spd:4.0, dmg:21, pts:330, ai:'bomber', scale:1.22, tier:4, taunt:'bombardiro!' }
   ];
 
+  /* Bombardiro é o único chefe ativo e retorna mais forte a cada cinco ondas. */
   MA.BOSSES = [
-    { id:'bigskibidi', name:'MEGA SKIBIDI G-MAN', emoji:'🚽', color:'#e6e6e6', ring:'#3d6fa0', hp:900,  spd:3.4, dmg:26, pts:3000,  taunt:'SKIBIDI DOM DOM YES YES' },
-    { id:'gigachad',   name:'GIGACHAD SUPREMO',   emoji:'🗿', color:'#b9c4cc', ring:'#333333', hp:1500, spd:4.2, dmg:32, pts:5000,  taunt:'não fale, apenas sinta' },
-    { id:'tralaboss',  name:'TRALALERO TRALALA',  emoji:'🦈', color:'#3fb9ff', ring:'#062f5e', hp:2200, spd:5.0, dmg:34, pts:7500,  taunt:'porco dio tralalero' },
-    { id:'bombaboss',  name:'BOMBARDIRO CROCODILO', emoji:'🐊', color:'#5f8f4f', ring:'#1b3315', hp:3000, spd:4.4, dmg:38, pts:10000, taunt:'bombardiro crocodilo' },
-    { id:'brainrot',   name:'O ALGORITMO',        emoji:'🧠', color:'#ff3ca6', ring:'#6a00ff', hp:4200, spd:5.2, dmg:42, pts:15000, taunt:'ROLE INFINITAMENTE' }
+    { id:'bombaboss', name:'BOMBARDIRO CROCODILO', emoji:'🐊', color:'#5f8f4f', ring:'#1b3315', hp:3000, spd:4.4, dmg:38, pts:10000, taunt:'bombardiro crocodilo' }
   ];
+
+  /* Resolve a onda de chefe sem depender do tamanho do elenco. Com apenas um
+     chefe, Bombardiro retorna a cada cinco ondas e recebe um ciclo extra. */
+  MA.bossEncounter = wave => {
+    const turn = Math.max(1, Math.floor(Number(wave) / 5));
+    const index = Math.min(turn - 1, MA.BOSSES.length - 1);
+    return {
+      def: MA.BOSSES[index],
+      extra: Math.max(0, turn - MA.BOSSES.length)
+    };
+  };
 
   /* ------------------------------------------------------------- armas --
      unlock: onda em que a arma é liberada                                  */
