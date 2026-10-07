@@ -4,6 +4,19 @@ Este arquivo registra recursos de terceiros distribuídos com o Meme Arena 3D.
 Os autores abaixo licenciaram os respectivos **modelos 3D**; a atribuição não
 implica participação ou endosso ao jogo.
 
+## KayKit City Builder Bits 1.0
+
+- **Arquivos no projeto:** `assets/kaykit-city/` (modelos glTF/bin, atlas `citybits_texture.png`, licença e registro de fonte)
+- **Título na fonte:** KayKit - City Builder Bits
+- **Autor:** Kay Lousberg / KayKit Game Assets
+- **Fonte principal:** [repositório oficial no GitHub](https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0)
+- **Página do pacote:** [itch.io](https://kaylousberg.itch.io/city-builder-bits)
+- **Licença:** [Creative Commons Zero 1.0 Universal (CC0 1.0)](https://creativecommons.org/publicdomain/zero/1.0/)
+- **Atribuição obrigatória:** não; crédito registrado voluntariamente.
+- **Alterações no jogo:** seleção dos modelos da versão gratuita, composição de ruas, prédios, carros e mobiliário urbano, escalonamento, rotação, posicionamento, sombras e colisões para o mapa competitivo Cidade do Caos.
+- **Cópia da licença:** `assets/kaykit-city/LICENSE.txt`
+- **Data de acesso registrada:** 7 de outubro de 2026
+
 ## DOGE
 
 - **Arquivo no projeto:** `assets/skins/doge.glb`

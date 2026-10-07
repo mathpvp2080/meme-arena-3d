@@ -6,6 +6,7 @@
   const M = {
     shopTab: 'weapon',
     invTab: 'all',
+    albumTab: 'all',
     busy: false,
 
     /* ------------------------------------------------------------ toast */
@@ -20,7 +21,7 @@
     },
 
     screen(id) {
-      ['auth', 'hub', 'shop', 'lootbox', 'inventory', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
+      ['auth', 'hub', 'shop', 'lootbox', 'inventory', 'album', 'playmode', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
         .forEach(s => { const e = $(s); if (e) e.classList.add('hid'); });
       if (id) $(id).classList.remove('hid');
     },
@@ -134,9 +135,15 @@
       if ($('hubRank')) $('hubRank').textContent = MA.Net.isGuest
         ? '◇ SESSÃO TEMPORÁRIA · SEM SUPABASE'
         : rank.icon + ' ' + rank.name;
-      const map = MA.mapById(MA.store.get('map', 'arena'));
-      if ($('hubMapIcon')) $('hubMapIcon').textContent = map.icon;
-      if ($('hubMapName')) $('hubMapName').textContent = map.name;
+      if ($('hubMapIcon')) $('hubMapIcon').textContent = '🎲';
+      if ($('hubMapName')) $('hubMapName').textContent = 'todos os mapas disponíveis';
+      const sticker = MA.Profile.equippedSticker();
+      const badge = $('hubStickerBadge');
+      if (badge) {
+        badge.classList.toggle('hid', !sticker);
+        badge.style.setProperty('--sticker', sticker ? sticker.color : '#ffe600');
+        badge.innerHTML = sticker ? '<i>' + sticker.icon + '</i><span>' + MA.esc(sticker.name) + '</span>' : '';
+      }
 
       const wIdx = MA.Profile.equippedWeapons();
       const ability = MA.Profile.equippedAbility();
@@ -312,6 +319,45 @@
       if (MA.Previews) MA.Previews.hydrate($('invGrid'));
     },
 
+    /* ============================================================ ÁLBUM */
+    openAlbum(tab) {
+      this.albumTab = tab || this.albumTab;
+      this.renderAlbum();
+      this.screen('album');
+    },
+
+    renderAlbum() {
+      document.querySelectorAll('#album .tab').forEach(t =>
+        t.classList.toggle('sel', t.dataset.tab === this.albumTab));
+      const all = MA.STICKERS.slice();
+      const ownedCount = all.filter(s => MA.Profile.owns('sticker', s.id)).length;
+      $('albumProgress').textContent = ownedCount + ' / ' + all.length + ' coletadas';
+      const list = this.albumTab === 'all' ? all : all.filter(s => s.kind === this.albumTab);
+      $('albumGrid').innerHTML = list.map(s => {
+        const rarity = MA.ITEM_RARITY[s.rarity] || MA.ITEM_RARITY.common;
+        const owned = MA.Profile.owns('sticker', s.id);
+        const equipped = MA.Profile.isEquipped('sticker', s.id);
+        const kind = s.kind === 'map' ? 'MAPA' : s.kind === 'boss' ? 'CHEFE' : 'NPC';
+        return '<article class="icard album-card ' + (owned ? '' : 'locked-sticker') + (equipped ? ' isequipped' : '') +
+          '" style="--rc:' + s.color + '"><div class="irar" style="color:' + rarity.color + '">' + rarity.name + '</div>' +
+          '<div class="sticker-frame"><div class="iico">' + s.icon + '</div></div><div class="album-kind">' + kind + '</div>' +
+          '<div class="iname">' + (owned ? MA.esc(s.name) : '???') + '</div><div class="idesc">' +
+          (owned ? 'Colecionada · distintivo disponível' : 'Ainda não está no seu álbum') + '</div>' +
+          (owned
+            ? '<button class="ibtn ' + (equipped ? 'uneq' : 'eq') + '" data-album-equip="' + s.id + '">' + (equipped ? '✔ EQUIPADA' : 'USAR DISTINTIVO') + '</button>'
+            : '<button class="ibtn buy" data-album-shop="1">VER NA LOJA</button>') + '</article>';
+      }).join('');
+      $('albumGrid').querySelectorAll('[data-album-equip]').forEach(b => b.onclick = () => {
+        const def = MA.findItem('sticker', b.dataset.albumEquip);
+        const r = MA.Profile.equip('sticker', def.id);
+        if (r.error) return this.toast('❌ ' + r.error, 'bad');
+        MA.Profile.save(); MA.Audio.ui();
+        this.toast('🃏 Distintivo equipado: <b>' + def.name + '</b>');
+        this.renderAlbum();
+      });
+      $('albumGrid').querySelectorAll('[data-album-shop]').forEach(b => b.onclick = () => this.openShop('sticker'));
+    },
+
     /* --------------------------------------------------------- card HTML */
     card(item, ctx) {
       const r = MA.ITEM_RARITY[item.rarity] || MA.ITEM_RARITY.common;
@@ -320,6 +366,7 @@
       const lv = MA.Profile.data.level;
       const canLv = lv >= (item.level || 1);
       const canCoin = MA.Profile.data.coins >= item.price;
+      const cardColor = item.color || r.color;
 
       const icon = item.type === 'skin' ? item.face
                  : item.type === 'armor' ? '🛡️'
@@ -338,6 +385,9 @@
           (w.count > 1 ? w.count + ' projéteis' : (1 / w.rate).toFixed(1) + '/s') + '</span></div>';
       } else if (item.type === 'ability') {
         stats = '<div class="istats"><span>TECLA F</span><span>' + item.cooldown + 's recarga</span></div>';
+      } else if (item.type === 'sticker') {
+        const kind = item.kind === 'map' ? 'MAPA' : item.kind === 'boss' ? 'CHEFE' : 'NPC';
+        stats = '<div class="istats"><span>' + kind + '</span><span>SÓ COSMÉTICA</span></div>';
       }
 
       let action;
@@ -352,7 +402,7 @@
         action = '<div class="ibtns">' +
           '<button class="ibtn ' + (eq ? 'uneq' : 'eq') + '" data-type="' + item.type +
             '" data-id="' + item.id + '" data-act="equip">' + (eq ? '✔ EQUIPADO' : 'EQUIPAR') + '</button>' +
-          (item.starter ? '' :
+          (item.starter || item.noSell ? '' :
             '<button class="ibtn sell" data-type="' + item.type + '" data-id="' + item.id +
             '" data-act="market" title="Revender por um valor definido por você">💱</button>' +
             (item.boxOnly ? '' : '<button class="ibtn sell" data-type="' + item.type + '" data-id="' + item.id +
@@ -360,11 +410,13 @@
           '</div>';
       }
 
-      return '<div class="icard ' + item.rarity + (eq ? ' isequipped' : '') + (item.seasonal ? ' seasonal' : '') + '" style="--rc:' + r.color + '">' +
+      const visual = item.type === 'sticker'
+        ? '<div class="sticker-frame"><div class="iico">' + icon + '</div></div>'
+        : '<div class="iico itempreview" data-preview-type="' + item.type + '" data-preview-id="' + item.id + '">' +
+          '<span>' + icon + '</span><i></i></div>';
+      return '<div class="icard ' + item.rarity + (eq ? ' isequipped' : '') + (item.seasonal ? ' seasonal' : '') + '" style="--rc:' + cardColor + '">' +
         (item.seasonal ? '<div class="season-chip">TEMPORADA 67</div>' : '') +
-        '<div class="irar" style="color:' + r.color + '">' + r.name + '</div>' +
-        '<div class="iico itempreview" data-preview-type="' + item.type + '" data-preview-id="' + item.id + '">' +
-          '<span>' + icon + '</span><i></i></div>' +
+        '<div class="irar" style="color:' + cardColor + '">' + r.name + '</div>' + visual +
         '<div class="iname">' + item.name + '</div>' +
         '<div class="idesc">' + (item.desc || '') + '</div>' +
         stats + action + '</div>';
@@ -543,21 +595,24 @@
 
     bind() {
       const on = (id, fn) => { const e = $(id); if (e) e.onclick = () => { MA.Audio.init(); MA.Audio.ui(); fn(); }; };
-      on('playBtnHub', () => {
+      on('playBtnHub', () => this.screen('playmode'));
+      on('playmodeClose', () => this.openHub());
+      on('soloModeBtn', () => {
         if (MA.Profile.equippedWeapons().length === 0) {
           this.toast('⚠️ Compre e equipe uma arma antes de jogar.', 'bad');
-          this.openShop('weapon');
-          return;
+          this.openShop('weapon'); return;
         }
-        if (MA._renderMapList) MA._renderMapList();
-        this.screen('start');
+        if (MA._startSoloAuto) MA._startSoloAuto();
       });
+      on('coopModeBtn', () => MA.MPUI.open('coop'));
+      on('pvpModeBtn', () => MA.MPUI.open('pvp'));
       on('seasonBtn', () => this.openShop('box'));
       on('shopBtn', () => this.openShop());
       on('lootClose', () => this.openShop('box'));
       on('lootAgain', () => { if (this._lastBox) this.openSeasonBox(this._lastBox); });
       on('invBtn', () => this.openInventory());
-      on('mpBtn', () => MA.MPUI.open());
+      on('albumBtn', () => this.openAlbum());
+      on('mpBtn', () => MA.MPUI.open('coop'));
       on('mkBtn', () => { MA.Market.preencherGift(); MA.Market.abrir('comprar'); });
       on('glBtn', () => this.openGoals('daily'));
       on('glClose', () => this.openHub());
@@ -609,12 +664,15 @@
       });
       on('shopClose', () => this.openHub());
       on('invClose', () => this.openHub());
+      on('albumClose', () => this.openHub());
       on('backToHub', () => this.openHub());
 
       document.querySelectorAll('#shop .tab').forEach(t =>
         t.onclick = () => { MA.Audio.ui(); this.openShop(t.dataset.tab); });
       document.querySelectorAll('#inventory .tab').forEach(t =>
         t.onclick = () => { MA.Audio.ui(); this.openInventory(t.dataset.tab); });
+      document.querySelectorAll('#album .tab').forEach(t =>
+        t.onclick = () => { MA.Audio.ui(); this.openAlbum(t.dataset.tab); });
 
       if (MA.Season && !this._seasonTimer) {
         this._seasonTimer = setInterval(() => {

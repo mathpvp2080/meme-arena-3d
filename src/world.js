@@ -12,6 +12,7 @@
 
     build(scene, quality, map) {
       this.scene = scene;
+      this.quality = quality;
       this.map = map = map || (MA.MAPS ? MA.MAPS[0] : null);
       this.obstacles.length = 0; this.lights.length = 0; this.billboards.length = 0;
       this.drips = null; this.monument = null; this._ringHSL = null;
@@ -143,7 +144,7 @@
       const ocfg = (map && map.obstacle) || {};
       const palette = ocfg.palette || [0xff00c8, 0x00ffd5, 0xffe600, 0x6a5bff, 0xff2d6f, 0x39ff88];
       const style = ocfg.style || 'neonbox';
-      const count = ocfg.count || 20;
+      const count = ocfg.count === undefined ? 20 : ocfg.count;
       const spots = [];
       for (let i = 0; i < count; i++) {
         let x = 0, z = 0, ok = false, tries = 0;
@@ -381,6 +382,24 @@
       this.obstacles.push({ x: 0, z: 0, r: 6, h: 10 });
     },
 
+    _mon_city(scene) {
+      /* Ilha central baixa: mantém linhas de visão do PvP sem deixar o
+         cruzamento totalmente exposto. Os prédios e veículos vêm do pack. */
+      const g = new THREE.Group();
+      const curb = new THREE.Mesh(new THREE.CylinderGeometry(4.6, 4.9, .65, 28),
+        new THREE.MeshStandardMaterial({ color: 0xb8c1cc, roughness: .85 }));
+      curb.position.y = .32; curb.castShadow = curb.receiveShadow = true; g.add(curb);
+      const soil = new THREE.Mesh(new THREE.CylinderGeometry(4.05, 4.05, .72, 28),
+        new THREE.MeshStandardMaterial({ color: 0x35543b, roughness: .92 }));
+      soil.position.y = .64; soil.receiveShadow = true; g.add(soil);
+      const sign = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.2, .35),
+        new THREE.MeshStandardMaterial({ color: 0x18233b, emissive: 0xff4fbd, emissiveIntensity: .34, roughness: .4 }));
+      sign.position.y = 1.9; sign.castShadow = true; g.add(sign);
+      scene.add(g);
+      this.monument = { group: g, orb: sign, halo: null };
+      this.obstacles.push({ x: 0, z: 0, r: 4.9, h: 3.1 });
+    },
+
     /* ======================================================= PROPS === */
     /* milharal de verdade: caule + folhas + espiga, desenhado em
        InstancedMesh (milhares de peças, só 3 chamadas de desenho) */
@@ -478,6 +497,18 @@
         ]);
         const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 16, .1, 5, false), mat);
         scene.add(tube);
+      }
+    },
+
+    _props_city(scene, map) {
+      const layout = MA.CITY_LAYOUT || { buildings: [], cover: [] };
+      layout.buildings.forEach(p => this.obstacles.push({ x: p[1], z: p[2], r: 6.2, h: 15 }));
+      layout.cover.forEach(p => this.obstacles.push({
+        x: p[1], z: p[2], r: p[0].indexOf('car_') === 0 ? 3.1 : p[0] === 'bench' ? 2.2 : 2.5, h: 2.6
+      }));
+      if (MA.CityAssets) {
+        MA.CityAssets.populate(scene, this.quality || 'high',
+          () => this.map === map && this.scene === scene);
       }
     },
 

@@ -135,6 +135,29 @@
       color:0x9b65ff, shop:false, boxOnly:true, seasonal:true, season:'67', marketMin:4675, marketMax:149600 }
   ];
 
+  /* Figurinhas são cosméticas: completam o álbum e uma delas aparece como
+     distintivo no lobby/perfil. Não liberam mapas, NPCs nem poder de combate. */
+  const stickerColor = n => '#' + Number(n || 0x6572ff).toString(16).padStart(6, '0');
+  MA.STICKERS = [];
+  MA.MAPS.forEach((m, i) => MA.STICKERS.push({
+    id: 'map-' + m.id, name: m.name, icon: m.icon, kind: 'map', targetId: m.id,
+    rarity: i >= 3 ? 'epic' : i >= 1 ? 'rare' : 'common',
+    price: 350 + i * 180, level: 1, noSell: true, color: stickerColor(m.ring),
+    desc: 'Figurinha de mapa · coleção e distintivo de perfil.'
+  }));
+  MA.MEMES.forEach((m, i) => MA.STICKERS.push({
+    id: 'npc-' + m.id, name: m.name, icon: m.emoji, kind: 'npc', targetId: m.id,
+    rarity: i >= 2 ? 'epic' : 'rare', price: 500 + i * 170, level: 1,
+    noSell: true, color: stickerColor(m.color),
+    desc: 'Figurinha de NPC · coleção e distintivo de perfil.'
+  }));
+  MA.BOSSES.forEach((b, i) => MA.STICKERS.push({
+    id: 'boss-' + b.id, name: b.name, icon: b.emoji, kind: 'boss', targetId: b.id,
+    rarity: i >= 2 ? 'legendary' : 'epic', price: 950 + i * 280, level: 1,
+    noSell: true, color: stickerColor(b.ring),
+    desc: 'Figurinha de chefe · coleção e distintivo de perfil.'
+  }));
+
   /* catálogo unificado usado pela loja e pelo inventário */
   MA.catalog = function () {
     const out = [];
@@ -147,6 +170,7 @@
       }, m, { starter: !!m.starter }));
     });
     MA.ABILITIES.forEach(a => out.push(Object.assign({ type: 'ability' }, a)));
+    MA.STICKERS.forEach(s => out.push(Object.assign({ type: 'sticker' }, s)));
     return out;
   };
 
@@ -154,6 +178,10 @@
     if (type === 'skin')    return MA.SKINS.find(s => s.id === id);
     if (type === 'armor')   return MA.ARMORS.find(a => a.id === id);
     if (type === 'ability') return MA.ABILITIES.find(a => a.id === id);
+    if (type === 'sticker') {
+      const s = MA.STICKERS.find(x => x.id === id);
+      return s ? Object.assign({ type: 'sticker' }, s) : null;
+    }
     if (type === 'weapon') {
       const w = MA.WEAPONS.find(x => x.id === id);
       if (!w) return null;

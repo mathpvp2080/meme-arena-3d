@@ -158,7 +158,7 @@
       const vendaveis = d.inventory.filter(key => {
         const [t, i] = key.split(':');
         const it = MA.findItem(t, i);
-        return it && !it.starter && equipados.indexOf(key) < 0;
+        return it && !it.starter && !it.noSell && equipados.indexOf(key) < 0;
       });
 
       let html = '';
@@ -280,7 +280,7 @@
       const itens = d.inventory.filter(key => {
         const [t, i] = key.split(':');
         const it = MA.findItem(t, i);
-        return it && !it.starter && equipados.indexOf(key) < 0;
+        return it && !it.starter && !it.noSell && equipados.indexOf(key) < 0;
       });
       sel.innerHTML = '<option value="">— só moedas —</option>' + itens.map(key => {
         const [t, i] = key.split(':');

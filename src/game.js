@@ -19,7 +19,8 @@
     score: 0, wave: 0, combo: 1, comboT: 0, kills: 0, waveKills: 0, waveTarget: 0,
     spawnQueue: 0, spawnT: 0, interWave: 0, brainrot: 0, ult: 0,
     bossAlive: null, time: 0, startTime: 0, perks: {}, diff: MA.DIFFS[1],
-    quality: 'high', shots: 0, hits: 0, maxCombo: 1, bossesKilled: 0
+    quality: 'high', shots: 0, hits: 0, maxCombo: 1, bossesKilled: 0,
+    sessionMode: 'solo', npcThreatKills: 0, teamScores: { pink: 0, cyan: 0 }, matchEnded: false
   };
 
   const S = {
@@ -36,7 +37,9 @@
   function mpOn()     { return !!(MA.Multi && MA.Multi.active && MA.Multi.started); }
   function mpHost()   { return mpOn() && MA.Multi.isHost; }
   function mpClient() { return mpOn() && !MA.Multi.isHost; }
-  function mpPvP()    { return mpOn() && MA.Multi.mode === 'pvp'; }
+  function mpPvP()    { return mpOn() && (MA.Multi.mode === 'pvp' || MA.Multi.mode === 'pvpve'); }
+  function mpPurePvP(){ return mpOn() && MA.Multi.mode === 'pvp'; }
+  function mpPvPvE()  { return mpOn() && MA.Multi.mode === 'pvpve'; }
   function mpSend(m)  { if (mpOn()) MA.Multi.send(m); }
 
   function currentSkin()  { return MA.Profile.data ? MA.Profile.equippedSkin()  : MA.SKINS[0]; }
@@ -83,7 +86,7 @@
 
   /* Garante que SEMPRE exista uma tela visível para o jogador. */
   function telaVisivel() {
-    return ['auth', 'hub', 'shop', 'lootbox', 'inventory', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over']
+    return ['auth', 'hub', 'shop', 'lootbox', 'inventory', 'album', 'playmode', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over']
       .some(id => { const e = $(id); return e && !e.classList.contains('hid'); });
   }
   function garantirTela() {
@@ -117,6 +120,7 @@
 
     /* Skins modeladas à mão (.glb): carrega em segundo plano e, se achar
        algum modelo, refaz o boneco e as miniaturas com ele. */
+    if (MA.CityAssets) MA.CityAssets.preload().catch(() => { /* mapa mantém fallback procedural */ });
     if (MA.SkinModels) {
       MA.SkinModels.preload().then(n => {
         if (!n) return;
@@ -255,12 +259,15 @@
 
   /* ============================================================== ONDAS */
   function startWave(n) {
-    if (mpClient() || mpPvP()) { G.wave = n; G.waveTarget = 0; G.spawnQueue = 0; return; }
+    if (mpClient() || mpPurePvP()) { G.wave = n; G.waveTarget = 0; G.spawnQueue = 0; return; }
     G.wave = n;
     G.waveKills = 0;
     G.waveNoHit = true;
     G.interWave = 0;
     const d = G.diff;
+    const threatTier = mpPvPvE() ? Math.floor(G.npcThreatKills / 10) : 0;
+    const threatHp = 1 + threatTier * .16;
+    const threatDmg = 1 + threatTier * .10;
 
     if (n % 5 === 0) {
       const encounter = MA.bossEncounter(n);
@@ -268,8 +275,8 @@
       const def = encounter.def;
       const boss = MA.createEnemy(scene, def, {
         boss: true,
-        hpScale: d.ehp * (1 + extra * .75) * (1 + n * .035),
-        dmgScale: d.edmg * (1 + extra * .3),
+        hpScale: d.ehp * (1 + extra * .75) * (1 + n * .035) * threatHp,
+        dmgScale: d.edmg * (1 + extra * .3) * threatDmg,
         spdScale: d.espd
       });
       const sp = MA.World.spawnPoint(player.pos, 34);
@@ -297,19 +304,22 @@
   }
 
   function spawnTick(dt) {
-    if (mpClient() || mpPvP()) return;
+    if (mpClient() || mpPurePvP()) return;
     if (G.spawnQueue <= 0) return;
     G.spawnT -= dt;
     if (G.spawnT > 0) return;
-    G.spawnT = clamp((1.45 - G.wave * .055) * G.diff.spawn, .22, 1.6);
+    const threatTier = mpPvPvE() ? Math.floor(G.npcThreatKills / 10) : 0;
+    const threatHp = 1 + threatTier * .16;
+    const threatDmg = 1 + threatTier * .10;
+    G.spawnT = clamp((1.45 - G.wave * .055) * G.diff.spawn / (1 + threatTier * .05), .22, 1.6);
 
     const pool = MA.MEMES.filter(m => m.tier <= Math.ceil(G.wave / 1.6));
     const def = pick(pool.length ? pool : [MA.MEMES[0]]);
     const eliteChance = G.wave >= 4 ? clamp(.04 + G.wave * .012, 0, .3) : 0;
     const e = MA.createEnemy(scene, def, {
       elite: Math.random() < eliteChance,
-      hpScale: G.diff.ehp * (1 + (G.wave - 1) * .16),
-      dmgScale: G.diff.edmg * (1 + (G.wave - 1) * .05),
+      hpScale: G.diff.ehp * (1 + (G.wave - 1) * .16) * threatHp,
+      dmgScale: G.diff.edmg * (1 + (G.wave - 1) * .05) * threatDmg,
       spdScale: G.diff.espd * (1 + (G.wave - 1) * .012)
     });
     const sp = MA.World.spawnPoint(player.pos, 24);
@@ -331,7 +341,10 @@
       const sp = MA.World.spawnPoint(player.pos, 8);
       pickups.push(MA.createPickup(scene, sp.x, sp.z, weightedPickup()));
     }
-    setTimeout(offerPerks, 1300);
+    /* Em rede ninguém pausa a sala para uma escolha só do anfitrião. A próxima
+       onda começa para todos; no Solo o sistema de perks continua intacto. */
+    if (mpOn()) setTimeout(() => startWave(G.wave + 1), 1300);
+    else setTimeout(offerPerks, 1300);
   }
 
   /* ============================================================== PERKS */
@@ -521,6 +534,15 @@
     const pts = Math.round(e.pts * Math.min(G.combo, 25) * G.diff.pts * player.mScore);
     G.score += pts;
     G.kills++; G.waveKills++;
+    if (mpPvPvE() && mpHost()) {
+      G.npcThreatKills++;
+      MA.Multi.npcKills = G.npcThreatKills;
+      if (G.npcThreatKills % 10 === 0) {
+        const tier = Math.floor(G.npcThreatKills / 10);
+        MA.UI.banner('AMEAÇA NPC +' + tier, 'os memes estão ficando mais fortes', 1800, 'boss');
+        mpSend({ t: 'threat', kills: G.npcThreatKills, tier });
+      }
+    }
     if (MA.Goals) {
       MA.Goals.track('kills', 1);
       if (e.elite) MA.Goals.track('elite', 1);
@@ -678,6 +700,7 @@
     for (let i = 0; i < peers.length; i++) {
       const q = peers[i];
       if (q.dead || !q.obj) continue;
+      if (q.team && MA.Multi.me.team && q.team === MA.Multi.me.team) continue;
       const d = Math.hypot(p.x - q.pos.x, p.z - q.pos.z);
       if (d < 1.3 && p.y > .2 && p.y < 3.2) {
         mpSend({ t: 'pvp', to: q.id, d: Math.round(b.dmg) });
@@ -690,28 +713,64 @@
     return false;
   }
 
+  const PVP_TEAM_TARGET = 20;
+  const seenFrags = new Set();
   let lastAttacker = null;
+  function teamName(team) { return team === 'pink' ? 'Equipe Rosa' : 'Equipe Ciano'; }
+  function updateTeamScoreHUD() {
+    const el = $('teamScore');
+    if (!el) return;
+    el.classList.toggle('hid', !mpPvP());
+    if (mpPvP()) el.innerHTML = '<b>ROSA ' + (G.teamScores.pink || 0) + '</b><span>×</span><b>' +
+      (G.teamScores.cyan || 0) + ' CIANO</b>';
+  }
+  function teamSpawn() {
+    const me = MA.Multi && MA.Multi.me;
+    const hash = String(me && me.id || '').split('').reduce((n, ch) => n + ch.charCodeAt(0), 0);
+    const lane = (hash % 5 - 2) * 7;
+    return V3().set(me && me.team === 'pink' ? -38 : 38, 0, lane);
+  }
   function onPvpDamage(m) {
     if (!mpPvP()) return;
-    if (m.frag) {                        // alguém caiu: foi abate meu?
+    if (m.frag) {
+      const fragId = m.fragId || (m.from + ':' + m.by + ':' + m.name);
+      if (seenFrags.has(fragId)) return;
+      seenFrags.add(fragId);
+      const killer = m.by === MA.Multi.me.id ? MA.Multi.me : MA.Multi.peerList.find(p => p.id === m.by);
+      const team = (killer && killer.team) || m.team;
+      if (!team || G.matchEnded) return;
+      G.teamScores[team] = (G.teamScores[team] || 0) + 1;
+      const total = G.teamScores[team];
+      updateTeamScoreHUD();
       if (m.by === MA.Multi.me.id) {
         G.pvpKills = (G.pvpKills || 0) + 1;
         G.score += 250;
-        MA.UI.kill('Abate em ' + (m.name || 'jogador'), '💀', '#ff3d7f');
-        MA.UI.float('ABATE! (' + G.pvpKills + '/10)', '#ff3d7f', 34);
+        MA.UI.kill('Abate em ' + (m.name || 'jogador'), '💀', team === 'pink' ? '#ff4fcf' : '#36dfff');
         MA.Audio.kill();
-        if (G.pvpKills >= 10) {
-          if (MA.Goals) MA.Goals.track('pvpwins', 1);
-          mpSend({ t: 'over', winner: MA.Multi.me.name });
-          MA.UI.banner('VITÓRIA', 'Você venceu o PvP!', 3200, 'boss');
-          setTimeout(() => { if (G.running) toMenu(); }, 3400);
-        }
+      }
+      MA.UI.float(teamName(team) + ' ' + total + '/' + PVP_TEAM_TARGET, team === 'pink' ? '#ff4fcf' : '#36dfff', 30);
+      if (total >= PVP_TEAM_TARGET && mpHost() && !G.matchEnded) {
+        G.matchEnded = true;
+        const result = { winner: teamName(team), winnerTeam: team };
+        mpSend(Object.assign({ t: 'over' }, result));
+        finishCompetitive(result);
       }
       return;
     }
     if (m.to !== MA.Multi.me.id || G.over) return;
+    const attacker = MA.Multi.peerList.find(p => p.id === m.from);
+    if (attacker && attacker.team && attacker.team === MA.Multi.me.team) return;
     lastAttacker = m.from;
     hurtPlayer(m.d, null, null);
+  }
+
+  function finishCompetitive(d) {
+    if (!d || G.over) return;
+    G.matchEnded = true;
+    const won = d.winnerTeam && MA.Multi.me && d.winnerTeam === MA.Multi.me.team;
+    if (won && MA.Goals) MA.Goals.track('pvpwins', 1);
+    MA.UI.banner(won ? 'VITÓRIA' : 'FIM', (d.winner || 'Uma equipe') + ' venceu!', 3200, 'boss');
+    setTimeout(() => { if (G.running) toMenu(); }, 3400);
   }
 
   /* ------------------------------------------- abatido e renascimento */
@@ -747,9 +806,13 @@
     G.combo = 1;
     MA.FX.burst(player.pos.clone().setY(1.3), 0xff2d6f, 50, 12, .4);
     MA.UI.banner('VOCÊ CAIU', 'Renascendo em ' + downT + 's…', 2200, 'boss');
-    mpSend({ t: 'p', x: player.pos.x, y: 0, z: player.pos.z, r: 0, h: 0, hm: player.hpMax, d: true, s: G.score | 0, k: G.kills | 0 });
+    mpSend({ t: 'p', x: player.pos.x, y: 0, z: player.pos.z, r: 0, h: 0, hm: player.maxhp, d: true, s: G.score | 0, k: G.kills | 0 });
     if (mpPvP() && lastAttacker) {
-      mpSend({ t: 'pvp', frag: true, by: lastAttacker, name: MA.Multi.me.name });
+      const killer = MA.Multi.peerList.find(p => p.id === lastAttacker);
+      const frag = { t: 'pvp', frag: true, fragId: MA.Multi.me.id + ':' + Date.now(), by: lastAttacker,
+        team: killer && killer.team, name: MA.Multi.me.name };
+      onPvpDamage(Object.assign({ from: MA.Multi.me.id }, frag));
+      mpSend(frag);
       lastAttacker = null;
     }
     /* eu era o último de pé? então foi o grupo inteiro */
@@ -763,11 +826,11 @@
     downT -= dt;
     if (downT > 0) return;
     downT = 0;
-    const sp = MA.World.spawnPoint(V3().set(0, 0, 0), 20);
+    const sp = mpPvP() ? teamSpawn() : MA.World.spawnPoint(V3().set(0, 0, 0), 20);
     player.obj.position.set(sp.x, 0, sp.z);
     player.pos.set(sp.x, 0, sp.z);
     player.vel.set(0, 0, 0);
-    player.hp = Math.max(1, Math.round(player.hpMax * (mpPvP() ? 1 : .6)));
+    player.hp = Math.max(1, Math.round(player.maxhp * (mpPvP() ? 1 : .6)));
     player.invuln = 2.2;
     player.obj.visible = true;
     MA.UI.banner('DE VOLTA', 'Vai lá!', 1400);
@@ -779,13 +842,24 @@
     const m = MA.Multi;
     if (MA.Goals) MA.Goals.track('mpgames', 1);
     setMap(m.map);
-    const d = MA.DIFFS.filter(x => x.id === m.diff)[0];
-    if (d) { G.diff = d; MA.store.set('diff', d.id); }
+    G.sessionMode = m.mode;
+    const count = 1 + m.peerList.length;
+    G.diff = m.mode === 'coop' ? MA.coopDiff(count) : Object.assign({}, MA.DIFFS[1], { id: 'pvpve-auto', name: 'AMEAÇA DINÂMICA' });
     startGame();
-    if (m.mode === 'pvp') {
-      G.wave = 0; G.spawnQueue = 0; G.waveTarget = 0;
-      clearAll();
-      MA.UI.banner('PVP', 'Primeiro a 10 abates vence!', 2800, 'boss');
+    if (m.mode === 'pvp' || m.mode === 'pvpve') {
+      /* Competitivo justo: todos entram com a mesma vida, proteção, arma e
+         multiplicadores. Compras cosméticas não alteram o combate. */
+      player.hp = player.maxhp = 140;
+      player.armor = 1; player.mDmg = 1; player.mRate = 1; player.mSpeed = 1;
+      player.crit = .05; player.ability = ''; player.allowedWeapons = [0]; player.weapon = 0;
+      MA.syncWeaponModel(player);
+      const teamPos = teamSpawn();
+      player.pos.copy(teamPos); player.obj.position.copy(teamPos);
+      if (m.mode === 'pvp') {
+        G.wave = 0; G.spawnQueue = 0; G.waveTarget = 0; clearAll();
+      }
+      MA.UI.banner(m.mode === 'pvp' ? 'PVP PURO' : 'PVPVE',
+        teamName(m.me.team) + ' · primeiro time a ' + PVP_TEAM_TARGET + ' abates', 3000, 'boss');
     }
     downT = 0;
   }
@@ -802,6 +876,10 @@
     m.on('hit', onRemoteHit);
     m.on('ekill', onEnemyKill);
     m.on('pvp', onPvpDamage);
+    m.on('threat', d => {
+      G.npcThreatKills = Math.max(G.npcThreatKills, Number(d.kills) || 0);
+      if (mpClient()) MA.UI.banner('AMEAÇA NPC +' + (d.tier || 1), 'os memes estão ficando mais fortes', 1800, 'boss');
+    });
     m.on('wave', d => { if (mpClient()) MA.UI.banner('ONDA ' + d.n, 'O grupo avança!', 2000); });
     /* o anfitrião caiu e eu assumi: herdo o comando dos inimigos */
     m.on('hostchange', () => { if (G.running && mpOn()) assumirComandoDosInimigos(); });
@@ -814,6 +892,7 @@
         setTimeout(() => gameOver(), 900);
         return;
       }
+      if (d && d.winnerTeam) { finishCompetitive(d); return; }
       MA.UI.banner('FIM', (d.winner || '') + ' venceu!', 3200, 'boss');
       setTimeout(() => { if (G.running) toMenu(); }, 3400);
     });
@@ -1192,7 +1271,7 @@
     spawnTick(dt);
 
     /* fim de onda */
-    if (!mpClient() && !mpPvP() && !G.over && !G.choosing && G.spawnQueue <= 0 && enemies.length === 0) {
+    if (!mpClient() && !mpPurePvP() && !G.over && !G.choosing && G.spawnQueue <= 0 && enemies.length === 0) {
       if (G.interWave <= 0) { G.interWave = 99; waveCleared(); }
     }
 
@@ -1627,8 +1706,11 @@
       score: 0, wave: 0, combo: 1, comboT: 0, kills: 0, waveKills: 0, waveTarget: 0,
       spawnQueue: 0, spawnT: 0, interWave: 0, brainrot: 0, ult: 0, bossAlive: null,
       time: 0, startTime: performance.now(), perks: {}, over: false, paused: false,
-      choosing: false, shots: 0, hits: 0, maxCombo: 1, bossesKilled: 0
+      choosing: false, shots: 0, hits: 0, maxCombo: 1, bossesKilled: 0,
+      npcThreatKills: 0, teamScores: { pink: 0, cyan: 0 }, matchEnded: false, pvpKills: 0
     });
+    seenFrags.clear();
+    updateTeamScoreHUD();
     yaw = 0; pitch = -.16; shake = 0;
     MA.UI.el.vig.style.opacity = '0';
     MA.UI.updatePerkBar(G.perks);
@@ -1639,7 +1721,7 @@
 
   function startGame() {
     MA.Audio.init(); MA.Audio.resume();
-    ['start', 'over', 'pausebox', 'settings', 'board', 'perkScreen', 'help', 'auth', 'hub', 'shop', 'lootbox', 'inventory', 'multi']
+    ['start', 'over', 'pausebox', 'settings', 'board', 'perkScreen', 'help', 'auth', 'hub', 'shop', 'lootbox', 'inventory', 'album', 'playmode', 'multi']
       .forEach(id => $(id).classList.add('hid'));
     $('hud').classList.remove('hid');
     if (isTouch) $('touch').classList.remove('hid');
@@ -1647,6 +1729,19 @@
     G.running = true;
     if (!isTouch) requestLock();
   }
+
+  function startSoloAuto() {
+    if (!MA.Profile.data) return;
+    if (MA.Multi && MA.Multi.active) MA.Multi.leave();
+    G.sessionMode = 'solo';
+    G.diff = MA.diffForLevel(MA.Profile.data.level);
+    MA.store.set('diff', G.diff.id);
+    const previous = MA.store.get('map', '');
+    const chosen = MA.randomMap('solo', previous);
+    setMap(chosen.id);
+    startGame();
+  }
+  MA._startSoloAuto = startSoloAuto;
 
   function gameOver() {
     if (G.over) return;
@@ -1848,7 +1943,7 @@
         return;
       }
       if (!G.running) {
-        if (e.code === 'Enter' && !$('start').classList.contains('hid')) startGame();
+        if (e.code === 'Enter' && !$('start').classList.contains('hid')) startSoloAuto();
         return;
       }
       if (e.code === 'KeyQ') cycleWeapon(1);
@@ -1992,9 +2087,9 @@
 
     /* botões */
     const on = (id, fn) => { const e = $(id); if (e) e.onclick = () => { MA.Audio.init(); MA.Audio.ui(); fn(); }; };
-    on('playBtn', startGame);
+    on('playBtn', startSoloAuto);
     on('startBack', () => { $('start').classList.add('hid'); MA.MetaUI.openHub(); });
-    on('againBtn', startGame);
+    on('againBtn', () => mpOn() ? startGame() : startSoloAuto());
     on('menuBtn', toMenu);
     on('quitBtn', toMenu);
     on('resumeBtn', () => togglePause(false));

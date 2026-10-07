@@ -17,6 +17,7 @@ const run = (rel, context) => vm.runInContext(read(rel), context, { filename: re
 const contentWindow = { MA: {} };
 const contentContext = vm.createContext({ window: contentWindow, console, Date, Math, setTimeout, clearTimeout });
 run('src/data.js', contentContext);
+run('src/maps.js', contentContext);
 run('src/items.js', contentContext);
 run('src/season.js', contentContext);
 run('src/goals.js', contentContext);
@@ -28,8 +29,27 @@ check('catálogo mantém 14 skins, 9 armaduras, 9 armas e 3 habilidades', () => 
   assert.equal(MA.WEAPONS.length, 9);
   assert.equal(MA.ABILITIES.length, 3);
 });
+check('mapas aleatórios incluem a Cidade do Caos somente no competitivo', () => {
+  assert.equal(MA.MAPS.length, 6);
+  const city = MA.mapById('cidade');
+  assert.deepEqual(Array.from(city.modes), ['pvp', 'pvpve']);
+  assert.ok(!MA.mapsForMode('solo').some(m => m.id === 'cidade'));
+  assert.ok(MA.mapsForMode('pvp').some(m => m.id === 'cidade'));
+  assert.equal(MA.MAPS.every(m => MA.mapUnlocked(m, 1)), true, 'mapa ainda bloqueado por nível');
+});
+check('álbum cobre todos os mapas, NPCs e chefes sem bônus de combate', () => {
+  assert.equal(MA.STICKERS.length, MA.MAPS.length + MA.MEMES.length + MA.BOSSES.length);
+  assert.equal(MA.STICKERS.filter(s => s.kind === 'map').length, MA.MAPS.length);
+  assert.equal(MA.STICKERS.filter(s => s.kind === 'npc').length, MA.MEMES.length);
+  assert.equal(MA.STICKERS.filter(s => s.kind === 'boss').length, MA.BOSSES.length);
+  for (const sticker of MA.STICKERS) {
+    assert.equal(sticker.noSell, true);
+    for (const key of ['hp', 'dr', 'dmg', 'speed', 'armor']) assert.equal(sticker[key], undefined, `${sticker.id} altera ${key}`);
+    assert.ok(MA.findItem('sticker', sticker.id), `figurinha ausente no catálogo: ${sticker.id}`);
+  }
+});
 check('IDs são únicos dentro de cada categoria', () => {
-  for (const [name, list] of Object.entries({ skins: MA.SKINS, armors: MA.ARMORS, weapons: MA.WEAPONS, abilities: MA.ABILITIES, memes: MA.MEMES, bosses: MA.BOSSES })) {
+  for (const [name, list] of Object.entries({ skins: MA.SKINS, armors: MA.ARMORS, weapons: MA.WEAPONS, abilities: MA.ABILITIES, stickers: MA.STICKERS, memes: MA.MEMES, bosses: MA.BOSSES })) {
     assert.equal(new Set(list.map(x => x.id)).size, list.length, `IDs duplicados em ${name}`);
   }
 });
@@ -97,6 +117,28 @@ check('todos os assets locais do HTML existem', () => {
     if (/^(?:https?:|data:|mailto:)/.test(ref) || ref === './') continue;
     assert.ok(fs.existsSync(path.join(root, ref)), `arquivo ausente: ${ref}`);
   }
+});
+check('JOGAR roteia Solo, Coop e equipes com capacidades válidas', () => {
+  const meta = read('src/metaui.js');
+  const multi = read('src/multi.js');
+  const schema = read('supabase/schema_multiplayer.sql');
+  assert.match(index, /id="playmode"/);
+  for (const id of ['soloModeBtn', 'coopModeBtn', 'pvpModeBtn']) assert.match(index, new RegExp(`id="${id}"`));
+  for (const mode of ['data-mode="coop"', 'data-mode="pvp"', 'data-mode="pvpve"']) assert.ok(index.includes(mode), `modo ausente: ${mode}`);
+  assert.match(meta, /MA\._startSoloAuto\(\)/);
+  assert.match(multi, /return competitive\(mode \|\| this\.mode\) \? 12 : 6/);
+  assert.match(multi, /t\.pink >= 2 && t\.cyan >= 2/);
+  assert.match(schema, /mode in \('coop','pvp','pvpve'\)/);
+  assert.match(schema, /players between 1 and 12/);
+});
+check('dificuldade automática usa nível, tamanho do Coop e ameaça PvPvE', () => {
+  const game = read('src/game.js');
+  assert.equal(MA.diffForLevel(1).id, 'easy');
+  assert.equal(MA.diffForLevel(20).id, 'hard');
+  assert.ok(MA.coopDiff(6).ehp > MA.coopDiff(2).ehp);
+  assert.match(game, /G\.npcThreatKills \/ 10/);
+  assert.match(game, /player\.hp = player\.maxhp = 140/);
+  assert.match(game, /player\.allowedWeapons = \[0\]/);
 });
 check('modelos 3D registrados apontam para arquivos existentes', () => {
   run('src/skinmodels.js', contentContext);
@@ -214,6 +256,22 @@ check('modelos CC BY têm atribuição visível e registro permanente', () => {
   assert.match(index, /CalnnHotCake/);
   assert.match(index, /徹水/);
 });
+check('mapa urbano KayKit preserva modelos, licença CC0 e crédito', () => {
+  const notices = read('ATTRIBUTIONS.md');
+  const city = read('src/cityassets.js');
+  const names = ['building_A', 'building_B', 'building_C', 'building_D', 'building_E',
+    'road_straight', 'road_junction', 'streetlight', 'car_sedan', 'car_taxi', 'car_police'];
+  for (const name of names) {
+    assert.ok(city.includes(`'${name}'`), `ativo urbano não usado: ${name}`);
+    assert.ok(fs.existsSync(path.join(root, `assets/kaykit-city/${name}.gltf`)), `gltf ausente: ${name}`);
+    assert.ok(fs.existsSync(path.join(root, `assets/kaykit-city/${name}.bin`)), `bin ausente: ${name}`);
+  }
+  assert.ok(fs.existsSync(path.join(root, 'assets/kaykit-city/citybits_texture.png')));
+  assert.match(read('assets/kaykit-city/LICENSE.txt'), /Creative Commons Zero, CC0/);
+  for (const credit of ['Kay Lousberg', 'City Builder Bits', 'CC0 1.0', 'KayKit-Game-Assets']) {
+    assert.ok(index.includes(credit) || notices.includes(credit), `crédito KayKit ausente: ${credit}`);
+  }
+});
 check('entrada resiste a máquina sem GPU e sem rede (certificação 10.1.2)', () => {
   const jogo = read('src/game.js');
   const rede = read('src/net.js');
@@ -239,7 +297,7 @@ check('service worker e manifesto incluem somente assets existentes', () => {
   const indexVersions = new Set([...read('index.html').matchAll(/\?v=(\d+)/g)].map(m => m[1]));
   assert.equal(indexVersions.size, 1, `index.html mistura versões de cache: ${[...indexVersions].join(', ')}`);
   assert.equal([...indexVersions][0], swVersion[1], 'index.html e service worker em versões diferentes');
-  for (const rel of ['termos.html', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'assets/skins/tung.glb', 'assets/skins/bombardiro.glb', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
+  for (const rel of ['termos.html', 'assets/splash-season67.jpg', 'assets/hub-season67.jpg', 'assets/screens/00-season67.jpg', 'assets/skins/doge.glb', 'assets/skins/tralalero.glb', 'assets/skins/tung.glb', 'assets/skins/bombardiro.glb', 'assets/kaykit-city/citybits_texture.png', 'src/cityassets.js', 'src/season.js']) assert.ok(sw.includes(rel), `${rel} fora do cache`);
   for (const [, asset] of sw.matchAll(/'\.\/([^']*)'/g)) assert.ok(fs.existsSync(path.join(root, asset || '.')), `cache aponta para arquivo ausente: ${asset}`);
   const manifest = JSON.parse(read('manifest.webmanifest'));
   for (const asset of [...manifest.icons, ...manifest.screenshots]) assert.ok(fs.existsSync(path.join(root, asset.src)), `manifesto aponta para arquivo ausente: ${asset.src}`);

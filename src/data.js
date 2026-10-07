@@ -104,6 +104,27 @@
     { id:'feed', name:'FIM DO FEED', icon:'🕳️', ehp:4.60, edmg:3.60, espd:1.60, spawn:0.36, pts:4.5, desc:'Não foi feito pra ser vencido. Prove o contrário.' }
   ];
 
+  /* Solo não pede mais uma dificuldade manual: o nível da conta escolhe a
+     faixa. No Coop, mais jogadores aumentam a resistência da horda. */
+  MA.diffForLevel = level => {
+    const lv = Math.max(1, Math.floor(Number(level) || 1));
+    const id = lv <= 4 ? 'easy' : lv <= 12 ? 'norm' : lv <= 24 ? 'hard' : lv <= 39 ? 'brain' : 'feed';
+    return MA.DIFFS.find(d => d.id === id) || MA.DIFFS[0];
+  };
+  MA.coopDiff = players => {
+    const n = Math.max(2, Math.min(6, Math.floor(Number(players) || 2)));
+    const base = MA.DIFFS.find(d => d.id === 'norm');
+    const extra = n - 2;
+    return Object.assign({}, base, {
+      id: 'coop-auto', name: 'COOP ' + n + 'P', icon: '🤝',
+      ehp: base.ehp * (1 + extra * .28),
+      edmg: base.edmg * (1 + extra * .08),
+      spawn: Math.max(.55, base.spawn * (1 - extra * .07)),
+      pts: base.pts * (1 + extra * .12),
+      desc: 'Escala automática para ' + n + ' jogadores.'
+    });
+  };
+
   MA.TAUNTS = ['NICE!','DELETADO','BANIDO','RATIO','L + BOZO','GG EZ','REKT','CANCELADO','SKILL ISSUE','NO CAP','COOKED','AURA +100','FANUM TAXED','UNSUBSCRIBED'];
   MA.WAVE_LINES = ['o feed tá carregando...','eles vieram do For You','novos NPCs detectados','brainrot incoming','o algoritmo recomendou você','mais conteúdo sem contexto'];
 

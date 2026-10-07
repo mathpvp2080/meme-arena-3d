@@ -170,6 +170,9 @@ Three.js é distribuído sob a licença MIT (© three.js authors).
   sazonais. As armaduras dão **+HP** e **redução de dano**, e aparecem no boneco 3D.
 - **Inventário** para equipar (até 3 armas ao mesmo tempo) e **vender** itens
   por 50% do preço.
+- **Figurinhas cosméticas** de todos os mapas, NPCs e chefes na loja, com álbum
+  de coleção e um distintivo equipável visível no perfil e no lobby. Figurinhas
+  não aumentam atributos e não liberam mapas ou matchmaking.
 - **Multiplayer** destrava no **nível 5** (chega na Etapa 3).
 
 > As armas não são mais liberadas por onda: agora você as **compra e equipa**.
@@ -183,26 +186,38 @@ Three.js é distribuído sob a licença MIT (© three.js authors).
   Eles se alternam a cada cinco ondas e ficam mais fortes a cada nova rotação.
 - **Fallback procedural** mantém cada inimigo e chefe jogável se o carregamento
   externo falhar; barra de vida, brilho, colisão e IA permanecem separados do visual.
-- **5 mapas** que mudam céu, chão, névoa, luzes, obstáculos e cartazes:
+- **6 mapas** que mudam céu, chão, névoa, luzes, obstáculos e cartazes. O mapa
+  é sorteado a cada nova partida e não depende de compra ou nível:
 
-| Mapa | Libera no nível |
+| Mapa | Modos |
 |---|---|
-| 6⁷ Arena 67 | 1 |
-| 🌽 Planície de Ohio | 4 |
-| 🚽 Esgoto Skibidi | 9 |
-| 🦈 Praia Italiana | 15 |
-| 🧠 Servidor do Algoritmo | 22 |
+| 6⁷ Arena 67 | Solo, Coop e competitivo |
+| 🌽 Planície de Ohio | Solo, Coop e competitivo |
+| 🚽 Esgoto Skibidi | Solo, Coop e competitivo |
+| 🦈 Praia Italiana | Solo, Coop e competitivo |
+| 🧠 Servidor do Algoritmo | Solo, Coop e competitivo |
+| 🏙️ Cidade do Caos | PvP e PvPvE |
+
+A **Cidade do Caos** usa uma seleção da versão gratuita do **KayKit City Builder
+Bits 1.0**, em CC0 1.0: ruas, prédios, carros, iluminação e mobiliário urbano.
+A licença e a fonte estão preservadas em `assets/kaykit-city/` e em
+[`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
 
 ## 🌐 Multiplayer (Etapa 3 — parte 1)
 
-Libera no **nível 5**. No hub, botão **🌐 MULTIPLAYER**.
+Libera no **nível 5**. O botão **JOGAR** abre uma escolha clara entre Solo,
+Coop e equipes; o botão **GRUPO** continua sendo um atalho para as salas.
 
-- **CO-OP** — até 4 jogadores contra as ondas de memes. O anfitrião comanda os
-  inimigos e todo mundo vê exatamente os mesmos monstros, no mesmo lugar.
-- **PVP** — todos contra todos em tempo real; primeiro a 10 abates vence.
+- **Solo PvE** — um jogador contra as hordas; dificuldade automática pelo nível da conta.
+- **Coop PvE** — 2–6 jogadores na mesma equipe; resistência e ritmo das hordas
+  escalam pelo número de jogadores e pelas ondas.
+- **PvP puro** — Equipe Rosa contra Equipe Ciano, 2–6 por equipe, sem NPCs.
+- **PvPvE** — as mesmas equipes com NPCs cuja ameaça cresce a cada 10 abates de NPC.
+- O competitivo normaliza vida, proteção, multiplicadores e arma para não virar
+  pay-to-win; vence a primeira equipe a chegar a 20 abates.
 - Sala com **código de 4 letras** para chamar os amigos, mais a lista de
-  **salas abertas** para entrar em um clique.
-- Quem cai renasce sozinho (7s no co-op, 4s no PvP).
+  **salas abertas** para entrar em um clique e migração automática de anfitrião.
+- Quem cai renasce sozinho (7s no Coop, 4s no competitivo).
 
 Para funcionar pela internet é preciso rodar `supabase/schema_multiplayer.sql`
 no SQL Editor do Supabase. Sem isso, o multiplayer ainda funciona em **modo

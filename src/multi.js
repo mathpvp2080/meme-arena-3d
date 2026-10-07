@@ -26,6 +26,7 @@
     return s;
   }
   const now = () => performance.now();
+  const competitive = mode => mode === 'pvp' || mode === 'pvpve';
 
   /* =================================================== transporte LOCAL */
   function LocalTransport(code) {
@@ -69,9 +70,9 @@
   const Multi = {
     active: false,
     code: null,
-    mode: 'coop',          // 'coop' | 'pvp'
+    mode: 'coop',          // 'coop' | 'pvp' | 'pvpve'
     map: 'arena',
-    diff: 'normal',
+    diff: 'auto',
     isHost: false,
     started: false,
     me: null,              // { id, name, skin, armor, level }
@@ -90,6 +91,20 @@
 
     get peerList() { return Object.keys(this.peers).map(k => this.peers[k]); },
     get count() { return 1 + this.peerList.length; },
+
+    maxPlayers(mode) { return competitive(mode || this.mode) ? 12 : 6; },
+    teamCounts() {
+      const all = [this.me].concat(this.peerList).filter(Boolean);
+      return {
+        pink: all.filter(p => p.team === 'pink').length,
+        cyan: all.filter(p => p.team === 'cyan').length
+      };
+    },
+    canStart() {
+      if (this.mode === 'coop') return this.count >= 2;
+      const t = this.teamCounts();
+      return t.pink >= 2 && t.cyan >= 2;
+    },
 
     minLevel() { return (MA.CONFIG && MA.CONFIG.MULTIPLAYER_LEVEL) || 5; },
     unlocked() {
@@ -112,7 +127,8 @@
         uid: (MA.Net.user && MA.Net.user.id) || null,
         name: p.username, level: p.level,
         skin: (p.equipped && p.equipped.skin) || 'chill',
-        armor: (p.equipped && p.equipped.armor) || 'hoodie'
+        armor: (p.equipped && p.equipped.armor) || 'hoodie',
+        sticker: (p.equipped && p.equipped.sticker) || '', team: null
       };
     },
 
@@ -123,7 +139,8 @@
         try {
           await MA.Net.impl.sb.from('rooms').insert({
             code: this.code, host_id: this.me.uid, host_name: this.me.name,
-            mode, map, diff, players: 1, state: 'lobby'
+            mode: this.mode, map: this.map, diff: this.diff, players: 1,
+            max_players: this.maxPlayers(), state: 'lobby'
           });
         } catch (e) { console.warn('[MP] não deu pra anunciar a sala', e); }
       }
@@ -133,7 +150,7 @@
     async joinRoom(code) {
       code = String(code || '').trim().toUpperCase();
       if (code.length !== 4) return { error: 'O código tem 4 letras.' };
-      let mode = 'coop', map = 'arena', diff = 'normal';
+      let mode = 'coop', map = 'arena', diff = 'auto';
       if (MA.Net.online && MA.Net.impl.sb) {
         /* o cadastro da sala é só um atalho: se a tabela não existir ou a
            consulta falhar, dá pra entrar do mesmo jeito pelo código. */
@@ -155,7 +172,9 @@
       this.leave();
       this.me = this._identity();
       this.code = code; this.isHost = host;
-      this.mode = mode || 'coop'; this.map = map || 'arena'; this.diff = diff || 'normal';
+      this.mode = ['coop', 'pvp', 'pvpve'].indexOf(mode) >= 0 ? mode : 'coop';
+      this.map = map || 'arena'; this.diff = diff || 'auto';
+      this.me.team = host && competitive(this.mode) ? 'pink' : null;
       this.peers = {}; this.started = false; this.lastError = null;
 
       const sb = MA.Net.online && MA.Net.impl.sb;
@@ -227,7 +246,7 @@
         MA.Net.impl.sb.from('rooms').upsert({
           code: this.code, host_id: this.me.uid, host_name: this.me.name,
           mode: this.mode, map: this.map, diff: this.diff,
-          players: this.count, state: this.started ? 'playing' : 'lobby'
+          players: this.count, max_players: this.maxPlayers(), state: this.started ? 'playing' : 'lobby'
         }).then(() => {}, () => {});
       }
     },
@@ -243,9 +262,22 @@
             id: m.from, pos: new THREE.Vector3(0, 0, 0), yaw: 0,
             hp: 100, hpMax: 100, score: 0, kills: 0, dead: false, obj: null
           });
+          const oldTeam = p.team;
           p.name = m.name; p.skin = m.skin; p.armor = m.armor; p.level = m.level;
+          p.sticker = m.sticker || ''; p.team = m.team || p.team || null;
           p.last = Date.now();
           if (m.t === 'hello') {
+            if (this.isHost && this.count > this.maxPlayers()) {
+              this.send({ t: 'reject', to: m.from, reason: 'Sala cheia.' });
+              delete this.peers[m.from];
+              break;
+            }
+            if (this.isHost && competitive(this.mode) && !p.team) {
+              const teams = this.teamCounts();
+              p.team = teams.pink <= teams.cyan && teams.pink < 6 ? 'pink' : 'cyan';
+            }
+            if (this.isHost) this.send({ t: 'room', to: m.from, mode: this.mode, map: this.map,
+              diff: this.diff, team: p.team, maxPlayers: this.maxPlayers() });
             this.send({ t: 'ping', ...this.me, host: this.isHost, started: this.started });
             /* partida em andamento: convida SÓ quem acabou de chegar.
                Sem o 'to', todo mundo recebia 'start' de novo e a partida
@@ -256,8 +288,8 @@
           }
           /* o anfitrião se identifica no ping: usado na migração de host */
           if (m.host) { p.host = true; this._hostId = m.from; } else { p.host = false; }
+          if (isNew || oldTeam !== p.team) this.emit('peers');
           if (isNew) {
-            this.emit('peers');
             if (MA.UI && MA.UI.notice) MA.UI.notice('🎮 <b>' + m.name + '</b> entrou na sala');
           }
           break;
@@ -270,6 +302,22 @@
             this._removeAvatar(p); delete this.peers[m.from]; this.emit('peers');
             if (eraHost) this._migrarHost();
           }
+          break;
+        }
+        case 'room': {
+          if (m.to && m.to !== this.me.id) break;
+          this.mode = ['coop', 'pvp', 'pvpve'].indexOf(m.mode) >= 0 ? m.mode : 'coop';
+          this.map = m.map || this.map; this.diff = m.diff || 'auto';
+          this.me.team = competitive(this.mode) ? m.team : null;
+          this.send({ t: 'ping', ...this.me, host: this.isHost, started: this.started });
+          this.emit('peers'); this.emit('room', m);
+          break;
+        }
+        case 'reject': {
+          if (m.to && m.to !== this.me.id) break;
+          this.lastError = m.reason || 'Não foi possível entrar na sala.';
+          this.emit('reject', this.lastError);
+          setTimeout(() => this.leave(), 0);
           break;
         }
         case 'host': {                      // alguém assumiu o comando da sala
@@ -304,6 +352,7 @@
         case 'shot':  this.emit('shot', m); break;      // tiro visível dos outros
         case 'pvp':   this.emit('pvp', m); break;       // dano em jogador
         case 'wave':  this.emit('wave', m); break;
+        case 'threat': this.emit('threat', m); break;
         case 'over':  this.emit('over', m); break;
         case 'chat':  this.emit('chat', m); break;
       }
@@ -319,7 +368,7 @@
         this.send({
           t: 'p', x: +p.x.toFixed(2), y: +p.y.toFixed(2), z: +p.z.toFixed(2),
           r: +player.obj.rotation.y.toFixed(2),
-          h: Math.round(player.hp), hm: Math.round(player.hpMax),
+          h: Math.round(player.hp), hm: Math.round(player.maxhp),
           d: !!G.over, s: G.score | 0, k: G.kills | 0, w: player.weapon
         });
       }
@@ -333,7 +382,7 @@
       a.obj.position.copy(p.pos);
       /* etiqueta com o nome em cima da cabeça */
       const tag = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: MA.Tex.nameTag(p.name, this.mode === 'pvp' ? '#ff3d7f' : '#49ffb0'),
+        map: MA.Tex.nameTag(p.name, competitive(this.mode) ? (p.team === 'pink' ? '#ff4fcf' : '#36dfff') : '#49ffb0'),
         transparent: true, depthTest: false
       }));
       tag.scale.set(3.2, .8, 1); tag.position.y = 3.5;
@@ -399,8 +448,12 @@
     },
 
     startMatch() {
+      if (!this.canStart()) return { error: this.mode === 'coop'
+        ? 'O Coop precisa de pelo menos 2 jogadores.'
+        : 'Cada equipe precisa de pelo menos 2 jogadores.' };
       this.started = true;
       this.send({ t: 'start', mode: this.mode, map: this.map, diff: this.diff });
+      return { ok: true };
     }
   };
 

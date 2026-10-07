@@ -27,8 +27,8 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
 #bootFallback{position:fixed;left:50%;bottom:16px;translate:-50% 0;z-index:9;max-width:92vw;padding:8px 14px;
   border-radius:10px;background:rgba(8,10,38,.82);color:#cfe2ff;font-size:11px;letter-spacing:.08em;text-align:center}
 </style>
-<link rel="stylesheet" href="css/style.css?v=43">
-<link rel="stylesheet" href="css/season67.css?v=43">
+<link rel="stylesheet" href="css/style.css?v=44">
+<link rel="stylesheet" href="css/season67.css?v=44">
 </head>
 <body>
 <noscript><div id="bootFallback">Este jogo precisa de JavaScript ativado para iniciar.</div></noscript>
@@ -60,6 +60,7 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
     <div class="lbl">67 · PONTOS</div>
     <div id="score">0</div>
     <div id="waveTxt">ONDA 1</div>
+    <div id="teamScore" class="team-score hid"><b>ROSA 0</b><span>×</span><b>0 CIANO</b></div>
     <div id="combo">x1</div>
   </div>
 
@@ -159,6 +160,7 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
             <span class="level-pill">NV. <b id="hubLevel">1</b></span>
           </div>
           <div class="lobby-rank" id="hubRank">🤖 NPC</div>
+          <div class="sticker-badge hid" id="hubStickerBadge" aria-label="Figurinha equipada"></div>
           <div class="xpbar"><div id="hubXpFill" class="xpfill"></div></div>
           <div class="xptxt" id="hubXpTxt">0 / 0 XP</div>
         </div>
@@ -183,6 +185,7 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
         <button id="seasonBtn" class="lobby-tile acid"><span class="tile-number">67</span><b>CAIXAS</b><small>temporada</small></button>
         <button id="shopBtn" class="lobby-tile pink"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><b>LOJA</b><small>itens especiais</small></button>
         <button id="invBtn" class="lobby-tile cyan"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 4 2 4-2 5 3-3 4v9H6v-9L3 8l5-3Z"/><path d="M9 6.5c.5 1.5 1.5 2.2 3 2.2s2.5-.7 3-2.2"/></svg></span><b>PERSONALIZAR</b><small>visual e arsenal</small></button>
+        <button id="albumBtn" class="lobby-tile orange"><span>🃏</span><b>ÁLBUM</b><small>mapas e NPCs</small></button>
         <button id="mkBtn" class="lobby-tile violet"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h8l8 8-8 8-8-8V4Z"/><circle cx="8.5" cy="8.5" r="1.5"/></svg></span><b>MERCADO</b><small>comprar e revender</small></button>
         <button id="logoutBtn" class="lobby-exit">↪ SAIR</button>
       </nav>
@@ -206,11 +209,11 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
       </section>
 
       <aside class="lobby-right">
-        <div class="mode-card" title="Mapa selecionado">
-          <div class="mode-card-head"><span>EVENTO 67</span><i>SOLO</i></div>
-          <div class="mode-map-art"><span id="hubMapIcon">👑</span></div>
-          <b class="mode-shortcut-label">TORNEIOS</b>
-          <small id="hubMapName">Arena 67</small>
+        <div class="mode-card" title="O mapa é sorteado ao iniciar cada partida">
+          <div class="mode-card-head"><span>NOVA PARTIDA</span><i>AUTO</i></div>
+          <div class="mode-map-art"><span id="hubMapIcon">🎲</span></div>
+          <b class="mode-shortcut-label">MAPA ALEATÓRIO</b>
+          <small id="hubMapName">todos os mapas disponíveis</small>
         </div>
         <button id="mpBtn" class="lobby-multi locked">🔒 GRUPO</button>
         <button id="playBtnHub" class="lobby-play"><span>▶</span><b>JOGAR</b><small>COMEÇAR PARTIDA</small></button>
@@ -249,6 +252,7 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
       <button class="tab" data-tab="ability">HABILIDADES</button>
       <button class="tab" data-tab="skin">SKINS</button>
       <button class="tab" data-tab="armor">ARMADURAS</button>
+      <button class="tab" data-tab="sticker">🃏 FIGURINHAS</button>
     </div>
     <div id="shopGrid" class="igrid"></div>
     <div class="btnrow"><button id="shopClose" class="btn sec">← VOLTAR</button></div>
@@ -283,14 +287,30 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
       <button class="tab" data-tab="ability">HABILIDADES</button>
       <button class="tab" data-tab="skin">SKINS</button>
       <button class="tab" data-tab="armor">ARMADURAS</button>
+      <button class="tab" data-tab="sticker">FIGURINHAS</button>
     </div>
     <div id="invGrid" class="igrid"></div>
     <div class="btnrow"><button id="invClose" class="btn sec">← VOLTAR</button></div>
   </div>
 </div>
 
-
-
+<!-- ========================================================= ÁLBUM === -->
+<div id="album" class="screen hid">
+  <div class="sheet wide tall">
+    <div class="hubtop">
+      <div><h2 class="h2">🃏 ÁLBUM DE FIGURINHAS</h2><div id="albumProgress" class="album-progress">0 / 0</div></div>
+      <div class="dim">Cosméticas · não dão poder nem liberam mapas</div>
+    </div>
+    <div class="tabs">
+      <button class="tab sel" data-tab="all">TODAS</button>
+      <button class="tab" data-tab="map">MAPAS</button>
+      <button class="tab" data-tab="npc">NPCS</button>
+      <button class="tab" data-tab="boss">CHEFES</button>
+    </div>
+    <div id="albumGrid" class="igrid album-grid"></div>
+    <div class="btnrow"><button id="albumClose" class="btn sec">← VOLTAR</button></div>
+  </div>
+</div>
 
 <!-- ======================================================= METAS ==== -->
 <div id="goals" class="screen hid">
@@ -355,6 +375,27 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
   </div>
 </div>
 
+<!-- =============================================== ESCOLHER MODO === -->
+<div id="playmode" class="screen hid">
+  <div class="sheet wide playmode-sheet">
+    <div class="season-eyebrow">ESCOLHA SUA PARTIDA</div>
+    <h2 class="h2">🎮 COMO VOCÊ QUER JOGAR?</h2>
+    <p class="dim">O mapa é sorteado automaticamente em toda nova sala ou partida.</p>
+    <div class="playmode-grid">
+      <button id="soloModeBtn" class="playmode-card solo">
+        <span>🎯</span><b>SOLO PvE</b><small>1 jogador · hordas de NPCs<br>Dificuldade automática pelo seu nível</small>
+      </button>
+      <button id="coopModeBtn" class="playmode-card coop">
+        <span>🤝</span><b>COOP PvE</b><small>2–6 jogadores · mesma equipe<br>Escala por jogadores e ondas</small>
+      </button>
+      <button id="pvpModeBtn" class="playmode-card versus">
+        <span>⚔️</span><b>PvP EM EQUIPES</b><small>2–6 por equipe<br>PvP puro ou PvPvE</small>
+      </button>
+    </div>
+    <div class="btnrow"><button id="playmodeClose" class="btn sec">← VOLTAR</button></div>
+  </div>
+</div>
+
 <!-- ================================================== MULTIPLAYER === -->
 <div id="multi" class="screen hid">
   <div class="sheet wide tall">
@@ -369,13 +410,18 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
       <div class="mpmodes">
         <div class="mpmode sel" data-mode="coop">
           <div class="mpico">🤝</div>
-          <div class="mpname">CO-OP</div>
-          <div class="mpdesc">Até 4 amigos contra as ondas de memes. Vida e abates somam pro grupo.</div>
+          <div class="mpname">COOP PvE</div>
+          <div class="mpdesc">2–6 jogadores juntos contra hordas que escalam por equipe e ondas.</div>
         </div>
         <div class="mpmode" data-mode="pvp">
           <div class="mpico">⚔️</div>
-          <div class="mpname">PVP</div>
-          <div class="mpdesc">Todos contra todos em tempo real. Primeiro a 10 abates leva.</div>
+          <div class="mpname">PVP PURO</div>
+          <div class="mpdesc">Equipe Rosa contra Equipe Ciano, 2–6 por lado e sem NPCs.</div>
+        </div>
+        <div class="mpmode" data-mode="pvpve">
+          <div class="mpico">💥</div>
+          <div class="mpname">PVPVE</div>
+          <div class="mpdesc">As duas equipes se enfrentam enquanto NPCs ficam mais perigosos.</div>
         </div>
       </div>
 
@@ -431,11 +477,9 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
     </p>
     <div id="menuStats" class="mstats"></div>
 
-    <div class="seclbl">ESCOLHA O MAPA</div>
-    <div id="mapList" class="maplist"></div>
-
-    <div class="seclbl">ESCOLHA A DIFICULDADE</div>
-    <div id="diffList" class="difflist"></div>
+    <div class="auto-match-note">🎲 <b>MAPA ALEATÓRIO</b><br>⚡ A dificuldade Solo acompanha automaticamente o nível da sua conta.</div>
+    <div id="mapList" class="maplist hid" aria-hidden="true"></div>
+    <div id="diffList" class="difflist hid" aria-hidden="true"></div>
 
     <div class="btnrow">
       <button id="playBtn" class="btn">▶ JOGAR</button>
@@ -526,6 +570,13 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
       <input id="sInv" type="checkbox"><span></span></div>
     <div class="seclbl">CRÉDITOS DOS MODELOS 3D</div>
     <div class="modelcredits">
+      <article>
+        <strong>KayKit City Builder Bits 1.0</strong>
+        <span>Modelos urbanos por <b>Kay Lousberg / KayKit</b></span>
+        <a href="https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0" target="_blank" rel="noopener">Fonte oficial: GitHub</a>
+        <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener">Licença: CC0 1.0 Universal</a>
+        <small>Seleção da versão gratuita adaptada para o mapa Cidade do Caos.</small>
+      </article>
       <article>
         <strong>DOGE</strong>
         <span>Modelo 3D por <b>徹水</b></span>
@@ -623,35 +674,36 @@ html,body{margin:0;height:100%;background:#06051d;color:#eaf4ff;font-family:syst
   <div class="splash-foot">Arte própria, modelos licenciados e áudio original · Violência fantasiosa · Interação entre usuários · Apenas moeda virtual</div>
 </div>
 
-<script src="lib/three.min.js?v=43"></script>
-<script src="lib/GLTFLoader.js?v=43"></script>
-<script src="lib/SkeletonUtils.js?v=43"></script>
-<script src="src/utils.js?v=43"></script>
-<script src="src/config.js?v=43"></script>
-<script src="src/data.js?v=43"></script>
-<script src="src/maps.js?v=43"></script>
-<script src="src/items.js?v=43"></script>
-<script src="src/season.js?v=43"></script>
-<script src="src/audio.js?v=43"></script>
-<script src="src/faces.js?v=43"></script>
-<script src="src/textures.js?v=43"></script>
-<script src="src/world.js?v=43"></script>
-<script src="src/builds.js?v=43"></script>
-<script src="src/weapons3d.js?v=43"></script>
-<script src="src/armor3d.js?v=43"></script>
-<script src="src/skinmodels.js?v=43"></script>
-<script src="src/entities.js?v=43"></script>
-<script src="src/net.js?v=43"></script>
-<script src="src/profile.js?v=43"></script>
-<script src="src/ui.js?v=43"></script>
-<script src="src/pbuilds.js?v=43"></script>
-<script src="src/previews.js?v=43"></script>
-<script src="src/goals.js?v=43"></script>
-<script src="src/market.js?v=43"></script>
-<script src="src/multi.js?v=43"></script>
-<script src="src/mod.js?v=43"></script>
-<script src="src/mpui.js?v=43"></script>
-<script src="src/metaui.js?v=43"></script>
-<script src="src/game.js?v=43"></script>
+<script src="lib/three.min.js?v=44"></script>
+<script src="lib/GLTFLoader.js?v=44"></script>
+<script src="lib/SkeletonUtils.js?v=44"></script>
+<script src="src/utils.js?v=44"></script>
+<script src="src/config.js?v=44"></script>
+<script src="src/data.js?v=44"></script>
+<script src="src/maps.js?v=44"></script>
+<script src="src/items.js?v=44"></script>
+<script src="src/season.js?v=44"></script>
+<script src="src/audio.js?v=44"></script>
+<script src="src/faces.js?v=44"></script>
+<script src="src/textures.js?v=44"></script>
+<script src="src/cityassets.js?v=44"></script>
+<script src="src/world.js?v=44"></script>
+<script src="src/builds.js?v=44"></script>
+<script src="src/weapons3d.js?v=44"></script>
+<script src="src/armor3d.js?v=44"></script>
+<script src="src/skinmodels.js?v=44"></script>
+<script src="src/entities.js?v=44"></script>
+<script src="src/net.js?v=44"></script>
+<script src="src/profile.js?v=44"></script>
+<script src="src/ui.js?v=44"></script>
+<script src="src/pbuilds.js?v=44"></script>
+<script src="src/previews.js?v=44"></script>
+<script src="src/goals.js?v=44"></script>
+<script src="src/market.js?v=44"></script>
+<script src="src/multi.js?v=44"></script>
+<script src="src/mod.js?v=44"></script>
+<script src="src/mpui.js?v=44"></script>
+<script src="src/metaui.js?v=44"></script>
+<script src="src/game.js?v=44"></script>
 </body>
 </html>

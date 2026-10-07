@@ -21,6 +21,7 @@
       d.equipped.armor = d.equipped.armor || 'hoodie';
       d.equipped.weapons = d.equipped.weapons || [];
       d.equipped.ability = d.equipped.ability || '';
+      d.equipped.sticker = d.equipped.sticker || '';
       d.stats = Object.assign(
         { games: 0, bestScore: 0, totalScore: 0, kills: 0, bosses: 0, bestWave: 0, maxCombo: 1, playtime: 0 },
         d.stats || {});
@@ -105,6 +106,7 @@
     equippedSkin()  { return MA.findItem('skin',  this.data.equipped.skin)  || MA.SKINS[0]; },
     equippedArmor() { return MA.findItem('armor', this.data.equipped.armor) || MA.ARMORS[0]; },
     equippedAbility() { return MA.findItem('ability', this.data.equipped.ability) || null; },
+    equippedSticker() { return MA.findItem('sticker', this.data.equipped.sticker) || null; },
     equippedWeapons() {
       const ids = this.data.equipped.weapons.filter(id => this.owns('weapon', id));
       return ids.map(id => MA.WEAPONS.findIndex(w => w.id === id)).filter(i => i >= 0);
@@ -136,6 +138,7 @@
     sell(item) {
       if (!this.owns(item.type, item.id)) return { error: 'Você não possui esse item.' };
       if (item.starter) return { error: 'Itens iniciais não podem ser vendidos.' };
+      if (item.noSell) return { error: 'Figurinhas de coleção não podem ser vendidas.' };
       if (item.boxOnly) return { error: 'Itens sazonais são revendidos no Mercado com preço definido por você.' };
       if (this.isEquipped(item.type, item.id)) return { error: 'Desequipe o item antes de vender.' };
       const value = Math.round((item.price || 0) * CFG.SELL_RATE);

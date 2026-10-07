@@ -23,15 +23,20 @@ create table if not exists public.rooms (
   code        text primary key,
   host_id     uuid not null references auth.users (id) on delete cascade,
   host_name   text not null,
-  mode        text not null default 'coop',        -- 'coop' | 'pvp'
+  mode        text not null default 'coop',        -- 'coop' | 'pvp' | 'pvpve'
   map         text not null default 'arena',
-  diff        text not null default 'normal',
+  diff        text not null default 'auto',
   players     int  not null default 1,
-  max_players int  not null default 4,
+  max_players int  not null default 6,
   state       text not null default 'lobby',       -- 'lobby' | 'playing'
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+
+-- Migração de instalações existentes: as capacidades e a dificuldade agora
+-- são automáticas, sem apagar salas ou perfis antigos.
+alter table public.rooms alter column diff set default 'auto';
+alter table public.rooms alter column max_players set default 6;
 
 -- Valida novas salas mesmo quando alguém chama a API REST sem usar o cliente.
 alter table public.rooms drop constraint if exists rooms_code_format;
@@ -40,9 +45,12 @@ alter table public.rooms drop constraint if exists rooms_host_name_format;
 alter table public.rooms add constraint rooms_host_name_format check (host_name ~ '^[A-Za-z0-9_]{3,16}$') not valid;
 alter table public.rooms drop constraint if exists rooms_values_valid;
 alter table public.rooms add constraint rooms_values_valid check (
-  mode in ('coop','pvp') and map in ('arena','ohio','praia','esgoto','servidor') and
-  diff in ('easy','norm','normal','hard','brain') and state in ('lobby','playing') and
-  players between 1 and 4 and max_players between 1 and 4 and players <= max_players
+  mode in ('coop','pvp','pvpve') and map in ('arena','ohio','praia','esgoto','servidor','cidade') and
+  diff in ('auto','easy','norm','normal','hard','brain','feed') and state in ('lobby','playing') and
+  players between 1 and 12 and
+  ((mode = 'coop' and max_players between 2 and 6) or
+   (mode in ('pvp','pvpve') and max_players between 4 and 12)) and
+  players <= max_players
 ) not valid;
 
 create index if not exists rooms_updated_idx on public.rooms (updated_at desc);
