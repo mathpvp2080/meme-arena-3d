@@ -123,9 +123,13 @@
     if (MA.CityAssets) MA.CityAssets.preload().catch(() => { /* mapa mantém fallback procedural */ });
     if (MA.SkinModels) {
       MA.SkinModels.preload().then(n => {
-        if (!n) return;
-        if (MA.Previews) MA.Previews.cache = Object.create(null);
-        rebuildPlayerLook();
+        if (n) {
+          if (MA.Previews) MA.Previews.cache = Object.create(null);
+          rebuildPlayerLook();
+        }
+        /* Se o GLB da skin equipada ainda não chegou (falha no boot),
+           agenda o retry — as miniaturas repetem sozinhas via previews. */
+        retryEquippedSkinModel();
       }).catch(() => { /* segue com o boneco procedural */ });
     }
 
@@ -207,6 +211,26 @@
     player.obj.position.set(0, 0, 0);
   }
   MA._rebuildLook = rebuildPlayerLook;
+
+  /* Se o GLB da skin equipada ainda não está pronto (falhou no boot),
+     tenta de novo quando o cooldown de falha acabar e refaz o boneco com
+     o modelo real — o dummy procedural não fica na vitrine para sempre. */
+  function retryEquippedSkinModel() {
+    if (!MA.SkinModels) return;
+    const skin = currentSkin();
+    const sp = MA.SkinModels.specFor(skin);
+    if (!sp || MA.SkinModels.hasLoaded(skin)) return;
+    const wait = Math.max(MA.SkinModels.retryDelay(sp.url), 1000) + 100;
+    setTimeout(() => {
+      if (!G.booted || G.running) return;
+      const now = currentSkin();
+      const np = MA.SkinModels.specFor(now);
+      if (!np || MA.SkinModels.hasLoaded(now)) return;
+      MA.SkinModels.load(np.url).then(entry => {
+        if (entry && G.booted && !G.running) rebuildPlayerLook();
+      }).catch(() => { /* segue procedural; o próximo rebuild tenta de novo */ });
+    }, wait);
+  }
   setTimeout(() => { if (MA._bindMulti) MA._bindMulti(); }, 0);
   MA._dbg = { get cam() { return camera; }, get player() { return player; }, get scene() { return scene; }, get G() { return G; }, get enemies() { return enemies; }, get pickups() { return pickups; } };
 
