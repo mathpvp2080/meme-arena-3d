@@ -18,33 +18,38 @@ Sobreviva a ondas infinitas de memes, escolha perks, derrube chefes gigantes.
 ## 🎮 Sobre
 
 A internet colapsou e o **Brainrot** vazou dos servidores: os memes ganharam forma 3D.
-Você é o **Chill Guy**, o último com dopamina suficiente pra resistir. Segure a arena.
+Escolha entre animais, plantas e monstros absurdos, monte o equipamento e segure a arena.
 
 ### Temporada 1 · 67
 
 - **Período:** 03/10/2026 a 28/11/2026; a próxima temporada começa em 29/11/2026.
 - Identidade visual própria em azul elétrico, rosa-magenta, ciano e violeta, com a **Arena 67**.
-- **Caixa 67** e **Cofre 67**, comprados somente com moedas virtuais. As chances ficam
-  visíveis na loja e a 7ª abertura sem equipamento garante um item sazonal.
-- Conteúdo exclusivo: **4 skins, 3 armaduras, 4 armas e 3 habilidades**, incluindo
-  Corredor 67, Seis em Órbita, Sete Quebra-Loop e Fusão 67. Os modelos 3D são próprios.
-- **Impulso 67** concede +67% de moedas e XP na próxima partida; duplicatas viram
-  fragmentos e 67 fragmentos forjam um item sazonal que ainda falta.
-- O mercado usa limites mínimo e máximo **específicos por item**, e o jogador escolhe
-  o valor do anúncio dentro dessa faixa.
-- A temporada usa o conceito numérico do meme. Não inclui música, voz, foto,
-  personagem ou arte da trend; todos os visuais, efeitos e sons são originais.
+- **Caixa 67** e **Cofre 67** usam somente moedas virtuais. Cada abertura e cada
+  chefe escolhem primeiro **50% skin / 50% recursos automáticos** (moedas, XP ou ambos).
+- No ramo de skin, as chances condicionais são: **40% Uncommon, 29,5% Legendary,
+  20% Mythical, 10% Ultimate e 0,5% Secret**. Uma recompensa entrega no máximo uma skin.
+- Skins Common são exclusivas da loja do sistema. As outras 28 skins indicam se vêm
+  de caixa, chefe ou ambos; repetidas são convertidas automaticamente em moedas.
+- Cada skin tem valor-base progressivo dentro de sua raridade. No mercado de jogadores,
+  o preço é fixo em **70% do valor-base** e o vendedor recebe o total, sem taxa.
+- A temporada usa o conceito numérico do meme. Não inclui música, voz, foto ou
+  arte da trend; ambientes, efeitos e sons são autorais. Os modelos 3D externos
+  são identificados e creditados conforme suas licenças.
 
-Personagens, equipamentos e efeitos 3D são **gerados proceduralmente** com geometrias
-primitivas e texturas em `<canvas>`. A entrada e o lobby usam duas artes autorais da
-Temporada 67; a trilha e os efeitos são sintetizados com WebAudio.
+As 33 skins jogáveis usam avatares R1/R2 do projeto **Polygonal Mind 100 Avatars**,
+transformados em GLBs compactos com rig e clipes `idle`, `run` e `punch`. O catálogo
+inclui objetos, comidas, pessoas e criaturas com geometrias próprias. O corpo
+procedural permanece apenas como fallback de carregamento.
+Equipamentos, efeitos e os visuais de reserva dos NPCs continuam gerados por código.
+Os quatro inimigos ativos usam seus próprios GLBs creditados. A entrada e o lobby usam
+duas artes autorais da Temporada 67; a trilha e os efeitos são sintetizados com WebAudio.
 
 ## ✨ Funcionalidades
 
 | | |
 |---|---|
-| 🧟 **16 inimigos** | Trollface, Amogus, Pepe, Skibidi Toilet, Doge, Rizzler, Nyan Cat, Bluescreen, Ohio, Stonks, Sigma, Grimace, Tralalero, Tung Tung, Bombardiro, Goofy Ahh |
-| 👹 **5 chefes** | Com **3 fases**, barragens em leque, investidas com onda de impacto e invocação de lacaios |
+| 🧟 **4 inimigos** | Doge Corrompido, Tralalero Tralala, Tung Tung Sahur e Bombardiro Crocodilo |
+| 👹 **4 chefes** | Versões gigantes de Doge, Tralalero, Tung Tung e Bombardiro, em rotação a cada 5 ondas |
 | 🔫 **9 armas** | Laser, shotgun, bumerangue, RPG, orbe gravitacional, minigun, prisma, railgun e Pulso 67 |
 | ✦ **3 habilidades** | Repulsão 6, Passo 7 e Sobrecarga 67 com mecânicas e recargas próprias |
 | 🃏 **20 perks** | Escolha 1 de 3 cartas a cada onda. Comuns, raras e épicas. Acumulam entre si |
@@ -54,6 +59,7 @@ Temporada 67; a trilha e os efeitos são sintetizados com WebAudio.
 | 🤖 **7 tipos de IA** | Perseguir, flanquear, orbitar, atirar, investir, teleportar e bombardear |
 | 📊 **4 dificuldades** | Normie, Meme Lord, Sigma e Brainrot |
 | 🏆 **Progressão** | Combo multiplicador, 7 ranks, recordes locais e estatísticas de fim de partida |
+| 🧭 **Lobby Meme Arena** | Identidade permanente em adesivos recortados, personagem central, menu lateral colorido e modo pré-definido acima do JOGAR compacto; apenas o fundo acompanha a temporada |
 | 📱 **Mobile** | Joystick virtual, botões de ação e layout responsivo |
 | 🔌 **Offline** | PWA com service worker — instala e joga sem internet |
 
@@ -136,6 +142,7 @@ meme-arena-3d/
 - **Trilha adaptativa**: a intensidade da música sobe junto com o número da onda e no Ultimate.
 - **Correção de cor**: todas as texturas em `sRGBEncoding` com tone mapping ACES Filmic.
 - Validação automatizada com `npm test`: catálogo, referências, assets, PWA, convidado e patch SQL.
+- Pipeline reproduzível dos avatares: `POLYGONAL_SOURCE=/caminho/100Avatars npm run build:polygonal-skins`.
 
 ### Console de debug
 
@@ -157,55 +164,78 @@ Three.js é distribuído sob a licença MIT (© three.js authors).
 - **Conta com nome e senha** — sem e-mail real. Não existe recuperação automática,
   então a senha deve ser guardada. O modo **Convidado** usa somente `sessionStorage`,
   termina com a sessão e nunca cria usuário no Supabase.
-- Para publicar o backend, aplique [`supabase/schema.sql`](supabase/schema.sql) e depois
-  o patch único [`supabase/DEPLOY_LAUNCH.sql`](supabase/DEPLOY_LAUNCH.sql).
-- **Todo jogador começa igual**: skin *Chill Guy*, armadura *Moletom Básico* e
+- Para publicar o backend, aplique [`supabase/schema.sql`](supabase/schema.sql), depois
+  [`supabase/DEPLOY_LAUNCH.sql`](supabase/DEPLOY_LAUNCH.sql). Esse deploy já inclui a
+  migração; ela também está separada em [`supabase/patch_polygonal_mind_skins.sql`](supabase/patch_polygonal_mind_skins.sql)
+  para bancos publicados que precisem apenas trocar o catálogo.
+- **Todo jogador começa igual**: skin *Cool Fries*, armadura *Moletom Básico* e
   **600 moedas** — o bastante para comprar a arma inicial (Laser de Doge, 450).
 - **Nível e XP** até o nível 60. Ganhe XP e moedas a cada partida (pontos,
   abates, ondas e chefes, multiplicados pela dificuldade).
-- **Loja e inventário** com 14 skins, 9 armaduras, 9 armas, 3 habilidades e caixas
-  sazonais. As armaduras dão **+HP** e **redução de dano**, e aparecem no boneco 3D.
-- **Inventário** para equipar (até 3 armas ao mesmo tempo) e **vender** itens
-  por 50% do preço.
+- **Loja e inventário** com 33 skins Polygonal Mind completas e animadas,
+  9 armaduras, 9 armas, 3 habilidades e caixas sazonais.
+  As armaduras dão **+HP** e **redução de dano**.
+- **Inventário** para equipar até 3 armas e anunciar skins negociáveis no mercado.
+  O preço de cada skin é 30% menor que o valor-base e não há taxa do vendedor.
+- **Figurinhas cosméticas** de todos os mapas, NPCs e chefes na loja, com álbum
+  de coleção e um distintivo equipável visível no perfil e no lobby. Figurinhas
+  não aumentam atributos e não liberam mapas ou matchmaking.
 - **Multiplayer** destrava no **nível 5** (chega na Etapa 3).
 
 > As armas não são mais liberadas por onda: agora você as **compra e equipa**.
 
 ## 🎭 NPCs e mapas (Etapa 2)
 
-- **Rostos desenhados à mão** (canvas, sem imagem externa) para os 16 memes e
-  os 5 chefes — nada de emoji genérico. O rosto fica num "adesivo" virado pra
-  frente, então sempre dá pra reconhecer quem está vindo.
-- **Silhueta própria para cada meme**: o Skibidi sai de um vaso sanitário, o
-  Tung Tung carrega um taco, o Bombardiro tem asas e hélices girando, o Nyan
-  Cat é uma torrada com rastro de arco-íris, o Bluescreen é um monitor CRT, o
-  Grimace é um copo de milkshake, o Amogus tem viseira e mochila...
-- **5 mapas** que mudam céu, chão, névoa, luzes, obstáculos e cartazes:
+- **Quatro inimigos com GLB próprio**: Doge Corrompido, Tralalero Tralala,
+  Tung Tung Sahur e Bombardiro Crocodilo.
+- **Quatro chefes gigantes** reutilizam os mesmos modelos em escala maior:
+  Doge Supremo, Tralalero Colossal, Tung Tung Titã e Bombardiro Crocodilo.
+  Eles se alternam a cada cinco ondas e ficam mais fortes a cada nova rotação.
+- **Fallback procedural** mantém cada inimigo e chefe jogável se o carregamento
+  externo falhar; barra de vida, brilho, colisão e IA permanecem separados do visual.
+- **6 mapas** que mudam céu, chão, névoa, luzes, obstáculos e cartazes. O mapa
+  é sorteado a cada nova partida e não depende de compra ou nível:
 
-| Mapa | Libera no nível |
+| Mapa | Modos |
 |---|---|
-| 6⁷ Arena 67 | 1 |
-| 🌽 Planície de Ohio | 4 |
-| 🚽 Esgoto Skibidi | 9 |
-| 🦈 Praia Italiana | 15 |
-| 🧠 Servidor do Algoritmo | 22 |
+| 6⁷ Arena 67 | Solo, Coop e competitivo |
+| 🌽 Planície de Ohio | Solo, Coop e competitivo |
+| 🚽 Esgoto Skibidi | Solo, Coop e competitivo |
+| 🦈 Praia Italiana | Solo, Coop e competitivo |
+| 🧠 Servidor do Algoritmo | Solo, Coop e competitivo |
+| 🏙️ Cidade do Caos | PvP e PvPvE |
+
+A **Cidade do Caos** usa uma seleção da versão gratuita do **KayKit City Builder
+Bits 1.0**, em CC0 1.0: ruas, prédios, carros, iluminação e mobiliário urbano.
+A licença e a fonte estão preservadas em `assets/kaykit-city/` e em
+[`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
 
 ## 🌐 Multiplayer (Etapa 3 — parte 1)
 
-Libera no **nível 5**. No hub, botão **🌐 MULTIPLAYER**.
+Libera no **nível 5**. A aba de modo do lobby pré-seleciona Solo, Coop ou
+Equipes; o botão **JOGAR** inicia o modo escolhido ou abre a sala correspondente.
 
-- **CO-OP** — até 4 jogadores contra as ondas de memes. O anfitrião comanda os
-  inimigos e todo mundo vê exatamente os mesmos monstros, no mesmo lugar.
-- **PVP** — todos contra todos em tempo real; primeiro a 10 abates vence.
+- **Solo PvE** — um jogador contra as hordas; dificuldade automática pelo nível da conta.
+- **Coop PvE** — 2–6 jogadores na mesma equipe; resistência e ritmo das hordas
+  escalam pelo número de jogadores e pelas ondas.
+- **PvP puro** — Equipe Rosa contra Equipe Ciano, 2–6 por equipe, sem NPCs.
+- **PvPvE** — as mesmas equipes com NPCs cuja ameaça cresce a cada 10 abates de NPC.
+- O competitivo normaliza vida, proteção, multiplicadores e arma para não virar
+  pay-to-win; vence a primeira equipe a chegar a 20 abates.
 - Sala com **código de 4 letras** para chamar os amigos, mais a lista de
-  **salas abertas** para entrar em um clique.
-- Quem cai renasce sozinho (7s no co-op, 4s no PvP).
+  **salas abertas** para entrar em um clique e migração automática de anfitrião.
+- Quem cai renasce sozinho (7s no Coop, 4s no competitivo).
 
 Para funcionar pela internet é preciso rodar `supabase/schema_multiplayer.sql`
 no SQL Editor do Supabase. Sem isso, o multiplayer ainda funciona em **modo
 local** entre abas do mesmo navegador.
 
-O mercado de itens (vender/presentear) usa o mesmo SQL. A coleção da Temporada 67
-tem 14 itens entre skins, armaduras, armas e habilidades, obtidos originalmente
-em Caixas 67 ou por drop aleatório de chefe. Depois, eles podem ser revendidos no
-mercado dentro das faixas individuais validadas pelo servidor.
+O mercado de itens (vender/presentear) usa o mesmo SQL. As 28 skins não Common
+vêm de Caixas 67, de chefes ou de ambos. Depois, podem ser revendidas pelo preço
+fixo de 70% validado no navegador e no servidor; 100% desse preço vai ao vendedor.
+
+## Créditos de recursos externos
+
+Os créditos, fontes, licenças e adaptações dos modelos 3D de terceiros estão
+registrados em [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md) e também aparecem dentro do
+jogo em **Opções → Créditos dos modelos 3D**.

@@ -6,6 +6,8 @@
   const M = {
     shopTab: 'weapon',
     invTab: 'all',
+    albumTab: 'all',
+    hubMode: 'solo',
     busy: false,
 
     /* ------------------------------------------------------------ toast */
@@ -20,7 +22,7 @@
     },
 
     screen(id) {
-      ['auth', 'hub', 'shop', 'lootbox', 'inventory', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
+      ['auth', 'hub', 'shop', 'lootbox', 'inventory', 'album', 'playmode', 'goals', 'market', 'multi', 'start', 'help', 'board', 'settings', 'over', 'pausebox', 'perkScreen']
         .forEach(s => { const e = $(s); if (e) e.classList.add('hid'); });
       if (id) $(id).classList.remove('hid');
     },
@@ -108,6 +110,72 @@
       this.screen('hub');
     },
 
+    /* A escolha feita no cartão de modo fica salva. JOGAR usa essa escolha
+       diretamente, sem manter um atalho GRUPO duplicado no menu principal. */
+    selectHubMode(mode, persist) {
+      const specs = {
+        solo: {
+          title: 'SOLO PVE', readout: 'MAPA ALEATÓRIO', capacity: '1 JOGADOR',
+          detail: 'dificuldade ajustada ao seu nível', feature: '⚡ Dificuldade pelo nível',
+          hint: 'PRONTO PARA PARTIDA SOLO'
+        },
+        coop: {
+          title: 'COOP PVE', readout: 'MAPA ALEATÓRIO', capacity: '2–6 JOGADORES',
+          detail: 'dificuldade ajustada ao tamanho da equipe', feature: '⚡ Escala para 2–6 jogadores',
+          hint: 'PRONTO PARA ABRIR SALAS COOP'
+        },
+        pvp: {
+          title: 'EQUIPES', readout: 'ARENA ALEATÓRIA', capacity: '4–12 JOGADORES',
+          detail: 'PvP ou PvPvE · equipes Rosa e Ciano', feature: '⚔ PvP puro ou PvPvE',
+          hint: 'PRONTO PARA ABRIR SALAS DE EQUIPE'
+        }
+      };
+      this.hubMode = specs[mode] ? mode : 'solo';
+      const spec = specs[this.hubMode];
+      const unlocked = !MA.Profile || !MA.Profile.canMultiplayer || MA.Profile.canMultiplayer();
+      const locked = this.hubMode !== 'solo' && !unlocked;
+      const put = (id, value) => { const el = $(id); if (el) el.textContent = value; };
+
+      document.querySelectorAll('[data-hub-mode]').forEach(btn => {
+        const selected = btn.dataset.hubMode === this.hubMode;
+        btn.classList.toggle('sel', selected);
+        btn.classList.toggle('locked', btn.dataset.hubMode !== 'solo' && !unlocked);
+        btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      });
+      const card = document.querySelector('#hub .mode-card');
+      if (card) card.dataset.mode = this.hubMode;
+      const launch = $('playBtnHub');
+      if (launch) {
+        launch.dataset.mode = this.hubMode;
+        launch.classList.toggle('locked-mode', locked);
+      }
+      put('hubModeCode', spec.title);
+      put('hubModeReadout', spec.readout);
+      put('hubModeCapacity', spec.capacity);
+      put('hubModeTitle', spec.title);
+      put('hubMapName', spec.detail);
+      put('hubModeFeature', spec.feature);
+      put('hubModeHint', locked ? 'LIBERA NO NÍVEL ' + MA.CONFIG.MULTIPLAYER_LEVEL : spec.hint);
+      put('hubPlayModeLabel', locked ? 'BLOQUEADO · NÍVEL ' + MA.CONFIG.MULTIPLAYER_LEVEL : spec.title);
+      put('hubModeCoopMeta', unlocked ? '2–6' : 'NV.' + MA.CONFIG.MULTIPLAYER_LEVEL);
+      put('hubModePvpMeta', unlocked ? '4–12' : 'NV.' + MA.CONFIG.MULTIPLAYER_LEVEL);
+      if (persist !== false && MA.store) MA.store.set('hubMode', this.hubMode);
+    },
+
+    launchHubMode() {
+      const mode = this.hubMode || (MA.store && MA.store.get('hubMode', 'solo')) || 'solo';
+      if (mode === 'solo') {
+        if (MA.Profile.equippedWeapons().length === 0) {
+          this.toast('⚠️ Compre e equipe uma arma antes de jogar.', 'bad');
+          this.openShop('weapon');
+          return;
+        }
+        if (MA._startSoloAuto) MA._startSoloAuto();
+        return;
+      }
+      MA.MPUI.open(mode === 'pvp' ? 'pvp' : 'coop');
+    },
+
     renderHub() {
       const p = MA.Profile.data;
       if (!p) return;
@@ -116,10 +184,21 @@
       const need = MA.Profile.xpToNext();
 
       $('hubName').textContent = p.username;
+      const operatorCode = Array.from(p.username || 'NPC').reduce((n, ch) => ((n * 31) + ch.charCodeAt(0)) % 10000, 67);
+      if ($('hubOperatorId')) $('hubOperatorId').textContent = 'MA-' + String(operatorCode).padStart(4, '0');
       $('hubLevel').textContent = p.level;
       $('hubXpFill').style.width = (MA.Profile.xpProgress() * 100) + '%';
       $('hubXpTxt').textContent = MA.fmt(p.xp) + ' / ' + MA.fmt(need) + ' XP';
       $('hubCoins').textContent = MA.fmt(p.coins);
+      const network = $('hubNetworkState');
+      if (network) {
+        const online = !!(MA.Net.online && !MA.Net.isGuest);
+        network.classList.toggle('online', online);
+        network.innerHTML = '<i></i><span>' + (online ? 'ONLINE' : 'SESSÃO LOCAL') + '</span>';
+      }
+      const ownedStickers = (MA.STICKERS || []).filter(s => MA.Profile.owns('sticker', s.id)).length;
+      if ($('hubStickerProgress')) $('hubStickerProgress').textContent = ownedStickers + ' / ' + (MA.STICKERS || []).length;
+      if ($('hubStickerFill')) $('hubStickerFill').style.width = ((MA.STICKERS || []).length ? ownedStickers / MA.STICKERS.length * 100 : 0) + '%';
       $('hubSkin').textContent = skin.face;
       $('hubSkin').title = skin.name;
       $('hubArmor').textContent = '🛡️ ' + armor.name;
@@ -134,9 +213,14 @@
       if ($('hubRank')) $('hubRank').textContent = MA.Net.isGuest
         ? '◇ SESSÃO TEMPORÁRIA · SEM SUPABASE'
         : rank.icon + ' ' + rank.name;
-      const map = MA.mapById(MA.store.get('map', 'arena'));
-      if ($('hubMapIcon')) $('hubMapIcon').textContent = map.icon;
-      if ($('hubMapName')) $('hubMapName').textContent = map.name;
+      if ($('hubMapIcon')) $('hubMapIcon').textContent = 'M/A';
+      const sticker = MA.Profile.equippedSticker();
+      const badge = $('hubStickerBadge');
+      if (badge) {
+        badge.classList.toggle('hid', !sticker);
+        badge.style.setProperty('--sticker', sticker ? sticker.color : '#ffe600');
+        badge.innerHTML = sticker ? '<i>' + sticker.icon + '</i><span>' + MA.esc(sticker.name) + '</span>' : '';
+      }
 
       const wIdx = MA.Profile.equippedWeapons();
       const ability = MA.Profile.equippedAbility();
@@ -166,14 +250,10 @@
         st('MELHOR ONDA', s.bestWave) + st('ABATES', MA.fmt(s.kills)) +
         st('CHEFES', s.bosses) + st('COMBO MÁX', 'x' + s.maxCombo);
 
-      /* trava do multiplayer */
-      const ok = MA.Profile.canMultiplayer();
-      const btn = $('mpBtn');
-      btn.classList.toggle('locked', !ok);
-      btn.innerHTML = ok
-        ? '<span class="multi-mark">◈</span> GRUPO'
-        : '<span class="multi-mark">◇</span> GRUPO <em>nível ' + MA.CONFIG.MULTIPLAYER_LEVEL + '</em>';
-
+      /* O modo lateral é a única pré-seleção do hub; o acesso às salas
+         acontece pelo mesmo botão JOGAR. */
+      const savedMode = MA.store ? MA.store.get('hubMode', this.hubMode) : this.hubMode;
+      this.selectHubMode(savedMode, false);
       $('playBtnHub').classList.toggle('needweapon', wIdx.length === 0);
     },
 
@@ -190,11 +270,8 @@
       document.querySelectorAll('#shop .tab').forEach(t =>
         t.classList.toggle('sel', t.dataset.tab === this.shopTab));
 
-      if (MA.Season) {
-        const sp = MA.Season.progress();
-        if ($('seasonShopCountdown')) $('seasonShopCountdown').textContent = MA.Season.countdown();
-        if ($('shopFragments')) $('shopFragments').textContent = MA.fmt(sp.fragments);
-        if ($('shopBoosts')) $('shopBoosts').textContent = sp.boosts;
+      if (MA.Season && $('seasonShopCountdown')) {
+        $('seasonShopCountdown').textContent = MA.Season.countdown();
       }
 
       if (this.shopTab === 'box') {
@@ -214,42 +291,22 @@
     renderBoxes() {
       const grid = $('shopGrid');
       if (!MA.Season) { grid.innerHTML = '<p class="dim">Temporada indisponível.</p>'; return; }
-      const sp = MA.Season.progress();
       const boxes = MA.SEASON.boxes.map((box, index) => {
         const can = MA.Profile.data.coins >= box.price;
         return '<article class="loot-card' + (index ? ' vault' : '') + '">' +
           '<div class="loot-box-art">' + box.icon + '</div>' +
           '<div><h3>' + box.name + '</h3><p>' + box.desc + '</p>' +
           '<div class="loot-odds"><b>CHANCES POR ABERTURA</b><br>' +
-          '42% moedas · 23% XP · 17% Impulso 67 · 18% item sazonal<br>' +
-          '<b>5% skin · 4% armadura · 5% arma · 4% habilidade</b></div>' +
-          '<div class="loot-pity">GARANTIA: próxima abertura ' + Math.min(7, sp.pity + 1) + '/7 · item na 7ª sem drop</div>' +
+          '<b>50% skin · 50% moedas, XP ou ambos</b><br>' +
+          'Na skin: 40% Uncommon · 29,5% Legendary · 20% Mythical · 10% Ultimate · 0,5% Secret</div>' +
+          '<div class="loot-pity">UMA SKIN NO MÁXIMO · repetidas viram moedas</div>' +
           '<div class="loot-buy"><button class="ibtn buy' + (can ? '' : ' poor') + '" data-box="' + box.id + '">' +
           '🪙 ' + MA.fmt(box.price) + '</button><small>somente moeda virtual</small></div></div></article>';
       }).join('');
-      const missing = MA.SEASON.itemKeys.some(key => {
-        const parts = key.split(':'); return !MA.Profile.owns(parts[0], parts[1]);
-      });
-      const forgeDisabled = sp.fragments < 67 || !missing;
-      grid.innerHTML = '<div class="box-grid">' + boxes +
-        '<div class="forge-card"><span>⬡</span><div><b>CAIXA GARANTIDA · ' + MA.fmt(sp.fragments) + '/67 FRAGMENTOS</b>' +
-        '<p>Itens repetidos e chefes rendem fragmentos. Use 67 para abrir uma Caixa 67 com um item que ainda falta.</p></div>' +
-        '<button class="btn mini sec" id="forge67"' + (forgeDisabled ? ' disabled' : '') + '>ABRIR CAIXA</button></div></div>';
+      grid.innerHTML = '<div class="box-grid">' + boxes + '</div>';
       grid.querySelectorAll('[data-box]').forEach(btn => {
         btn.onclick = () => this.openSeasonBox(btn.dataset.box);
       });
-      const forge = $('forge67');
-      if (forge) forge.onclick = async () => {
-        if (forge.disabled) return;
-        forge.disabled = true; forge.textContent = 'ABRINDO…';
-        let r;
-        try { r = await MA.Season.forge(); }
-        catch (e) { r = { error: 'Falha na Caixa Garantida: ' + e.message }; }
-        if (r.error) { MA.Audio.deny(); this.toast('❌ ' + r.error, 'bad'); this.renderBoxes(); return; }
-        MA.Audio.pickup();
-        this.toast('📦 Caixa garantida: <b>' + r.item.name + '</b>');
-        this.renderShop();
-      };
     },
 
     async openSeasonBox(id) {
@@ -270,7 +327,10 @@
     },
 
     showLootResults(opened) {
-      const colors = { common: '#9fb3c8', rare: '#2de2ff', epic: '#9b65ff', legendary: '#ffd166', mythic: '#ff4fbd' };
+      const colors = {
+        common:'#9fb3c8', uncommon:'#2de2ff', legendary:'#ffd166', mythical:'#ff4fbd',
+        ultimate:'#ff6b35', secret:'#72ff8b', rare:'#2de2ff', epic:'#9b65ff', mythic:'#ff4fbd'
+      };
       $('lootTitle').textContent = opened.box.name + ' ABERTO';
       $('lootResults').innerHTML = opened.results.map(r =>
         '<div class="loot-result ' + (r.guaranteed ? 'guaranteed' : '') + '" style="--rc:' + (colors[r.rarity] || colors.common) + '">' +
@@ -279,8 +339,7 @@
         '</small></div>').join('');
       const sp = opened.progress;
       $('lootProgress').innerHTML = 'Caixas abertas: <b>' + MA.fmt(sp.boxesOpened) + '</b> · ' +
-        'próxima garantia: <b>' + Math.min(7, sp.pity + 1) + '/7</b> · ' +
-        'fragmentos: <b>' + MA.fmt(sp.fragments) + '</b> · Impulsos: <b>' + sp.boosts + '</b>';
+        'chance de skin: <b>50%</b> · recursos automáticos: <b>50%</b>';
       const again = $('lootAgain');
       again.textContent = 'ABRIR OUTRA · 🪙 ' + MA.fmt(opened.box.price);
       again.disabled = MA.Profile.data.coins < opened.box.price;
@@ -312,6 +371,45 @@
       if (MA.Previews) MA.Previews.hydrate($('invGrid'));
     },
 
+    /* ============================================================ ÁLBUM */
+    openAlbum(tab) {
+      this.albumTab = tab || this.albumTab;
+      this.renderAlbum();
+      this.screen('album');
+    },
+
+    renderAlbum() {
+      document.querySelectorAll('#album .tab').forEach(t =>
+        t.classList.toggle('sel', t.dataset.tab === this.albumTab));
+      const all = MA.STICKERS.slice();
+      const ownedCount = all.filter(s => MA.Profile.owns('sticker', s.id)).length;
+      $('albumProgress').textContent = ownedCount + ' / ' + all.length + ' coletadas';
+      const list = this.albumTab === 'all' ? all : all.filter(s => s.kind === this.albumTab);
+      $('albumGrid').innerHTML = list.map(s => {
+        const rarity = MA.ITEM_RARITY[s.rarity] || MA.ITEM_RARITY.common;
+        const owned = MA.Profile.owns('sticker', s.id);
+        const equipped = MA.Profile.isEquipped('sticker', s.id);
+        const kind = s.kind === 'map' ? 'MAPA' : s.kind === 'boss' ? 'CHEFE' : 'NPC';
+        return '<article class="icard album-card ' + (owned ? '' : 'locked-sticker') + (equipped ? ' isequipped' : '') +
+          '" style="--rc:' + s.color + '"><div class="irar" style="color:' + rarity.color + '">' + rarity.name + '</div>' +
+          '<div class="sticker-frame"><div class="iico">' + s.icon + '</div></div><div class="album-kind">' + kind + '</div>' +
+          '<div class="iname">' + (owned ? MA.esc(s.name) : '???') + '</div><div class="idesc">' +
+          (owned ? 'Colecionada · distintivo disponível' : 'Ainda não está no seu álbum') + '</div>' +
+          (owned
+            ? '<button class="ibtn ' + (equipped ? 'uneq' : 'eq') + '" data-album-equip="' + s.id + '">' + (equipped ? '✔ EQUIPADA' : 'USAR DISTINTIVO') + '</button>'
+            : '<button class="ibtn buy" data-album-shop="1">VER NA LOJA</button>') + '</article>';
+      }).join('');
+      $('albumGrid').querySelectorAll('[data-album-equip]').forEach(b => b.onclick = () => {
+        const def = MA.findItem('sticker', b.dataset.albumEquip);
+        const r = MA.Profile.equip('sticker', def.id);
+        if (r.error) return this.toast('❌ ' + r.error, 'bad');
+        MA.Profile.save(); MA.Audio.ui();
+        this.toast('🃏 Distintivo equipado: <b>' + def.name + '</b>');
+        this.renderAlbum();
+      });
+      $('albumGrid').querySelectorAll('[data-album-shop]').forEach(b => b.onclick = () => this.openShop('sticker'));
+    },
+
     /* --------------------------------------------------------- card HTML */
     card(item, ctx) {
       const r = MA.ITEM_RARITY[item.rarity] || MA.ITEM_RARITY.common;
@@ -320,6 +418,7 @@
       const lv = MA.Profile.data.level;
       const canLv = lv >= (item.level || 1);
       const canCoin = MA.Profile.data.coins >= item.price;
+      const cardColor = item.color || r.color;
 
       const icon = item.type === 'skin' ? item.face
                  : item.type === 'armor' ? '🛡️'
@@ -338,13 +437,21 @@
           (w.count > 1 ? w.count + ' projéteis' : (1 / w.rate).toFixed(1) + '/s') + '</span></div>';
       } else if (item.type === 'ability') {
         stats = '<div class="istats"><span>TECLA F</span><span>' + item.cooldown + 's recarga</span></div>';
+      } else if (item.type === 'sticker') {
+        const kind = item.kind === 'map' ? 'MAPA' : item.kind === 'boss' ? 'CHEFE' : 'NPC';
+        stats = '<div class="istats"><span>' + kind + '</span><span>SÓ COSMÉTICA</span></div>';
       }
 
       let action;
       if (ctx === 'shop') {
         if (owned) action = '<button class="ibtn owned" disabled>✔ ADQUIRIDO</button>';
-        else if (item.boxOnly) action = '<button class="ibtn boxonly" data-act="boxes">📦 ABRIR CAIXAS 67</button>';
-        else if (!canLv) action = '<button class="ibtn lock" disabled>🔒 NÍVEL ' + item.level + '</button>';
+        else if (item.boxOnly && item.acquisition === 'boss') {
+          action = '<button class="ibtn boxonly" disabled>👹 DROP DE CHEFE</button>';
+        } else if (item.boxOnly && item.acquisition === 'both') {
+          action = '<button class="ibtn boxonly" data-act="boxes" title="Também pode cair de chefes">📦 CAIXA OU 👹 CHEFE</button>';
+        } else if (item.boxOnly) {
+          action = '<button class="ibtn boxonly" data-act="boxes">📦 ABRIR CAIXAS 67</button>';
+        } else if (!canLv) action = '<button class="ibtn lock" disabled>🔒 NÍVEL ' + item.level + '</button>';
         else action = '<button class="ibtn buy' + (canCoin ? '' : ' poor') + '" data-type="' + item.type +
           '" data-id="' + item.id + '" data-act="buy">🪙 ' + MA.fmt(item.price) + '</button>';
       } else {
@@ -352,19 +459,23 @@
         action = '<div class="ibtns">' +
           '<button class="ibtn ' + (eq ? 'uneq' : 'eq') + '" data-type="' + item.type +
             '" data-id="' + item.id + '" data-act="equip">' + (eq ? '✔ EQUIPADO' : 'EQUIPAR') + '</button>' +
-          (item.starter ? '' :
+          (item.starter || item.noSell ? '' :
             '<button class="ibtn sell" data-type="' + item.type + '" data-id="' + item.id +
-            '" data-act="market" title="Revender por um valor definido por você">💱</button>' +
+            '" data-act="market" title="' + (item.type === 'skin'
+              ? 'Anunciar pelo preço fixo de ' + MA.fmt(item.marketValue) + ' moedas'
+              : 'Revender dentro da faixa permitida') + '">💱</button>' +
             (item.boxOnly ? '' : '<button class="ibtn sell" data-type="' + item.type + '" data-id="' + item.id +
             '" data-act="sell" title="Venda rápida por ' + sellv + '">🪙 ' + MA.fmt(sellv) + '</button>')) +
           '</div>';
       }
 
-      return '<div class="icard ' + item.rarity + (eq ? ' isequipped' : '') + (item.seasonal ? ' seasonal' : '') + '" style="--rc:' + r.color + '">' +
+      const visual = item.type === 'sticker'
+        ? '<div class="sticker-frame"><div class="iico">' + icon + '</div></div>'
+        : '<div class="iico itempreview" data-preview-type="' + item.type + '" data-preview-id="' + item.id + '">' +
+          '<span>' + icon + '</span><i></i></div>';
+      return '<div class="icard ' + item.rarity + (eq ? ' isequipped' : '') + (item.seasonal ? ' seasonal' : '') + '" style="--rc:' + cardColor + '">' +
         (item.seasonal ? '<div class="season-chip">TEMPORADA 67</div>' : '') +
-        '<div class="irar" style="color:' + r.color + '">' + r.name + '</div>' +
-        '<div class="iico itempreview" data-preview-type="' + item.type + '" data-preview-id="' + item.id + '">' +
-          '<span>' + icon + '</span><i></i></div>' +
+        '<div class="irar" style="color:' + cardColor + '">' + r.name + '</div>' + visual +
         '<div class="iname">' + item.name + '</div>' +
         '<div class="idesc">' + (item.desc || '') + '</div>' +
         stats + action + '</div>';
@@ -400,8 +511,11 @@
             }
             MA.Market.abrir('vender');
           } else if (act === 'sell') {
+            const marketHint = item.type === 'skin'
+              ? 'No Mercado, esta skin vale o preço fixo de ' + MA.fmt(item.marketValue) + ' moedas.'
+              : 'No Mercado você pode anunciar dentro da faixa permitida.';
             if (!confirm('Fazer venda rápida de "' + item.name + '" por ' +
-                MA.fmt(Math.round(item.price * MA.CONFIG.SELL_RATE)) + ' moedas?\n\nNo Mercado você pode definir o seu próprio preço.')) return;
+                MA.fmt(Math.round(item.price * MA.CONFIG.SELL_RATE)) + ' moedas?\n\n' + marketHint)) return;
             const r = MA.Profile.sell(item);
             if (r.error) { this.toast('❌ ' + r.error, 'bad'); MA.Audio.deny(); return; }
             this.toast('💰 Venda rápida: <b>' + MA.fmt(r.value) + '</b> moedas');
@@ -543,21 +657,26 @@
 
     bind() {
       const on = (id, fn) => { const e = $(id); if (e) e.onclick = () => { MA.Audio.init(); MA.Audio.ui(); fn(); }; };
-      on('playBtnHub', () => {
+      on('playBtnHub', () => this.launchHubMode());
+      document.querySelectorAll('[data-hub-mode]').forEach(btn => {
+        btn.onclick = () => { MA.Audio.init(); MA.Audio.ui(); this.selectHubMode(btn.dataset.hubMode); };
+      });
+      on('playmodeClose', () => this.openHub());
+      on('soloModeBtn', () => {
         if (MA.Profile.equippedWeapons().length === 0) {
           this.toast('⚠️ Compre e equipe uma arma antes de jogar.', 'bad');
-          this.openShop('weapon');
-          return;
+          this.openShop('weapon'); return;
         }
-        if (MA._renderMapList) MA._renderMapList();
-        this.screen('start');
+        if (MA._startSoloAuto) MA._startSoloAuto();
       });
+      on('coopModeBtn', () => MA.MPUI.open('coop'));
+      on('pvpModeBtn', () => MA.MPUI.open('pvp'));
       on('seasonBtn', () => this.openShop('box'));
       on('shopBtn', () => this.openShop());
       on('lootClose', () => this.openShop('box'));
       on('lootAgain', () => { if (this._lastBox) this.openSeasonBox(this._lastBox); });
       on('invBtn', () => this.openInventory());
-      on('mpBtn', () => MA.MPUI.open());
+      on('albumBtn', () => this.openAlbum());
       on('mkBtn', () => { MA.Market.preencherGift(); MA.Market.abrir('comprar'); });
       on('glBtn', () => this.openGoals('daily'));
       on('glClose', () => this.openHub());
@@ -609,12 +728,26 @@
       });
       on('shopClose', () => this.openHub());
       on('invClose', () => this.openHub());
+      on('albumClose', () => this.openHub());
       on('backToHub', () => this.openHub());
 
       document.querySelectorAll('#shop .tab').forEach(t =>
         t.onclick = () => { MA.Audio.ui(); this.openShop(t.dataset.tab); });
       document.querySelectorAll('#inventory .tab').forEach(t =>
         t.onclick = () => { MA.Audio.ui(); this.openInventory(t.dataset.tab); });
+      document.querySelectorAll('#album .tab').forEach(t =>
+        t.onclick = () => { MA.Audio.ui(); this.openAlbum(t.dataset.tab); });
+
+      if (!this._hubKeyboardBound) {
+        this._hubKeyboardBound = true;
+        document.addEventListener('keydown', ev => {
+          const target = ev.target && ev.target.tagName;
+          if (ev.code !== 'Enter' || target === 'INPUT' || target === 'TEXTAREA' || target === 'SELECT') return;
+          const hub = $('hub');
+          if (!hub || hub.classList.contains('hid')) return;
+          ev.preventDefault(); $('playBtnHub').click();
+        });
+      }
 
       if (MA.Season && !this._seasonTimer) {
         this._seasonTimer = setInterval(() => {

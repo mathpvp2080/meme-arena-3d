@@ -167,15 +167,13 @@ rápida, mais forte e mais absurda que a anterior.
 
 O QUE TEM NO JOGO
 
-• 5 mapas — Arena Brainrot, Planície de Ohio, Esgoto Skibidi, Praia do Tubarão
-  e Núcleo do Servidor, cada um com ambientação, cores e perigos próprios.
-• 16 inimigos diferentes, dos corredores rápidos aos tanques blindados, mais
-  versões de elite com coroa dourada.
-• 5 chefes com três fases cada, invocação de lacaios e ataques especiais.
+• 6 mapas — Arena 67, Planície de Ohio, Esgoto Skibidi, Praia Italiana,
+  Servidor do Algoritmo e Cidade do Caos, com ambientações e perigos próprios.
+• 4 inimigos em rotação, versões de elite e quatro chefes gigantes.
 • 20 melhorias permanentes — a cada onda vencida você escolhe uma de três cartas.
-• 14 skins, 9 armaduras, 9 armas e 3 habilidades com modelos e mecânicas próprias.
-• Temporada 67 com caixas de moeda virtual, chances visíveis, garantia da 7ª
-  abertura, fragmentos de duplicata e recompensas aleatórias de chefe.
+• 33 skins Polygonal Mind animadas e variadas, 9 armaduras, 9 armas e 3 habilidades.
+• Temporada 67 com caixas de moeda virtual e chefes: 50% skin ou 50% moedas/XP.
+  No ramo de skin, as chances de raridade ficam visíveis antes da abertura.
 • Modo Brainrot: encha a barra durante o combate e ative a ultimate.
 • Progressão de conta com nível, experiência, moedas e sete patentes.
 • Loja, inventário, prévias 3D, presentes e mercado entre jogadores.

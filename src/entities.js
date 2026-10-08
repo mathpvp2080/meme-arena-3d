@@ -251,6 +251,7 @@
       color: 0xffffff,
       map: MA.Tex.face(Object.assign({}, skin, {
         id: 'skin:' + skin.id,
+        emoji: skin.face,
         color: skin.skinTone,
         ring: MA.shade(skin.skinTone, -55),
         noRing: true
@@ -609,6 +610,17 @@
           add(mesh) { mesh.castShadow = true; g.add(mesh); return mesh; }
         });
       } catch (err) { console.warn('[MemeArena] build falhou:', def.id, err); }
+    }
+
+    /* Modelo externo opcional do NPC. Mantém barra, brilho, hitbox e IA; só
+       substitui a aparência criada acima. Se falhar, o build procedural fica. */
+    if (MA.SkinModels && MA.SkinModels.enemySpecFor(def)) {
+      try {
+        MA.SkinModels.applyEnemy({
+          g, body, head, a1, a2, l1, l2, hb, glow, def, trans: false,
+          anim: fn => anim.push(fn)
+        });
+      } catch (err) { console.warn('[MemeArena] modelo .glb do NPC falhou:', def.id, err); }
     }
 
     scene.add(g);

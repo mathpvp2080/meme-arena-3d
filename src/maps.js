@@ -2,7 +2,7 @@
    MEME ARENA 3D — mapas
 
    Cada mapa troca céu, chão, névoa, luzes, obstáculos, cenário de fundo
-   e os cartazes. Todos liberam por NÍVEL do jogador.
+   e os cartazes. As partidas sorteiam o mapa automaticamente.
    ===================================================================== */
 (function (MA) {
   'use strict';
@@ -20,7 +20,7 @@
       obstacle: { style: 'neonbox', palette: [0x6572ff, 0x2de2ff, 0xff4fbd, 0x9b65ff, 0xe7ecff, 0x424fc9], count: 20 },
       monument: 'likes',
       signs: [['TEMPORADA\n67', '#6572ff'], ['PROTOCOLO\n6·7 ATIVO', '#ff4fbd'],
-              ['7ª CAIXA\nGARANTIDA', '#2de2ff'], ['SEIS PARTES\nCORAGEM', '#6572ff'],
+              ['50% SKIN\n50% RECURSOS', '#2de2ff'], ['SEIS PARTES\nCORAGEM', '#6572ff'],
               ['SETE PARTES\nCAOS', '#ff4fbd'], ['PULSO 67\nCARREGADO', '#ffffff'],
               ['03 OUT\n28 NOV', '#e7ecff'], ['ARTE E ÁUDIO\nORIGINAIS', '#2de2ff']]
     },
@@ -91,13 +91,39 @@
       signs: [['DATACENTER\nSETOR 7', '#00e5ff'], ['NÃO DESLIGUE\nO ALGORITMO', '#ff00c8'],
               ['ENGAJAMENTO\n+999%', '#39ff88'], ['ROLE\nINFINITAMENTE', '#ffe600'],
               ['CPU 100%\nSEMPRE', '#6a5bff'], ['VOCÊ É\nO PRODUTO', '#ff2d6f']]
+    },
+
+    {
+      id: 'cidade', name: 'Cidade do Caos', icon: '🏙️', level: 1,
+      modes: ['pvp', 'pvpve'],
+      desc: 'Mapa competitivo urbano com ruas, prédios, carros e coberturas KayKit.',
+      bg: 0x111a30, fog: 0x263653, fogD: 0.009,
+      ground: { base: '#384256', grid: 'rgba(250,210,80,.28)', fine: 'rgba(220,235,255,.13)', speck: true, repeat: 22 },
+      sky: { stops: ['#0a1124', '#192b4d', '#426684', '#e47d68', '#f6b56b', '#283852'], stars: 90, sun: ['rgba(255,245,210,1)', 'rgba(255,170,105,.75)', 'rgba(255,95,115,.22)'] },
+      ring: 0xffc857, wall: 0x4685a8, wallEmissive: 0x173b62,
+      ambient: [0x52647e, .46], hemi: [0xbfe7ff, 0x2c3040, .48], sun3d: [0xffedcf, 1.3],
+      neon: [0xff4fbd, 0x2de2ff, 0xffc857, 0x6572ff],
+      obstacle: { style: 'neonbox', palette: [0xffc857], count: 0 },
+      monument: 'city', props: 'city',
+      signs: [['PVP\n2–6 POR TIME', '#ff4fbd'], ['RUA DO\nCAOS', '#2de2ff'],
+              ['SEM PAY\nTO WIN', '#ffc857'], ['EQUIPE\nROSA', '#ff4fbd'],
+              ['EQUIPE\nCIANO', '#2de2ff'], ['KAYKIT CITY\nCC0', '#ffffff']]
     }
   ];
 
   MA.mapById = function (id) {
     return MA.MAPS.find(m => m.id === id) || MA.MAPS[0];
   };
-  MA.mapUnlocked = function (map, level) {
-    return level >= (map.level || 1);
+  MA.mapUnlocked = function () { return true; };
+
+  /* `modes` é opcional. Cidade do Caos fica no sorteio competitivo sem
+     entrar no sorteio do Solo ou Coop. */
+  MA.mapsForMode = function (mode) {
+    return MA.MAPS.filter(m => !m.modes || m.modes.indexOf(mode || 'solo') >= 0);
+  };
+  MA.randomMap = function (mode, excludeId) {
+    let pool = MA.mapsForMode(mode);
+    if (pool.length > 1 && excludeId) pool = pool.filter(m => m.id !== excludeId);
+    return pool[Math.floor(Math.random() * pool.length)] || MA.MAPS[0];
   };
 })(window.MA);

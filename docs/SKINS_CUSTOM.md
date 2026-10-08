@@ -46,7 +46,6 @@ npm run export:base
 
 | Site | O que tem |
 |---|---|
-| https://quaternius.com | pacotes de personagens low-poly prontos (.glb/.blend), CC0 |
 | https://kenney.nl/assets | bonecos estilizados e acessórios, CC0 |
 | https://poly.pizza | busca de modelos low-poly, maioria CC0/CC-BY |
 | https://www.mixamo.com | personagens **com rig e animações** prontos (grátis, conta Adobe) |
@@ -74,7 +73,7 @@ Depois selecione o boneco e o acessório e exporte tudo junto como um `.glb`.
 
 ```js
 MA.SKIN_MODELS = {
-  'chill': {
+  'coolfries': {
     url: 'assets/skins/acessorio-bone.glb',
     mode: 'part', anchor: 'head',
     fit: false, keepPivot: true   // já nasce encaixado na cabeça
@@ -126,13 +125,13 @@ assets/skins/meu-boneco.glb
 ## 4. Registrar a skin
 
 Abra `src/skinmodels.js` e preencha `MA.SKIN_MODELS`. A chave é o **id da skin**
-em `src/items.js` (`chill`, `hacker`, `doge`, `rizzler`, ...).
+em `src/items.js` (`coolfries`, `pizza`, `robot`, `cosmicperson`, ...).
 
 ### Modelo inteiro (substitui o boneco)
 
 ```js
 MA.SKIN_MODELS = {
-  'chill': {
+  'coolfries': {
     url: 'assets/skins/meu-boneco.glb',
     mode: 'full',
     height: 2.62,   // altura final no jogo
@@ -147,8 +146,8 @@ MA.SKIN_MODELS = {
 
 ```js
 MA.SKIN_MODELS = {
-  'doge': {
-    url: 'assets/skins/orelhas-doge.glb',
+  'pizza': {
+    url: 'assets/skins/acessorio-exemplo.glb',
     mode: 'part',
     anchor: 'hat',      // head | hat | body | back | handL | handR | gun
     size: 0.9,          // maior dimensão da peça

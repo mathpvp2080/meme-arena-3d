@@ -619,7 +619,11 @@
       c.a1.scale.set(1.7, 1.2, 1.7); c.a2.scale.set(1.7, 1.2, 1.7);
     },
 
+    dogeboss(c) { BUILDS.doge(c); },
+
     tralaboss(c) { BUILDS.tralala(c); },
+
+    tungboss(c) { BUILDS.tung(c); },
 
     bombaboss(c) { BUILDS.bombard(c); },
 

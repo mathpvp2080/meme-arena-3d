@@ -16,13 +16,7 @@
 
       /* escolha do modo */
       document.querySelectorAll('#mpHome .mpmode').forEach(el => {
-        el.onclick = () => {
-          document.querySelectorAll('#mpHome .mpmode').forEach(x => x.classList.remove('sel'));
-          el.classList.add('sel');
-          this.mode = el.dataset.mode;
-          $('mpModeTag').textContent = this.mode === 'pvp' ? 'PVP' : 'CO-OP';
-          MA.Audio.ui();
-        };
+        el.onclick = () => { this.selectMode(el.dataset.mode); MA.Audio.ui(); };
       });
 
       $('mpCreate').onclick = () => this.create();
@@ -38,8 +32,8 @@
       };
       $('mpStart').onclick = () => {
         if (!M.isHost) return;
-        if (M.count < 2) { this.msg('Espere pelo menos mais um jogador entrar.'); return; }
-        M.startMatch();
+        const r = M.startMatch();
+        if (r.error) { this.msg(r.error); MA.Audio.deny(); return; }
         MA._startMultiMatch();
       };
 
@@ -52,11 +46,14 @@
           const hint = $('mpHint');
           if (hint) {
             hint.innerHTML = M.isHost
-              ? 'Você é o anfitrião: quando todo mundo estiver aqui, clique em <b>COMEÇAR PARTIDA</b>.'
+              ? (M.canStart() ? 'Equipes prontas! Clique em <b>COMEÇAR PARTIDA</b>.'
+                : (M.mode === 'coop' ? 'O Coop precisa de pelo menos 2 jogadores.' : 'Cada equipe precisa de pelo menos 2 jogadores.'))
               : 'Esperando o anfitrião começar a partida…';
           }
         }
       });
+      M.on('room', () => { this.mode = M.mode; this.selectMode(M.mode); this.showLobby(); });
+      M.on('reject', reason => { this.showHome(); this.msg(reason || 'Não foi possível entrar.'); MA.Audio.deny(); });
       M.on('chat', m => {
         /* quem você bloqueou simplesmente não existe pra você */
         if (MA.Mod && MA.Mod.estaBloqueado(m.name)) return;
@@ -88,8 +85,19 @@
       $('mpChatIn').onkeydown = e => { if (e.key === 'Enter') enviar(); };
     },
 
-    /* chamada pelo botão MULTIPLAYER do hub */
-    open() {
+    modeLabel(mode) {
+      return mode === 'pvp' ? 'PVP PURO' : mode === 'pvpve' ? 'PVPVE' : 'COOP PvE';
+    },
+
+    selectMode(mode) {
+      this.mode = ['coop', 'pvp', 'pvpve'].indexOf(mode) >= 0 ? mode : 'coop';
+      document.querySelectorAll('#mpHome .mpmode').forEach(x =>
+        x.classList.toggle('sel', x.dataset.mode === this.mode));
+      $('mpModeTag').textContent = this.modeLabel(this.mode);
+    },
+
+    /* chamada pelos botões do hub e do seletor principal */
+    open(mode) {
       const M = MA.Multi;
       if (!M.unlocked()) {
         MA.Audio.deny();
@@ -97,6 +105,7 @@
         return;
       }
       MA._bindMulti && MA._bindMulti();
+      this.selectMode(mode || this.mode);
       this.showHome();
       MA.MetaUI.screen('multi');
       this.loadRooms();
@@ -139,14 +148,18 @@
       $('mpBigCode').textContent = M.code;
       this.msg('');
       const mapa = MA.mapById(M.map);
+      const modeIcon = M.mode === 'coop' ? '🤝' : M.mode === 'pvp' ? '⚔️' : '💥';
+      $('mpModeTag').textContent = this.modeLabel(M.mode);
       $('mpLobbyInfo').innerHTML =
-        (M.mode === 'pvp' ? '⚔️ PVP' : '🤝 CO-OP') + ' · ' + mapa.icon + ' ' + mapa.name +
+        modeIcon + ' ' + this.modeLabel(M.mode) + ' · 🎲 ' + mapa.icon + ' ' + mapa.name +
+        ' · ' + M.count + '/' + M.maxPlayers() + ' jogadores' +
         (MA.Net.online
           ? ' · <b class="okdot">🌐 online</b>'
           : ' · <b class="warndot">⚠️ MODO LOCAL</b> — só enxerga outras abas deste navegador. ' +
             'Saia, volte e entre com sua conta para jogar pela internet.');
+      const minimum = M.mode === 'coop' ? 'mínimo de 2 jogadores' : 'mínimo de 2 jogadores em cada equipe';
       $('mpHint').innerHTML = M.isHost
-        ? 'Você é o anfitrião: quando todo mundo estiver aqui, clique em <b>COMEÇAR PARTIDA</b>.'
+        ? 'Você é o anfitrião: ' + minimum + '. Quando todos estiverem aqui, clique em <b>COMEÇAR PARTIDA</b>.'
         : 'Esperando o anfitrião começar a partida…';
       this.renderPlayers();
       this._diag();
@@ -176,10 +189,13 @@
       if (!box || !M.active) return;
       if (M.count > 1) clearTimeout(this._diagT);
       const eu = M.me;
-      const todos = [{ name: eu.name, level: eu.level, skin: eu.skin, host: M.isHost, eu: true }]
-        .concat(M.peerList.map(p => ({ name: p.name, level: p.level, skin: p.skin, host: false })));
-      box.innerHTML = todos.map(p => {
+      const todos = [{ name: eu.name, level: eu.level, skin: eu.skin, sticker: eu.sticker,
+        team: eu.team, host: M.isHost, eu: true }]
+        .concat(M.peerList.map(p => ({ name: p.name, level: p.level, skin: p.skin, sticker: p.sticker,
+          team: p.team, host: !!p.host, eu: false })));
+      const playerHtml = p => {
         const sk = MA.findItem('skin', p.skin) || MA.SKINS[0];
+        const sticker = p.sticker ? MA.findItem('sticker', p.sticker) : null;
         const bloq = !p.eu && MA.Mod && MA.Mod.estaBloqueado(p.name);
         const safeName = MA.esc(p.name);
         const safeLevel = Math.max(1, Math.floor(Number(p.level) || 1));
@@ -190,16 +206,25 @@
               : '<button class="mppbtn" data-block="' + safeName + '" title="bloquear">🚫</button>') +
             '<button class="mppbtn" data-report="' + safeName + '" title="denunciar">🚩</button>' +
           '</div>';
-        return '<div class="mpp' + (bloq ? ' bloqueado' : '') + '">' +
+        return '<div class="mpp team-' + (p.team || 'coop') + (bloq ? ' bloqueado' : '') + '">' +
           '<div class="mppface">' + MA.esc(sk.face) + '</div>' +
           '<div class="mppinfo"><b>' + safeName + '</b>' + (p.eu ? ' <span class="dim">(você)</span>' : '') +
+          (sticker ? ' <span class="mppsticker" title="' + MA.esc(sticker.name) + '">' + sticker.icon + '</span>' : '') +
           '<div class="dim">nível ' + safeLevel + (p.host ? ' · 👑 anfitrião' : '') +
-            (bloq ? ' · 🚫 bloqueado' : '') + '</div></div>' +
-          acoes +
-          '</div>';
-      }).join('') +
-        Array.from({ length: Math.max(0, 4 - todos.length) },
-          () => '<div class="mpp empty"><div class="mppface">＋</div><div class="mppinfo dim">vaga aberta</div></div>').join('');
+            (bloq ? ' · 🚫 bloqueado' : '') + '</div></div>' + acoes + '</div>';
+      };
+      const empty = team => '<div class="mpp empty team-' + team + '"><div class="mppface">＋</div><div class="mppinfo dim">vaga aberta</div></div>';
+      if (M.mode === 'pvp' || M.mode === 'pvpve') {
+        const pink = todos.filter(p => p.team === 'pink');
+        const cyan = todos.filter(p => p.team === 'cyan');
+        box.innerHTML = '<div class="mpteam-title pink">EQUIPE ROSA · ' + pink.length + '/6</div>' + pink.map(playerHtml).join('') +
+          Array.from({ length: 6 - pink.length }, () => empty('pink')).join('') +
+          '<div class="mpteam-title cyan">EQUIPE CIANO · ' + cyan.length + '/6</div>' + cyan.map(playerHtml).join('') +
+          Array.from({ length: 6 - cyan.length }, () => empty('cyan')).join('');
+      } else {
+        box.innerHTML = todos.map(playerHtml).join('') +
+          Array.from({ length: Math.max(0, 6 - todos.length) }, () => empty('coop')).join('');
+      }
       box.querySelectorAll('[data-block]').forEach(b => {
         b.onclick = () => MA.Mod.bloquear(b.dataset.block);
       });
@@ -218,9 +243,8 @@
     async create() {
       const M = MA.Multi;
       this.msg('Criando sala…');
-      const mapa = MA.store.get('map', 'arena');
-      const diff = MA.store.get('diff', 'norm');
-      const r = await M.createRoom(this.mode, mapa, diff);
+      const picked = MA.randomMap(this.mode, MA.store.get('map', ''));
+      const r = await M.createRoom(this.mode, picked.id, 'auto');
       if (r.error) { this.msg(r.error); MA.Audio.deny(); return; }
       MA.Audio.pickup();
       this.showLobby();
@@ -259,11 +283,11 @@
           const mapa = MA.mapById(r.map);
           const safeCode = MA.esc(r.code);
           const players = Math.max(0, Math.floor(Number(r.players) || 0));
-          const maxPlayers = Math.max(1, Math.min(8, Math.floor(Number(r.max_players) || 4)));
+          const maxPlayers = Math.max(2, Math.min(12, Math.floor(Number(r.max_players) || (r.mode === 'coop' ? 6 : 12))));
           return '<div class="mproom" data-code="' + safeCode + '">' +
             '<div class="mprcode">' + safeCode + '</div>' +
             '<div class="mprinfo"><b>' + MA.esc(r.host_name) + '</b>' +
-            '<div class="dim">' + (r.mode === 'pvp' ? '⚔️ PvP' : '🤝 Co-op') + ' · ' +
+            '<div class="dim">' + (r.mode === 'pvp' ? '⚔️ PvP puro' : r.mode === 'pvpve' ? '💥 PvPvE' : '🤝 Coop PvE') + ' · ' +
             mapa.icon + ' ' + mapa.name + '</div></div>' +
             '<div class="mprn">' + players + '/' + maxPlayers + '</div>' +
             '</div>';

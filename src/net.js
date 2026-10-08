@@ -45,8 +45,8 @@
       level: 1,
       xp: 0,
       coins: CFG.START_COINS,
-      inventory: [],                    // ['skin:chill','armor:hoodie', ...]
-      equipped: { skin: 'chill', armor: 'hoodie', weapons: [], ability: '' },
+      inventory: [],                    // ['skin:coolfries','armor:hoodie', ...]
+      equipped: { skin: 'coolfries', armor: 'hoodie', weapons: [], ability: '' },
       stats: { games: 0, bestScore: 0, totalScore: 0, kills: 0, bosses: 0, bestWave: 0, maxCombo: 1, playtime: 0 },
       createdAt: Date.now(),
       updatedAt: Date.now()
@@ -198,7 +198,7 @@
       if (error || !data) return null;
       return {
         username: data.username, level: data.level, xp: data.xp, coins: data.coins,
-        inventory: data.inventory || [], equipped: data.equipped || { skin: 'chill', armor: 'hoodie', weapons: [], ability: '' },
+        inventory: data.inventory || [], equipped: data.equipped || { skin: 'coolfries', armor: 'hoodie', weapons: [], ability: '' },
         stats: data.stats || {}, updatedAt: Date.now()
       };
     },

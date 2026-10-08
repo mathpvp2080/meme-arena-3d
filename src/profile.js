@@ -17,10 +17,24 @@
       if (!d) return;
       d.inventory = d.inventory || [];
       d.equipped = d.equipped || {};
-      d.equipped.skin = d.equipped.skin || 'chill';
+
+      /* O elenco Polygonal Mind substitui os catálogos jogáveis anteriores. Mapeia
+         inventário e equipamento sem apagar as compras já feitas pelo jogador. */
+      const skinMap = MA.SKIN_ID_MIGRATION || {};
+      d.inventory = Array.from(new Set(d.inventory.map(key => {
+        const match = /^skin:(.+)$/.exec(key);
+        return match && skinMap[match[1]] ? 'skin:' + skinMap[match[1]] : key;
+      })));
+      const previousSkin = d.equipped.skin || '';
+      d.equipped.skin = skinMap[previousSkin] || previousSkin;
+      if (!MA.SKINS.some(s => s.id === d.equipped.skin)) {
+        const starter = MA.SKINS.find(s => s.starter) || MA.SKINS[0];
+        d.equipped.skin = starter ? starter.id : 'coolfries';
+      }
       d.equipped.armor = d.equipped.armor || 'hoodie';
       d.equipped.weapons = d.equipped.weapons || [];
       d.equipped.ability = d.equipped.ability || '';
+      d.equipped.sticker = d.equipped.sticker || '';
       d.stats = Object.assign(
         { games: 0, bestScore: 0, totalScore: 0, kills: 0, bosses: 0, bestWave: 0, maxCombo: 1, playtime: 0 },
         d.stats || {});
@@ -105,6 +119,7 @@
     equippedSkin()  { return MA.findItem('skin',  this.data.equipped.skin)  || MA.SKINS[0]; },
     equippedArmor() { return MA.findItem('armor', this.data.equipped.armor) || MA.ARMORS[0]; },
     equippedAbility() { return MA.findItem('ability', this.data.equipped.ability) || null; },
+    equippedSticker() { return MA.findItem('sticker', this.data.equipped.sticker) || null; },
     equippedWeapons() {
       const ids = this.data.equipped.weapons.filter(id => this.owns('weapon', id));
       return ids.map(id => MA.WEAPONS.findIndex(w => w.id === id)).filter(i => i >= 0);
@@ -113,7 +128,11 @@
     /* -------------------------------------------------------------- loja */
     canBuy(item) {
       if (this.owns(item.type, item.id)) return { error: 'Você já tem esse item.' };
-      if (item.boxOnly) return { error: 'Item sazonal: obtenha em uma Caixa 67 ou no drop aleatório de um chefe.' };
+      if (item.boxOnly) {
+        const source = item.acquisition === 'boss' ? 'derrotando chefes' :
+          item.acquisition === 'box' ? 'abrindo caixas' : 'abrindo caixas ou derrotando chefes';
+        return { error: 'Esta skin não é vendida pela loja: obtenha ' + source + '.' };
+      }
       if (this.data.level < (item.level || 1)) return { error: 'Precisa ser nível ' + item.level + '.' };
       if (this.data.coins < item.price) return { error: 'Moedas insuficientes.' };
       return { ok: true };
@@ -136,6 +155,7 @@
     sell(item) {
       if (!this.owns(item.type, item.id)) return { error: 'Você não possui esse item.' };
       if (item.starter) return { error: 'Itens iniciais não podem ser vendidos.' };
+      if (item.noSell) return { error: 'Figurinhas de coleção não podem ser vendidas.' };
       if (item.boxOnly) return { error: 'Itens sazonais são revendidos no Mercado com preço definido por você.' };
       if (this.isEquipped(item.type, item.id)) return { error: 'Desequipe o item antes de vender.' };
       const value = Math.round((item.price || 0) * CFG.SELL_RATE);

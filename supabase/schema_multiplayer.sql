@@ -23,15 +23,20 @@ create table if not exists public.rooms (
   code        text primary key,
   host_id     uuid not null references auth.users (id) on delete cascade,
   host_name   text not null,
-  mode        text not null default 'coop',        -- 'coop' | 'pvp'
+  mode        text not null default 'coop',        -- 'coop' | 'pvp' | 'pvpve'
   map         text not null default 'arena',
-  diff        text not null default 'normal',
+  diff        text not null default 'auto',
   players     int  not null default 1,
-  max_players int  not null default 4,
+  max_players int  not null default 6,
   state       text not null default 'lobby',       -- 'lobby' | 'playing'
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+
+-- Migração de instalações existentes: as capacidades e a dificuldade agora
+-- são automáticas, sem apagar salas ou perfis antigos.
+alter table public.rooms alter column diff set default 'auto';
+alter table public.rooms alter column max_players set default 6;
 
 -- Valida novas salas mesmo quando alguém chama a API REST sem usar o cliente.
 alter table public.rooms drop constraint if exists rooms_code_format;
@@ -40,9 +45,12 @@ alter table public.rooms drop constraint if exists rooms_host_name_format;
 alter table public.rooms add constraint rooms_host_name_format check (host_name ~ '^[A-Za-z0-9_]{3,16}$') not valid;
 alter table public.rooms drop constraint if exists rooms_values_valid;
 alter table public.rooms add constraint rooms_values_valid check (
-  mode in ('coop','pvp') and map in ('arena','ohio','praia','esgoto','servidor') and
-  diff in ('easy','norm','normal','hard','brain') and state in ('lobby','playing') and
-  players between 1 and 4 and max_players between 1 and 4 and players <= max_players
+  mode in ('coop','pvp','pvpve') and map in ('arena','ohio','praia','esgoto','servidor','cidade') and
+  diff in ('auto','easy','norm','normal','hard','brain','feed') and state in ('lobby','playing') and
+  players between 1 and 12 and
+  ((mode = 'coop' and max_players between 2 and 6) or
+   (mode in ('pvp','pvpve') and max_players between 4 and 12)) and
+  players <= max_players
 ) not valid;
 
 create index if not exists rooms_updated_idx on public.rooms (updated_at desc);
@@ -83,7 +91,7 @@ create table if not exists public.market_listings (
   id          bigserial primary key,
   seller_id   uuid not null references auth.users (id) on delete cascade,
   seller_name text not null,
-  item        text not null,            -- 'skin:doge' | 'weapon:laser' | 'armor:pixel'
+  item        text not null,            -- 'skin:pizza' | 'weapon:laser' | 'armor:pixel'
   price       int  not null,
   sold        boolean not null default false,
   buyer_name  text,
@@ -107,20 +115,39 @@ create table if not exists public.market_price_limits (
 );
 
 insert into public.market_price_limits (item, min_price, max_price, tradable) values
-  ('skin:chill',          25,    300, false),
-  ('skin:hacker',        450,   7200, true),
-  ('skin:doge',          600,   9600, true),
-  ('skin:rizzler',      1125,  27000, true),
-  ('skin:sigma',        1300,  31200, true),
-  ('skin:clown',         700,  11200, true),
-  ('skin:ghost',        1500,  36000, true),
-  ('skin:demon',        2375,  76000, true),
-  ('skin:gigachad',     3000,  96000, true),
-  ('skin:king',         6250, 250000, true),
-  ('skin:sixtyseven',   1670,  26700, true),
-  ('skin:sixorbit',      650,  10400, true),
-  ('skin:sevenbreak',   1925,  46200, true),
-  ('skin:duo67',        6675, 267000, true),
+  ('skin:coolfries',             10,     10, false),
+  ('skin:milk',                1750,   1750, true),
+  ('skin:hotdog',              3500,   3500, true),
+  ('skin:washingmachine',      5250,   5250, true),
+  ('skin:fridge',              7000,   7000, true),
+  ('skin:pizza',               7000,   7000, true),
+  ('skin:taco',               10500,  10500, true),
+  ('skin:coolramen',          14000,  14000, true),
+  ('skin:avocado',            17500,  17500, true),
+  ('skin:sunflower',          17500,  17500, true),
+  ('skin:baguette',           22750,  22750, true),
+  ('skin:goldfishbag',        28000,  28000, true),
+  ('skin:captainlantern',     28000,  28000, true),
+  ('skin:sharkperson',        42000,  42000, true),
+  ('skin:moongirl',           42000,  42000, true),
+  ('skin:alienskeleton',      70000,  70000, true),
+  ('skin:robot',              70000,  70000, true),
+  ('skin:tallguy',           109375, 109375, true),
+  ('skin:skeletoncostume',   148750, 148750, true),
+  ('skin:burnvictim',        188125, 188125, true),
+  ('skin:chaosbaby',         227500, 227500, true),
+  ('skin:o',                 266875, 266875, true),
+  ('skin:coolbananaguy',     306250, 306250, true),
+  ('skin:mousemisprint',     345625, 345625, true),
+  ('skin:ramon',             385000, 385000, true),
+  ('skin:littlealienmenace', 424375, 424375, true),
+  ('skin:eggplant',          463750, 463750, true),
+  ('skin:cosmicdweller',     503125, 503125, true),
+  ('skin:turtle',            542500, 542500, true),
+  ('skin:tnt',               581875, 581875, true),
+  ('skin:coolpolygonalmind', 621250, 621250, true),
+  ('skin:eyefighter',        660625, 660625, true),
+  ('skin:cosmicperson',      700000, 700000, true),
   ('armor:hoodie',        25,    300, false),
   ('armor:cardboard',    225,   2700, true),
   ('armor:pixel',        650,  10400, true),
@@ -146,6 +173,18 @@ on conflict (item) do update set
   min_price = excluded.min_price,
   max_price = excluded.max_price,
   tradable = excluded.tradable;
+
+delete from public.market_price_limits
+where item like 'skin:%' and item not in (
+  'skin:coolfries','skin:milk','skin:hotdog','skin:washingmachine','skin:fridge',
+  'skin:pizza','skin:taco','skin:coolramen','skin:avocado','skin:sunflower',
+  'skin:baguette','skin:goldfishbag','skin:captainlantern','skin:sharkperson',
+  'skin:moongirl','skin:alienskeleton','skin:robot','skin:tallguy',
+  'skin:skeletoncostume','skin:burnvictim','skin:chaosbaby','skin:o',
+  'skin:coolbananaguy','skin:mousemisprint','skin:ramon','skin:littlealienmenace',
+  'skin:eggplant','skin:cosmicdweller','skin:turtle','skin:tnt',
+  'skin:coolpolygonalmind','skin:eyefighter','skin:cosmicperson'
+);
 
 alter table public.market_price_limits enable row level security;
 drop policy if exists "limites do mercado leitura" on public.market_price_limits;

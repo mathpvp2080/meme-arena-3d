@@ -79,12 +79,22 @@
       if (this.busy || !this.queue.length) return;
       if (!this.init()) return;
       this.busy = true;
-      const next = () => {
+      const next = async () => {
         const job = this.queue.shift();
         if (!job) { this.busy = false; return; }
         let url = '';
-        try { url = this.snapshot(job.type, job.id); }
-        catch (err) { console.warn('[MemeArena] falha na miniatura', job.key, err); }
+        try {
+          /* O boot carrega só a skin equipada. Antes de fotografar outro card,
+             espera seu GLB sob demanda; do contrário o fallback procedural
+             seria fotografado e ficaria preso no cache da miniatura. */
+          if (MA.SkinModels && (job.type === 'skin' || job.type === 'avatar')) {
+            const skinId = job.type === 'avatar' ? String(job.id).split('|')[0] : job.id;
+            const skin = MA.findItem('skin', skinId);
+            const spec = skin && MA.SkinModels.specFor(skin);
+            if (spec && !MA.SkinModels.hasLoaded(skin)) await MA.SkinModels.load(spec.url);
+          }
+          url = this.snapshot(job.type, job.id);
+        } catch (err) { console.warn('[MemeArena] falha na miniatura', job.key, err); }
         if (url) this.cache[job.key] = url;
         (this.pending[job.key] || []).forEach(el => {
           if (url && el.isConnected) this.apply(el, url);

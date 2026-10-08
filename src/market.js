@@ -158,7 +158,7 @@
       const vendaveis = d.inventory.filter(key => {
         const [t, i] = key.split(':');
         const it = MA.findItem(t, i);
-        return it && !it.starter && equipados.indexOf(key) < 0;
+        return it && !it.starter && !it.noSell && equipados.indexOf(key) < 0;
       });
 
       let html = '';
@@ -172,13 +172,17 @@
         const it = MA.findItem(t, i);
         const bounds = MA.marketPriceBounds ? MA.marketPriceBounds(it) : { min: PRECO_MIN, max: 1000000 };
         const sugerido = Math.max(bounds.min, Math.min(bounds.max, Math.round((it.price || 100) * .7)));
+        const fixedSkinPrice = t === 'skin' && bounds.min === bounds.max;
+        const priceLabel = fixedSkinPrice
+          ? ' · preço fixo (70%) 🪙 ' + MA.fmt(bounds.min)
+          : ' · faixa 🪙 ' + MA.fmt(bounds.min) + '–' + MA.fmt(bounds.max);
         return '<div class="mkitem ' + (it.rarity || 'common') + '">' +
           '<div class="mkico">' + (it.icon || it.face || '🎁') + '</div>' +
           '<div class="mkinfo"><b>' + it.name + '</b><div class="dim">' +
           (t === 'skin' ? 'Skin' : t === 'armor' ? 'Armadura' : t === 'ability' ? 'Habilidade' : 'Arma') +
-          ' · faixa 🪙 ' + MA.fmt(bounds.min) + '–' + MA.fmt(bounds.max) + '</div></div>' +
+          priceLabel + '</div></div>' +
           '<input class="inp mkp" type="number" min="' + bounds.min + '" max="' + bounds.max +
-          '" value="' + sugerido + '" data-price="' + key + '">' +
+          '" value="' + sugerido + '" data-price="' + key + '"' + (fixedSkinPrice ? ' readonly' : '') + '>' +
           '<button class="btn mini" data-sell="' + key + '">ANUNCIAR</button>' +
           '</div>';
       }).join('')
@@ -280,7 +284,7 @@
       const itens = d.inventory.filter(key => {
         const [t, i] = key.split(':');
         const it = MA.findItem(t, i);
-        return it && !it.starter && equipados.indexOf(key) < 0;
+        return it && !it.starter && !it.noSell && equipados.indexOf(key) < 0;
       });
       sel.innerHTML = '<option value="">— só moedas —</option>' + itens.map(key => {
         const [t, i] = key.split(':');

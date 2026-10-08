@@ -57,10 +57,9 @@ No painel de autenticação:
 
 Para contas online, o servidor é a autoridade de:
 
-- Caixa 67 e Cofre 67;
-- garantia/piedade da 7ª caixa;
-- conversão de duplicatas em fragmentos;
-- Caixa Garantida de 67 fragmentos;
+- Caixa 67 e Cofre 67, com ramo inicial 50% skin / 50% recursos;
+- distribuição condicional de raridade 40 / 29,5 / 20 / 10 / 0,5%;
+- conversão automática de skins repetidas em moedas;
 - drops de chefe e recarga anti-duplicação;
 - anúncios, cancelamentos, compras e presentes do mercado.
 

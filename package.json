@@ -7,9 +7,14 @@
     "test": "node scripts/validate-release.mjs",
     "validate:release": "node scripts/validate-release.mjs",
     "export:base": "node scripts/export-base-skin.mjs",
-    "export:acessorios": "node scripts/export-acessorios.mjs"
+    "export:acessorios": "node scripts/export-acessorios.mjs",
+    "build:polygonal-skins": "node scripts/build-polygonal-skins.mjs"
   },
   "devDependencies": {
+    "@gltf-transform/core": "4.2.1",
+    "@gltf-transform/extensions": "4.2.1",
+    "@gltf-transform/functions": "4.2.1",
+    "sharp": "0.33.5",
     "three": "^0.128.0"
   }
 }

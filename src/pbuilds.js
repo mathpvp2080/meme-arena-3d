@@ -130,19 +130,26 @@
       c.hood.visible = false;
       const fur = M(c.skin.skinTone, { rough: .82 });
       const cream = M(0xf6e3bb, { rough: .88 });
-      const snout = Cap(.17, .14, cream);
-      snout.rotation.x = Math.PI / 2;
-      snout.position.set(0, 2.07, -.60); c.add(snout);
-      const nose = S(.084, M(0x241a14, { rough: .26, clear: .34 }), 14);
-      nose.position.set(0, 2.11, -.76); c.add(nose);
-      [-1, 1].forEach(s => {
-        const ear = Cone(.20, .48, fur, 7);
-        ear.position.set(s * .41, 2.66, .04);
-        ear.rotation.set(.1, Math.PI / 4, s * .28); c.add(ear);
-        const inner = Cone(.11, .31, M(0xd68a72, { rough: .62 }), 7);
-        inner.position.set(s * .41, 2.65, -.06);
-        inner.rotation.set(.1, Math.PI / 4, s * .28); c.add(inner);
-      });
+      const modelSpec = MA.SkinModels && MA.SkinModels.specFor(c.skin);
+      const customHead = modelSpec && modelSpec.mode === 'part' && modelSpec.anchor === 'head';
+
+      /* O .glb já traz focinho, nariz, olhos e orelhas. O fallback procedural
+         continua disponível caso o registro seja removido. */
+      if (!customHead) {
+        const snout = Cap(.17, .14, cream);
+        snout.rotation.x = Math.PI / 2;
+        snout.position.set(0, 2.07, -.60); c.add(snout);
+        const nose = S(.084, M(0x241a14, { rough: .26, clear: .34 }), 14);
+        nose.position.set(0, 2.11, -.76); c.add(nose);
+        [-1, 1].forEach(s => {
+          const ear = Cone(.20, .48, fur, 7);
+          ear.position.set(s * .41, 2.66, .04);
+          ear.rotation.set(.1, Math.PI / 4, s * .28); c.add(ear);
+          const inner = Cone(.11, .31, M(0xd68a72, { rough: .62 }), 7);
+          inner.position.set(s * .41, 2.65, -.06);
+          inner.rotation.set(.1, Math.PI / 4, s * .28); c.add(inner);
+        });
+      }
       const chest = S(.38, cream);
       chest.scale.set(.9, 1.1, .5);
       chest.position.set(0, 1.2, -.42); c.add(chest);
