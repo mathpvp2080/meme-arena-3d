@@ -519,7 +519,7 @@
     }
     const itemDrop = reward.type === 'item';
     if (MA.MetaUI) {
-      MA.MetaUI.toast((itemDrop ? '🎁 <b>DROP DO CHEFE:</b> ' : '⬡ <b>RECOMPENSA DO CHEFE:</b> ') + reward.name);
+      MA.MetaUI.toast((itemDrop ? '🎁 <b>DROP DO CHEFE:</b> ' : '⚡ <b>RECURSOS DO CHEFE:</b> ') + reward.name);
     }
     if (itemDrop) MA.Audio.pickup();
   }

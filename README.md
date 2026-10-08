@@ -24,22 +24,22 @@ Escolha entre animais, plantas e monstros absurdos, monte o equipamento e segure
 
 - **Período:** 03/10/2026 a 28/11/2026; a próxima temporada começa em 29/11/2026.
 - Identidade visual própria em azul elétrico, rosa-magenta, ciano e violeta, com a **Arena 67**.
-- **Caixa 67** e **Cofre 67**, comprados somente com moedas virtuais. As chances ficam
-  visíveis na loja e a 7ª abertura sem equipamento garante um item sazonal.
-- Conteúdo exclusivo: **4 skins, 3 armaduras, 4 armas e 3 habilidades**, incluindo
-  Ouriço Radioativo, Abelha-Chefe, Hipnose Ambulante e Glub Turbo. As skins usam
-  modelos CC0 do pacote Quaternius Ultimate Monsters.
-- **Impulso 67** concede +67% de moedas e XP na próxima partida; duplicatas viram
-  fragmentos e 67 fragmentos forjam um item sazonal que ainda falta.
-- O mercado usa limites mínimo e máximo **específicos por item**, e o jogador escolhe
-  o valor do anúncio dentro dessa faixa.
+- **Caixa 67** e **Cofre 67** usam somente moedas virtuais. Cada abertura e cada
+  chefe escolhem primeiro **50% skin / 50% recursos automáticos** (moedas, XP ou ambos).
+- No ramo de skin, as chances condicionais são: **40% Uncommon, 29,5% Legendary,
+  20% Mythical, 10% Ultimate e 0,5% Secret**. Uma recompensa entrega no máximo uma skin.
+- Skins Common são exclusivas da loja do sistema. As outras 28 skins indicam se vêm
+  de caixa, chefe ou ambos; repetidas são convertidas automaticamente em moedas.
+- Cada skin tem valor-base progressivo dentro de sua raridade. No mercado de jogadores,
+  o preço é fixo em **70% do valor-base** e o vendedor recebe o total, sem taxa.
 - A temporada usa o conceito numérico do meme. Não inclui música, voz, foto ou
   arte da trend; ambientes, efeitos e sons são autorais. Os modelos 3D externos
   são identificados e creditados conforme suas licenças.
 
-As 24 skins jogáveis usam modelos GLB animados do pacote Quaternius Ultimate
-Monsters: animais, plantas, criaturas voadoras, blobs e monstros com silhuetas
-variadas. O corpo procedural permanece apenas como fallback de carregamento.
+As 33 skins jogáveis usam avatares R1/R2 do projeto **Polygonal Mind 100 Avatars**,
+transformados em GLBs compactos com rig e clipes `idle`, `run` e `punch`. O catálogo
+inclui objetos, comidas, pessoas e criaturas com geometrias próprias. O corpo
+procedural permanece apenas como fallback de carregamento.
 Equipamentos, efeitos e os visuais de reserva dos NPCs continuam gerados por código.
 Os quatro inimigos ativos usam seus próprios GLBs creditados. A entrada e o lobby usam
 duas artes autorais da Temporada 67; a trilha e os efeitos são sintetizados com WebAudio.
@@ -142,6 +142,7 @@ meme-arena-3d/
 - **Trilha adaptativa**: a intensidade da música sobe junto com o número da onda e no Ultimate.
 - **Correção de cor**: todas as texturas em `sRGBEncoding` com tone mapping ACES Filmic.
 - Validação automatizada com `npm test`: catálogo, referências, assets, PWA, convidado e patch SQL.
+- Pipeline reproduzível dos avatares: `POLYGONAL_SOURCE=/caminho/100Avatars npm run build:polygonal-skins`.
 
 ### Console de debug
 
@@ -164,18 +165,18 @@ Three.js é distribuído sob a licença MIT (© three.js authors).
   então a senha deve ser guardada. O modo **Convidado** usa somente `sessionStorage`,
   termina com a sessão e nunca cria usuário no Supabase.
 - Para publicar o backend, aplique [`supabase/schema.sql`](supabase/schema.sql), depois
-  [`supabase/DEPLOY_LAUNCH.sql`](supabase/DEPLOY_LAUNCH.sql) e, em bancos que já
-  possuíam um catálogo anterior, [`supabase/patch_quaternius_skins.sql`](supabase/patch_quaternius_skins.sql).
-- **Todo jogador começa igual**: skin *Cacto de Praia* do pacote Quaternius,
-  armadura *Moletom Básico* e **600 moedas** — o bastante para comprar a arma
-  inicial (Laser de Doge, 450).
+  [`supabase/DEPLOY_LAUNCH.sql`](supabase/DEPLOY_LAUNCH.sql). Esse deploy já inclui a
+  migração; ela também está separada em [`supabase/patch_polygonal_mind_skins.sql`](supabase/patch_polygonal_mind_skins.sql)
+  para bancos publicados que precisem apenas trocar o catálogo.
+- **Todo jogador começa igual**: skin *Cool Fries*, armadura *Moletom Básico* e
+  **600 moedas** — o bastante para comprar a arma inicial (Laser de Doge, 450).
 - **Nível e XP** até o nível 60. Ganhe XP e moedas a cada partida (pontos,
   abates, ondas e chefes, multiplicados pela dificuldade).
-- **Loja e inventário** com 24 skins completas e animadas do pacote Quaternius
-  Ultimate Monsters, 9 armaduras, 9 armas, 3 habilidades e caixas sazonais.
+- **Loja e inventário** com 33 skins Polygonal Mind completas e animadas,
+  9 armaduras, 9 armas, 3 habilidades e caixas sazonais.
   As armaduras dão **+HP** e **redução de dano**.
-- **Inventário** para equipar (até 3 armas ao mesmo tempo) e **vender** itens
-  por 50% do preço.
+- **Inventário** para equipar até 3 armas e anunciar skins negociáveis no mercado.
+  O preço de cada skin é 30% menor que o valor-base e não há taxa do vendedor.
 - **Figurinhas cosméticas** de todos os mapas, NPCs e chefes na loja, com álbum
   de coleção e um distintivo equipável visível no perfil e no lobby. Figurinhas
   não aumentam atributos e não liberam mapas ou matchmaking.
@@ -229,10 +230,9 @@ Para funcionar pela internet é preciso rodar `supabase/schema_multiplayer.sql`
 no SQL Editor do Supabase. Sem isso, o multiplayer ainda funciona em **modo
 local** entre abas do mesmo navegador.
 
-O mercado de itens (vender/presentear) usa o mesmo SQL. A coleção da Temporada 67
-tem 14 itens entre skins, armaduras, armas e habilidades, obtidos originalmente
-em Caixas 67 ou por drop aleatório de chefe. Depois, eles podem ser revendidos no
-mercado dentro das faixas individuais validadas pelo servidor.
+O mercado de itens (vender/presentear) usa o mesmo SQL. As 28 skins não Common
+vêm de Caixas 67, de chefes ou de ambos. Depois, podem ser revendidas pelo preço
+fixo de 70% validado no navegador e no servidor; 100% desse preço vai ao vendedor.
 
 ## Créditos de recursos externos
 

@@ -270,11 +270,8 @@
       document.querySelectorAll('#shop .tab').forEach(t =>
         t.classList.toggle('sel', t.dataset.tab === this.shopTab));
 
-      if (MA.Season) {
-        const sp = MA.Season.progress();
-        if ($('seasonShopCountdown')) $('seasonShopCountdown').textContent = MA.Season.countdown();
-        if ($('shopFragments')) $('shopFragments').textContent = MA.fmt(sp.fragments);
-        if ($('shopBoosts')) $('shopBoosts').textContent = sp.boosts;
+      if (MA.Season && $('seasonShopCountdown')) {
+        $('seasonShopCountdown').textContent = MA.Season.countdown();
       }
 
       if (this.shopTab === 'box') {
@@ -294,42 +291,22 @@
     renderBoxes() {
       const grid = $('shopGrid');
       if (!MA.Season) { grid.innerHTML = '<p class="dim">Temporada indisponível.</p>'; return; }
-      const sp = MA.Season.progress();
       const boxes = MA.SEASON.boxes.map((box, index) => {
         const can = MA.Profile.data.coins >= box.price;
         return '<article class="loot-card' + (index ? ' vault' : '') + '">' +
           '<div class="loot-box-art">' + box.icon + '</div>' +
           '<div><h3>' + box.name + '</h3><p>' + box.desc + '</p>' +
           '<div class="loot-odds"><b>CHANCES POR ABERTURA</b><br>' +
-          '42% moedas · 23% XP · 17% Impulso 67 · 18% item sazonal<br>' +
-          '<b>5% skin · 4% armadura · 5% arma · 4% habilidade</b></div>' +
-          '<div class="loot-pity">GARANTIA: próxima abertura ' + Math.min(7, sp.pity + 1) + '/7 · item na 7ª sem drop</div>' +
+          '<b>50% skin · 50% moedas, XP ou ambos</b><br>' +
+          'Na skin: 40% Uncommon · 29,5% Legendary · 20% Mythical · 10% Ultimate · 0,5% Secret</div>' +
+          '<div class="loot-pity">UMA SKIN NO MÁXIMO · repetidas viram moedas</div>' +
           '<div class="loot-buy"><button class="ibtn buy' + (can ? '' : ' poor') + '" data-box="' + box.id + '">' +
           '🪙 ' + MA.fmt(box.price) + '</button><small>somente moeda virtual</small></div></div></article>';
       }).join('');
-      const missing = MA.SEASON.itemKeys.some(key => {
-        const parts = key.split(':'); return !MA.Profile.owns(parts[0], parts[1]);
-      });
-      const forgeDisabled = sp.fragments < 67 || !missing;
-      grid.innerHTML = '<div class="box-grid">' + boxes +
-        '<div class="forge-card"><span>⬡</span><div><b>CAIXA GARANTIDA · ' + MA.fmt(sp.fragments) + '/67 FRAGMENTOS</b>' +
-        '<p>Itens repetidos e chefes rendem fragmentos. Use 67 para abrir uma Caixa 67 com um item que ainda falta.</p></div>' +
-        '<button class="btn mini sec" id="forge67"' + (forgeDisabled ? ' disabled' : '') + '>ABRIR CAIXA</button></div></div>';
+      grid.innerHTML = '<div class="box-grid">' + boxes + '</div>';
       grid.querySelectorAll('[data-box]').forEach(btn => {
         btn.onclick = () => this.openSeasonBox(btn.dataset.box);
       });
-      const forge = $('forge67');
-      if (forge) forge.onclick = async () => {
-        if (forge.disabled) return;
-        forge.disabled = true; forge.textContent = 'ABRINDO…';
-        let r;
-        try { r = await MA.Season.forge(); }
-        catch (e) { r = { error: 'Falha na Caixa Garantida: ' + e.message }; }
-        if (r.error) { MA.Audio.deny(); this.toast('❌ ' + r.error, 'bad'); this.renderBoxes(); return; }
-        MA.Audio.pickup();
-        this.toast('📦 Caixa garantida: <b>' + r.item.name + '</b>');
-        this.renderShop();
-      };
     },
 
     async openSeasonBox(id) {
@@ -350,7 +327,10 @@
     },
 
     showLootResults(opened) {
-      const colors = { common: '#9fb3c8', rare: '#2de2ff', epic: '#9b65ff', legendary: '#ffd166', mythic: '#ff4fbd' };
+      const colors = {
+        common:'#9fb3c8', uncommon:'#2de2ff', legendary:'#ffd166', mythical:'#ff4fbd',
+        ultimate:'#ff6b35', secret:'#72ff8b', rare:'#2de2ff', epic:'#9b65ff', mythic:'#ff4fbd'
+      };
       $('lootTitle').textContent = opened.box.name + ' ABERTO';
       $('lootResults').innerHTML = opened.results.map(r =>
         '<div class="loot-result ' + (r.guaranteed ? 'guaranteed' : '') + '" style="--rc:' + (colors[r.rarity] || colors.common) + '">' +
@@ -359,8 +339,7 @@
         '</small></div>').join('');
       const sp = opened.progress;
       $('lootProgress').innerHTML = 'Caixas abertas: <b>' + MA.fmt(sp.boxesOpened) + '</b> · ' +
-        'próxima garantia: <b>' + Math.min(7, sp.pity + 1) + '/7</b> · ' +
-        'fragmentos: <b>' + MA.fmt(sp.fragments) + '</b> · Impulsos: <b>' + sp.boosts + '</b>';
+        'chance de skin: <b>50%</b> · recursos automáticos: <b>50%</b>';
       const again = $('lootAgain');
       again.textContent = 'ABRIR OUTRA · 🪙 ' + MA.fmt(opened.box.price);
       again.disabled = MA.Profile.data.coins < opened.box.price;
@@ -466,8 +445,13 @@
       let action;
       if (ctx === 'shop') {
         if (owned) action = '<button class="ibtn owned" disabled>✔ ADQUIRIDO</button>';
-        else if (item.boxOnly) action = '<button class="ibtn boxonly" data-act="boxes">📦 ABRIR CAIXAS 67</button>';
-        else if (!canLv) action = '<button class="ibtn lock" disabled>🔒 NÍVEL ' + item.level + '</button>';
+        else if (item.boxOnly && item.acquisition === 'boss') {
+          action = '<button class="ibtn boxonly" disabled>👹 DROP DE CHEFE</button>';
+        } else if (item.boxOnly && item.acquisition === 'both') {
+          action = '<button class="ibtn boxonly" data-act="boxes" title="Também pode cair de chefes">📦 CAIXA OU 👹 CHEFE</button>';
+        } else if (item.boxOnly) {
+          action = '<button class="ibtn boxonly" data-act="boxes">📦 ABRIR CAIXAS 67</button>';
+        } else if (!canLv) action = '<button class="ibtn lock" disabled>🔒 NÍVEL ' + item.level + '</button>';
         else action = '<button class="ibtn buy' + (canCoin ? '' : ' poor') + '" data-type="' + item.type +
           '" data-id="' + item.id + '" data-act="buy">🪙 ' + MA.fmt(item.price) + '</button>';
       } else {
@@ -477,7 +461,9 @@
             '" data-id="' + item.id + '" data-act="equip">' + (eq ? '✔ EQUIPADO' : 'EQUIPAR') + '</button>' +
           (item.starter || item.noSell ? '' :
             '<button class="ibtn sell" data-type="' + item.type + '" data-id="' + item.id +
-            '" data-act="market" title="Revender por um valor definido por você">💱</button>' +
+            '" data-act="market" title="' + (item.type === 'skin'
+              ? 'Anunciar pelo preço fixo de ' + MA.fmt(item.marketValue) + ' moedas'
+              : 'Revender dentro da faixa permitida') + '">💱</button>' +
             (item.boxOnly ? '' : '<button class="ibtn sell" data-type="' + item.type + '" data-id="' + item.id +
             '" data-act="sell" title="Venda rápida por ' + sellv + '">🪙 ' + MA.fmt(sellv) + '</button>')) +
           '</div>';
@@ -525,8 +511,11 @@
             }
             MA.Market.abrir('vender');
           } else if (act === 'sell') {
+            const marketHint = item.type === 'skin'
+              ? 'No Mercado, esta skin vale o preço fixo de ' + MA.fmt(item.marketValue) + ' moedas.'
+              : 'No Mercado você pode anunciar dentro da faixa permitida.';
             if (!confirm('Fazer venda rápida de "' + item.name + '" por ' +
-                MA.fmt(Math.round(item.price * MA.CONFIG.SELL_RATE)) + ' moedas?\n\nNo Mercado você pode definir o seu próprio preço.')) return;
+                MA.fmt(Math.round(item.price * MA.CONFIG.SELL_RATE)) + ' moedas?\n\n' + marketHint)) return;
             const r = MA.Profile.sell(item);
             if (r.error) { this.toast('❌ ' + r.error, 'bad'); MA.Audio.deny(); return; }
             this.toast('💰 Venda rápida: <b>' + MA.fmt(r.value) + '</b> moedas');

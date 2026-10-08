@@ -20,7 +20,7 @@
       obstacle: { style: 'neonbox', palette: [0x6572ff, 0x2de2ff, 0xff4fbd, 0x9b65ff, 0xe7ecff, 0x424fc9], count: 20 },
       monument: 'likes',
       signs: [['TEMPORADA\n67', '#6572ff'], ['PROTOCOLO\n6·7 ATIVO', '#ff4fbd'],
-              ['7ª CAIXA\nGARANTIDA', '#2de2ff'], ['SEIS PARTES\nCORAGEM', '#6572ff'],
+              ['50% SKIN\n50% RECURSOS', '#2de2ff'], ['SEIS PARTES\nCORAGEM', '#6572ff'],
               ['SETE PARTES\nCAOS', '#ff4fbd'], ['PULSO 67\nCARREGADO', '#ffffff'],
               ['03 OUT\n28 NOV', '#e7ecff'], ['ARTE E ÁUDIO\nORIGINAIS', '#2de2ff']]
     },

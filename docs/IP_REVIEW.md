@@ -1,46 +1,27 @@
-# Revisão preliminar de propriedade intelectual
-
-**Atualizado em:** 7 de outubro de 2026. Este documento é uma triagem técnica, não um parecer jurídico.
+# Revisão de propriedade intelectual — conteúdo atual
 
 ## Temporada 67
 
-A temporada utiliza os algarismos **6**, **7** e **67** como conceito cultural. As artes, interface, efeitos e áudio foram criados para o projeto e não copiam foto, música, voz, vídeo ou personagem da tendência. As quatro skins sazonais usam modelos CC0 documentados do pacote Quaternius Ultimate Monsters. Entre os temas avaliados, este é o núcleo de menor risco do lançamento.
+A temporada utiliza os algarismos **6**, **7** e **67** como conceito cultural. As artes, interface, efeitos e áudio foram criados para o projeto e não copiam foto, música, voz, vídeo ou personagem da tendência.
 
-Itens da temporada:
+## Skins jogáveis
 
-- Ouriço Radioativo, Abelha-Chefe, Hipnose Ambulante e Glub Turbo (modelos Quaternius CC0, nomes e integração do projeto);
-- Protocolo 6·7, Colete Órbita 6 e Bastião Prisma 7;
-- Pulso Seis-Sete, Bumerangue do Loop, Orbe Gravitacional 6 e Lâmina Prisma 7;
-- Repulsão 6, Passo 7 e Sobrecarga 67;
-- key art, cenário do lobby, logotipo numérico, efeitos e interface.
+O catálogo jogável foi substituído por 33 avatares selecionados das coleções **Polygonal Mind 100 Avatars R1/R2**. O projeto segue os termos CC BY 4.0 fornecidos pelo repositório oficial, mantém atribuição visível e distribui versões transformadas, otimizadas e animadas. Proveniência, commit recuperado, licença e todas as alterações estão em `assets/skins/polygonal-mind/SOURCE.md` e `ATTRIBUTIONS.md`.
 
-## Referências restantes que precisam de revisão
+Os nomes públicos foram normalizados em inglês, sem numeração de fonte e sem “Character”. Nomes inadequados foram substituídos por **Chaos Baby** e **Little Alien Menace**; Gnome foi publicado como **Ramon**; “Mickey Mousn’t” foi substituído por **Mouse Misprint**. A mudança de nome não elimina, por si só, eventual semelhança visual ou risco ligado a personagens de terceiros. Recomenda-se revisão jurídica e visual específica de Mouse Misprint antes de monetização ampla.
 
-O antigo catálogo de skins jogáveis foi integralmente substituído por 24 personagens animados do pacote Quaternius Ultimate Monsters sob CC0 1.0. NPCs, nomes de mapas, bordões e outras associações comerciais ainda podem envolver direitos de terceiros. Antes de monetização ou divulgação comercial ampla, revisar pelo menos:
+O README da fonte pede que avatares não modificados não sejam revendidos diretamente. O jogo não oferece os arquivos-fonte individualmente: integra GLBs transformados com animação e otimização. O mercado interno negocia direitos de inventário por moedas virtuais, não arquivos 3D. Mesmo assim, uma publicação comercial deve receber revisão jurídica independente.
 
-| Grupo | Referências no projeto | Ação recomendada |
-|---|---|---|
-| Personagens/plataformas | Amogus/Among Us, Nyan Cat, Skibidi Toilet, Grimace | obter autorização/licença ou substituir nome, silhueta e apresentação |
-| Referências removidas das skins | Trollface, Pepe, Gigachad, Chill Guy, Stonks Man | não reintroduzir sem licença/proveniência documentada |
-| Memes de criadores recentes | Tralalero Tralala, Tung Tung Sahur, Bombardiro Crocodilo | identificar autores e termos de uso antes de exploração comercial |
-| Marcas e associação | Doge, Ohio, Sigma/Rizzler quando usados com trade dress reconhecível | pesquisar marcas nas classes e territórios da distribuição |
-| Áudio/bordões | nomes de golpes e provocações ligados às referências acima | manter somente áudio próprio e revisar frases reconhecíveis |
+## NPCs e outros modelos
 
-Um aviso de “homenagem” ou “fan game” não substitui autorização.
+Os NPCs **DOGE**, **Tralalero**, **Tung Tung** e **Bombardiro** não são skins jogáveis. Eles permanecem separados e usam modelos de terceiros com crédito e licença registrados em `ATTRIBUTIONS.md`. Nomes, bordões, memes e associações comerciais ainda podem envolver direitos de terceiros.
 
-## Materiais de loja
+Antes de monetização ou divulgação comercial ampla, revisar pelo menos:
 
-- Não usar screenshots em que emojis de fornecedor sejam o elemento central do anúncio.
-- Não usar fotografia, frame de vídeo, áudio viral ou arte original de meme.
-- Preferir as artes próprias `assets/splash-season67.jpg` e `assets/hub-season67.jpg`, o logotipo numérico e os modelos sazonais.
-- Guardar arquivos-fonte, prompts, datas e histórico de commits como registro de autoria das artes próprias.
+- semelhança visual de Mouse Misprint e demais avatares com marcas/personagens conhecidos;
+- DOGE e os memes italianos usados como NPCs e chefes;
+- nomes de mapas e bordões;
+- marcas nominativas, classificação etária e regras das lojas de aplicativos;
+- compatibilidade entre a monetização planejada e todas as licenças/termos das fontes.
 
-## Decisão de lançamento
-
-O código pode ser publicado como projeto técnico, mas uma campanha comercial deve aguardar uma das opções:
-
-1. autorização/licença documentada para cada referência de maior risco;
-2. substituição do catálogo legado por personagens, nomes e silhuetas totalmente originais;
-3. parecer jurídico específico para os países e lojas de distribuição.
-
-A classificação indicativa e a revisão de propriedade intelectual são aprovações externas: os testes automatizados do repositório não as certificam.
+Este registro documenta diligência técnica e atribuição; não constitui parecer jurídico.

@@ -4,156 +4,149 @@
 
   MA.ITEM_RARITY = {
     common:    { name: 'COMUM',     color: '#9fb3c8' },
+    uncommon:  { name: 'INCOMUM',   color: '#2de2ff' },
+    legendary: { name: 'LENDÁRIO',  color: '#ffd166' },
+    mythical:  { name: 'MÍTICO',    color: '#ff4fbd' },
+    ultimate:  { name: 'ULTIMATE',  color: '#ff6b35' },
+    secret:    { name: 'SECRETO',   color: '#72ff8b' },
+    /* raridades legadas continuam válidas para armas, armaduras e habilidades */
     rare:      { name: 'RARO',      color: '#2de2ff' },
     epic:      { name: 'ÉPICO',     color: '#9b65ff' },
-    legendary: { name: 'LENDÁRIO',  color: '#ffd166' },
     mythic:    { name: 'MÍTICO',    color: '#ff4fbd' }
   };
 
+  const SKIN_FALLBACKS = [
+    ['#f4d06f',0xf4d06f,0x735d2a], ['#89d4ff',0x329bd1,0x174f78],
+    ['#f6a6c1',0xd85c8b,0x6b2745], ['#a8ef7a',0x59b83b,0x2f6c22],
+    ['#c8a5ff',0x8557cf,0x422675], ['#ff9978',0xdc5937,0x733020]
+  ];
+  function playableSkin(id, name, rarity, baseValue, sourceId, acquisition, face, desc, extra) {
+    const palette = SKIN_FALLBACKS[sourceId % SKIN_FALLBACKS.length];
+    const marketValue = Math.round(baseValue * .7);
+    return Object.assign({
+      id, name, rarity, price:baseValue, baseValue, marketValue,
+      marketMin:marketValue, marketMax:marketValue, level:1,
+      source:'Polygonal Mind 100 Avatars', sourceId, sourceRound:sourceId <= 100 ? 'R1' : 'R2',
+      acquisition, shop:acquisition === 'shop', boxOnly:acquisition !== 'shop',
+      desc, face, skinTone:palette[0], body:palette[1], hood:palette[2],
+      arms:palette[1], legs:palette[2], hat:'none', hatColor:0, aura:palette[1], extra:'none'
+    }, extra || {});
+  }
+
   /* ------------------------------------------------------------- SKINS --
-     Elenco jogável do pacote Ultimate Monsters, de Quaternius. A seleção
-     mistura famílias de rig e geometrias bem diferentes: animais, plantas,
-     monstros voadores, criaturas gelatinosas e personagens absurdos. As cores
-     abaixo mantêm um fallback procedural se um GLB não carregar. */
+     Manifesto jogável Polygonal Mind R1/R2. Common só entra pela loja do
+     sistema. As demais raridades são sorteadas por caixas e/ou chefes. `price`
+     é o valor-base; o Mercado usa um preço fixo de 70%, pago integralmente ao
+     vendedor. IDs de fonte existem para auditoria e nunca aparecem ao jogador. */
   MA.SKINS = [
-    { id:'cactopraia', name:'Cacto de Praia', rarity:'common', price:0, level:1, starter:true,
-      desc:'Foi tirar férias no deserto e apareceu de chapéu na arena errada.',
-      face:'🌵', skinTone:'#79bd55', body:0x55a947, hood:0x3c7d35, arms:0x6fbd55, legs:0x8b5b36,
-      hat:'sombrero', hatColor:0xe5a836, aura:0x8dff63, extra:'none' },
+    /* COMMON · 0–10.000 · loja do sistema */
+    playableSkin('coolfries', 'Cool Fries', 'common', 0, 118, 'shop', '🍟',
+      'The arena starter: crispy, confident and completely free.', { starter:true, noSell:true }),
+    playableSkin('milk', 'Milk', 'common', 2500, 84, 'shop', '🥛',
+      'Calcium, courage and a suspiciously steady aim.'),
+    playableSkin('hotdog', 'Hot Dog', 'common', 5000, 87, 'shop', '🌭',
+      'A fast snack that refuses to stay on the sidelines.'),
+    playableSkin('washingmachine', 'Washing Machine', 'common', 7500, 192, 'shop', '🫧',
+      'Ready to spin the lobby and rinse the competition.'),
+    playableSkin('fridge', 'Fridge', 'common', 10000, 196, 'shop', '🧊',
+      'Cold storage with an even colder victory pose.'),
 
-    { id:'galinhacaos', name:'Galinha do Caos', rarity:'common', price:900, level:2,
-      desc:'Corre em círculos, bica o perigo e sempre atravessa o mapa na pior hora.',
-      face:'🐔', skinTone:'#f5f0d7', body:0xf0eee0, hood:0xd7d2c2, arms:0xf0eee0, legs:0xe09b35,
-      hat:'none', hatColor:0, aura:0xffd166, extra:'none' },
+    /* UNCOMMON · 10.000–25.000 */
+    playableSkin('pizza', 'Pizza', 'uncommon', 10000, 103, 'box', '🍕',
+      'Fresh from a box and already looking for another one.'),
+    playableSkin('taco', 'Taco', 'uncommon', 15000, 162, 'boss', '🌮',
+      'Any defeated boss can drop this crunchy contender.'),
+    playableSkin('coolramen', 'Cool Ramen', 'uncommon', 20000, 138, 'both', '🍜',
+      'Too hot for the shop and too cool for the kitchen.'),
+    playableSkin('avocado', 'Avocado', 'uncommon', 25000, 88, 'boss', '🥑',
+      'Soft center, hard-earned boss drop.'),
 
-    { id:'gatosus', name:'Gato Suspeito', rarity:'rare', price:1600, level:3,
-      desc:'Diz que estava fazendo tarefas. Ninguém viu, mas ele parece convincente.',
-      face:'😼', skinTone:'#8c6b55', body:0x875f48, hood:0x5e4032, arms:0x875f48, legs:0x654637,
-      hat:'none', hatColor:0, aura:0xff9f68, extra:'tail' },
+    /* LEGENDARY · 25.000–40.000 */
+    playableSkin('sunflower', 'Sunflower', 'legendary', 25000, 104, 'box', '🌻',
+      'Turns every arena light into a personal spotlight.'),
+    playableSkin('baguette', 'Cool Baguette', 'legendary', 32500, 133, 'boss', '🥖',
+      'A legendary loaf with a very sharp sense of timing.'),
+    playableSkin('goldfishbag', 'Goldfish Bag', 'legendary', 40000, 105, 'both', '🐠',
+      'A portable aquarium with championship ambitions.'),
 
-    { id:'peixefora', name:"Peixe Fora d'Água", rarity:'rare', price:2200, level:4,
-      desc:'Não sabe como chegou aqui, não sabe respirar aqui e mesmo assim quer vencer.',
-      face:'🐟', skinTone:'#38b6c9', body:0x32a7c2, hood:0x21788d, arms:0x32a7c2, legs:0x28657c,
-      hat:'none', hatColor:0, aura:0x2de2ff, extra:'tail' },
+    /* MYTHICAL · 40.000–60.000 */
+    playableSkin('captainlantern', 'Captain Lantern', 'mythical', 40000, 119, 'box', '🏮',
+      'Lights a path through the rarest box rolls.'),
+    playableSkin('sharkperson', 'Shark Person', 'mythical', 60000, 120, 'boss', '🦈',
+      'The boss fight ends; the feeding frenzy begins.'),
 
-    { id:'pombocorreio', name:'Pombo-Correio do Wi-Fi', rarity:'rare', price:2800, level:5,
-      desc:'Entrega mensagens, farelos e latência baixa em qualquer canto do servidor.',
-      face:'🕊️', skinTone:'#738392', body:0x778896, hood:0x53616d, arms:0xaab5bc, legs:0xb94a55,
-      hat:'none', hatColor:0, aura:0x8fe8ff, extra:'wings' },
+    /* ULTIMATE · 60.000–100.000 */
+    playableSkin('moongirl', 'Moon Girl', 'ultimate', 60000, 177, 'box', '🌙',
+      'A lunar visitor at the beginning of the Ultimate range.'),
+    playableSkin('alienskeleton', 'Alien Skeleton', 'ultimate', 100000, 109, 'boss', '☠️',
+      'The final Ultimate, recovered from the toughest bosses.'),
 
-    { id:'cogubug', name:'Cogumelo Bugado', rarity:'rare', price:3400, level:6,
-      desc:'Cresceu dentro do código e agora solta esporos toda vez que encontra um bug.',
-      face:'🍄', skinTone:'#eadbb7', body:0x9958bd, hood:0xdb595e, arms:0xd8c9a6, legs:0x68417f,
-      hat:'mushroom', hatColor:0xe85762, aura:0xd28cff, extra:'none' },
-
-    { id:'magogeleia', name:'Mago de Geleia', rarity:'epic', price:4500, level:7,
-      desc:'Conjura feitiços duvidosos e escorrega antes de explicar como funcionam.',
-      face:'🧙', skinTone:'#7652a8', body:0x7a51b7, hood:0x402a69, arms:0x916bd1, legs:0x4b3472,
-      hat:'wizard', hatColor:0x493071, aura:0xb47cff, extra:'none' },
-
-    { id:'yetibolso', name:'Yeti de Bolso', rarity:'epic', price:5200, level:8,
-      desc:'Pequeno no tamanho, enorme na vontade de congelar o lobby inteiro.',
-      face:'❄️', skinTone:'#bfeeff', body:0x8fd8ec, hood:0x62aebe, arms:0x8fd8ec, legs:0x5a9aa8,
-      hat:'none', hatColor:0, aura:0x7eeeff, extra:'none', bulky:true },
-
-    { id:'coelhomaromba', name:'Coelho Maromba', rarity:'epic', price:6800, level:10,
-      desc:'Trocou cenoura por suplemento e nunca mais perdeu o dia de perna.',
-      face:'🐰', skinTone:'#e7e6df', body:0xe5e2da, hood:0xbab7b1, arms:0xe5e2da, legs:0x9c9993,
-      hat:'ears', hatColor:0xe5e2da, aura:0xff77c8, extra:'none', bulky:true },
-
-    { id:'sapopix', name:'Sapo do Pix', rarity:'epic', price:7600, level:11,
-      desc:'Promete multiplicar suas moedas. O comprovante chega depois da partida.',
-      face:'🐸', skinTone:'#67b94f', body:0x52ae48, hood:0x347d36, arms:0x52ae48, legs:0x347d36,
-      hat:'none', hatColor:0, aura:0x65ff79, extra:'none' },
-
-    { id:'alpacarei', name:'Alpaca Rei', rarity:'epic', price:8500, level:12,
-      desc:'Não pediu a coroa; apenas cuspiu em quem tentou tirá-la.',
-      face:'🦙', skinTone:'#dfb67b', body:0xd6aa70, hood:0xa67849, arms:0xd6aa70, legs:0x865d3b,
-      hat:'crown', hatColor:0xffcf3e, aura:0xffd166, extra:'none' },
-
-    { id:'dinocoach', name:'Dino Coach', rarity:'legendary', price:9500, level:14,
-      desc:'Extinto há milhões de anos, mas ainda vende curso de mentalidade jurássica.',
-      face:'🦖', skinTone:'#52a668', body:0x42945a, hood:0x28673e, arms:0x42945a, legs:0x315f3c,
-      hat:'none', hatColor:0, aura:0x72ff93, extra:'tail', bulky:true },
-
-    { id:'etbombado', name:'ET Bombado', rarity:'legendary', price:10500, level:15,
-      desc:'Veio em paz, encontrou uma academia e mudou completamente de plano.',
-      face:'👽', skinTone:'#9d62c4', body:0x9256bd, hood:0x633782, arms:0x9256bd, legs:0x56316f,
-      hat:'none', hatColor:0, aura:0xca7cff, extra:'none', bulky:true },
-
-    { id:'ninjameme', name:'Ninja do Meme', rarity:'legendary', price:11500, level:17,
-      desc:'Some no carregamento e reaparece quando a piada já ficou velha.',
-      face:'🥷', skinTone:'#282533', body:0x262331, hood:0x13121a, arms:0x262331, legs:0x15131d,
-      hat:'none', hatColor:0, aura:0xff4f6d, extra:'none' },
-
-    { id:'lulalunar', name:'Lula Lunar', rarity:'legendary', price:14500, level:22,
-      desc:'Oito braços, zero gravidade e nenhum respeito pelo espaço pessoal.',
-      face:'🦑', skinTone:'#8f66cc', body:0x835bc3, hood:0x56398b, arms:0xa879e4, legs:0x56398b,
-      hat:'none', hatColor:0, aura:0xc28cff, extra:'tentacles' },
-
-    { id:'monstroboleto', name:'Monstro do Boleto', rarity:'legendary', price:16000, level:23,
-      desc:'Aparece todo mês, cresce com juros e nunca aceita ser ignorado.',
-      face:'📄', skinTone:'#d06b55', body:0xc65c49, hood:0x833b32, arms:0xc65c49, legs:0x65302a,
-      hat:'none', hatColor:0, aura:0xff765f, extra:'none', bulky:true },
-
-    { id:'reicogumelo', name:'Rei Cogumelo', rarity:'legendary', price:18000, level:25,
-      desc:'Soberano absoluto do reino úmido atrás do roteador.',
-      face:'🍄', skinTone:'#f1ddbd', body:0xc8545c, hood:0x89383f, arms:0xe6d1b1, legs:0x754838,
-      hat:'mushroom', hatColor:0xd34e58, aura:0xff8f98, extra:'none', bulky:true },
-
-    { id:'passaropistola', name:'Pássaro Pistola', rarity:'mythic', price:20000, level:26,
-      desc:'Acordou com a asa esquerda e decidiu discutir com toda a arena.',
-      face:'🐦', skinTone:'#f4c84c', body:0xeebc3f, hood:0xb98228, arms:0xeebc3f, legs:0x9a6329,
-      hat:'none', hatColor:0, aura:0xffd94f, extra:'wings' },
-
-    { id:'dragaocaos', name:'Dragão do Caos', rarity:'mythic', price:24000, level:28,
-      desc:'Coleciona tesouros, derrotas alheias e abas demais abertas no navegador.',
-      face:'🐉', skinTone:'#d24c55', body:0xc63f49, hood:0x852630, arms:0xc63f49, legs:0x70212a,
-      hat:'horns', hatColor:0xefe0b6, aura:0xff4f5f, extra:'wings', bulky:true },
-
-    { id:'cranio', name:'Crânio Flutuante', rarity:'mythic', price:28000, level:30,
-      desc:'Não tem corpo, não tem medo e definitivamente não tem plano odontológico.',
-      face:'💀', skinTone:'#e7dfcc', body:0x393342, hood:0x1f1b27, arms:0x393342, legs:0x1f1b27,
-      hat:'none', hatColor:0, aura:0xb58cff, extra:'float' },
-
-    { id:'ouricoradio', name:'Ouriço Radioativo', rarity:'rare', price:4200, level:1,
-      desc:'Encostou no servidor errado e agora cada espinho pega cinco barras de sinal.',
-      face:'☢️', skinTone:'#76c94f', body:0x62ba43, hood:0x3d7d2d, arms:0x62ba43, legs:0x3d7d2d,
-      hat:'spikes', hatColor:0xc6f04c, aura:0xb8ff4a, extra:'none',
-      seasonal:true, season:'67', boxOnly:true, marketMin:1050, marketMax:16800 },
-
-    { id:'abelhachefe', name:'Abelha-Chefe', rarity:'epic', price:8700, level:1,
-      desc:'Gerencia a colmeia, cobra metas impossíveis e ainda encontra tempo para picar.',
-      face:'🐝', skinTone:'#f2bd35', body:0xeab52d, hood:0x2d2932, arms:0xeab52d, legs:0x2d2932,
-      hat:'crown', hatColor:0xffd84b, aura:0xffd94f, extra:'wings',
-      seasonal:true, season:'67', boxOnly:true, marketMin:2175, marketMax:52200 },
-
-    { id:'hywirl', name:'Hipnose Ambulante', rarity:'legendary', price:17700, level:1,
-      desc:'Olhou para o próprio olho por tempo demais e esqueceu qual era o time.',
-      face:'🌀', skinTone:'#9b66ce', body:0x8e58c2, hood:0x5d367e, arms:0x8e58c2, legs:0x5d367e,
-      hat:'none', hatColor:0, aura:0xdc7cff, extra:'float',
-      seasonal:true, season:'67', boxOnly:true, marketMin:4425, marketMax:141600 },
-
-    { id:'glubturbo', name:'Glub Turbo', rarity:'mythic', price:28700, level:1,
-      desc:'Uma criatura aerodinâmica, barulhenta e movida por pura energia de chat.',
-      face:'👾', skinTone:'#31bdd0', body:0x29aec3, hood:0x18758a, arms:0x29aec3, legs:0x18758a,
-      hat:'horns', hatColor:0xd7f36a, aura:0x2de2ff, extra:'float',
-      seasonal:true, season:'67', boxOnly:true, marketMin:7175, marketMax:287000 }
+    /* SECRET · 100.000–1.000.000 · seleções obrigatórias do usuário */
+    playableSkin('robot', 'Robot', 'secret', 100000, 51, 'boss', '🤖',
+      'A heavy Polygonal Mind machine hidden in the boss pool.'),
+    playableSkin('tallguy', 'Tall Guy', 'secret', 156250, 73, 'box', '🕴️',
+      'So tall that the secret is visible from the next arena.'),
+    playableSkin('skeletoncostume', 'Skeleton Costume', 'secret', 212500, 29, 'boss', '💀',
+      'A classic costume reserved for an exceptionally rare drop.'),
+    playableSkin('burnvictim', 'Burn Victim', 'secret', 268750, 66, 'box', '🔥',
+      'Walked through the fire and straight into the Secret tier.'),
+    playableSkin('chaosbaby', 'Chaos Baby', 'secret', 325000, 26, 'boss', '🍼',
+      'Small silhouette, catastrophic arena energy.'),
+    playableSkin('o', 'O', 'secret', 381250, 7, 'box', '⭕',
+      'One letter. One eye-catching secret.'),
+    playableSkin('coolbananaguy', 'Cool Banana Guy', 'secret', 437500, 24, 'box', '🍌',
+      'The banana roll was promoted all the way to Secret.'),
+    playableSkin('mousemisprint', 'Mouse Misprint', 'secret', 493750, 3, 'boss', '🐭',
+      'An original, delightfully wrong mouse from R1.'),
+    playableSkin('ramon', 'Ramon', 'secret', 550000, 78, 'box', '🧙',
+      'A tiny legend with a name of his own.'),
+    playableSkin('littlealienmenace', 'Little Alien Menace', 'secret', 606250, 2, 'boss', '👽',
+      'A little visitor with an enormous threat level.'),
+    playableSkin('eggplant', 'Eggplant', 'secret', 662500, 90, 'box', '🍆',
+      'The produce aisle has never been this exclusive.'),
+    playableSkin('cosmicdweller', 'Cosmic Dweller', 'secret', 718750, 124, 'box', '🌌',
+      'A resident of somewhere far beyond the drop table.'),
+    playableSkin('turtle', 'Turtle', 'secret', 775000, 182, 'boss', '🐢',
+      'Slow entrance, almost impossible acquisition.'),
+    playableSkin('tnt', 'TNT', 'secret', 831250, 152, 'box', '🧨',
+      'A secret box drop with a very short fuse.'),
+    playableSkin('coolpolygonalmind', 'Cool Polygonal Mind', 'secret', 887500, 200, 'boss', '🧠',
+      'The collection mascot at the top end of the market.'),
+    playableSkin('eyefighter', 'Eye Fighter', 'secret', 943750, 168, 'boss', '👁️',
+      'Always sees the boss reward coming.'),
+    playableSkin('cosmicperson', 'Cosmic Person', 'secret', 1000000, 129, 'box', '✨',
+      'The million-coin apex of the Secret catalog.')
   ];
 
-  /* Preserva compras e a skin equipada de perfis dos dois catálogos
-     anteriores. NPCs usam outro registro e nunca passam por esta migração. */
+  MA.SKIN_DROP_ODDS = Object.freeze({
+    uncommon: 40,
+    legendary: 29.5,
+    mythical: 20,
+    ultimate: 10,
+    secret: .5
+  });
+
+  /* Preserva compras/equipamento de todos os catálogos anteriores. Cada skin
+     removida ganha um substituto jogável; NPCs nunca entram neste registro. */
   MA.SKIN_ID_MIGRATION = Object.freeze({
-    chill:'cactopraia', hacker:'magogeleia', doge:'gatosus', rizzler:'sapopix',
-    sigma:'etbombado', clown:'galinhacaos', ghost:'cranio', demon:'dragaocaos',
-    gigachad:'coelhomaromba', king:'reicogumelo', sixtyseven:'ouricoradio',
-    sixorbit:'abelhachefe', sevenbreak:'hywirl', duo67:'glubturbo',
-    rookie:'cactopraia', gamer:'galinhacaos', lumber:'gatosus', striker:'peixefora',
-    survivor:'pombocorreio', scout:'cogubug', sheriff:'magogeleia',
-    professor:'yetibolso', dojo:'ninjameme', orcceo:'monstroboleto',
-    hunter:'dinocoach', bogorc:'glubturbo', executive:'reicogumelo',
-    captain:'passaropistola', crash:'ouricoradio', mechred:'abelhachefe',
-    mechviolet:'hywirl', shadow:'cranio'
+    chill:'coolfries', hacker:'sunflower', doge:'hotdog', rizzler:'coolramen',
+    sigma:'alienskeleton', clown:'milk', ghost:'skeletoncostume', demon:'burnvictim',
+    gigachad:'sharkperson', king:'captainlantern', sixtyseven:'cosmicdweller',
+    sixorbit:'turtle', sevenbreak:'eyefighter', duo67:'cosmicperson',
+    rookie:'coolfries', gamer:'milk', lumber:'hotdog', striker:'pizza', survivor:'taco',
+    scout:'coolramen', sheriff:'sunflower', professor:'baguette', dojo:'robot',
+    orcceo:'goldfishbag', hunter:'moongirl', bogorc:'littlealienmenace',
+    executive:'captainlantern', captain:'sharkperson', crash:'cosmicdweller',
+    mechred:'turtle', mechviolet:'eyefighter', shadow:'skeletoncostume',
+
+    cactopraia:'coolfries', galinhacaos:'milk', gatosus:'hotdog', peixefora:'pizza',
+    pombocorreio:'taco', cogubug:'coolramen', magogeleia:'sunflower',
+    yetibolso:'baguette', coelhomaromba:'goldfishbag', sapopix:'captainlantern',
+    alpacarei:'sharkperson', dinocoach:'moongirl', etbombado:'alienskeleton',
+    ninjameme:'robot', lulalunar:'tallguy', monstroboleto:'skeletoncostume',
+    reicogumelo:'burnvictim', passaropistola:'chaosbaby', dragaocaos:'o',
+    cranio:'coolbananaguy', ouricoradio:'cosmicdweller', abelhachefe:'turtle',
+    hywirl:'eyefighter', glubturbo:'cosmicperson'
   });
 
   /* --------------------------------------------------------- ARMADURAS -- */

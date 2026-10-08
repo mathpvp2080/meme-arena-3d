@@ -25,7 +25,7 @@
 
      Exemplo (descomente e troque pelo seu arquivo):
 
-     'cactopraia': {
+     'coolfries': {
        url: 'assets/skins/meu-boneco.glb', // caminho dentro do projeto
        mode: 'full',                       // 'full' (boneco inteiro) ou 'part'
        height: 2.62,                       // altura final em unidades do jogo
@@ -34,7 +34,7 @@
        clip: 'idle'                        // animação do .glb (se houver)
      },
 
-     'gatosus': {
+     'pizza': {
        url: 'assets/skins/acessorio-exemplo.glb',
        mode: 'part',
        anchor: 'head',                 // head | hat | body | back | handL | handR | gun
@@ -42,47 +42,30 @@
        hide: ['head']                  // esconde a cabeça procedural
      }
      --------------------------------------------------------------------- */
-  /* Elenco jogável Ultimate Monsters. Ao contrário do catálogo anterior,
-     esta seleção cruza rigs e famílias diferentes para evitar uma fileira de
-     corpos iguais com novas texturas. Os modelos olham para +Z; meia-volta os
-     alinha à frente do jogador no Meme Arena (-Z). */
-  const ULTIMATE_MONSTERS = {
-    cactopraia:      ['cacto-praia.glb', 'Idle'],
-    galinhacaos:     ['galinha-caos.glb', 'Idle'],
-    gatosus:         ['gato-sus.glb', 'Idle'],
-    peixefora:       ['peixe-fora.glb', 'Idle'],
-    pombocorreio:    ['pombo-correio.glb', 'Flying_Idle'],
-    cogubug:         ['cogumelo-bugado.glb', 'Idle'],
-    magogeleia:      ['mago-geleia.glb', 'Idle'],
-    yetibolso:       ['yeti-bolso.glb', 'Idle'],
-    coelhomaromba:   ['coelho-maromba.glb', 'Idle'],
-    sapopix:         ['sapo-pix.glb', 'Idle'],
-    alpacarei:       ['alpaca-rei.glb', 'Flying_Idle'],
-    dinocoach:       ['dino-coach.glb', 'Idle'],
-    etbombado:       ['et-bombado.glb', 'Idle'],
-    ninjameme:       ['ninja-meme.glb', 'Idle'],
-    lulalunar:       ['lula-lunar.glb', 'Flying_Idle'],
-    monstroboleto:   ['monstro-boleto.glb', 'Idle'],
-    reicogumelo:     ['rei-cogumelo.glb', 'Idle'],
-    passaropistola:  ['passaro-pistola.glb', 'Idle'],
-    dragaocaos:      ['dragao-caos.glb', 'Flying_Idle'],
-    cranio:          ['cranio-flutuante.glb', 'Flying_Idle'],
-    ouricoradio:     ['ourico-radioativo.glb', 'Idle'],
-    abelhachefe:     ['abelha-chefe.glb', 'Flying_Idle'],
-    hywirl:          ['hywirl.glb', 'Flying_Idle'],
-    glubturbo:       ['glub-turbo.glb', 'Flying_Idle']
+  /* Elenco jogável Polygonal Mind 100 Avatars R1/R2. Todos os arquivos
+     preservam o rig Mixamo e recebem clipes leves de idle, corrida e ataque
+     durante a conversão. Os avatares já olham para a frente do jogo (-Z). */
+  const POLYGONAL_MIND = {
+    coolfries:'cool-fries.glb', milk:'milk.glb', hotdog:'hot-dog.glb',
+    washingmachine:'washing-machine.glb', fridge:'fridge.glb',
+    pizza:'pizza.glb', taco:'taco.glb', coolramen:'cool-ramen.glb', avocado:'avocado.glb',
+    sunflower:'sunflower.glb', baguette:'baguette.glb', goldfishbag:'goldfish-bag.glb',
+    captainlantern:'captain-lantern.glb', sharkperson:'shark-person.glb',
+    moongirl:'moon-girl.glb', alienskeleton:'alien-skeleton.glb',
+    robot:'robot.glb', tallguy:'tall-guy.glb', skeletoncostume:'skeleton-costume.glb',
+    burnvictim:'burn-victim.glb', chaosbaby:'chaos-baby.glb', o:'o.glb',
+    coolbananaguy:'cool-banana-guy.glb', mousemisprint:'mouse-misprint.glb',
+    ramon:'ramon.glb', littlealienmenace:'little-alien-menace.glb', eggplant:'eggplant.glb',
+    cosmicdweller:'cosmic-dweller.glb', turtle:'turtle.glb', tnt:'tnt.glb',
+    coolpolygonalmind:'cool-polygonal-mind.glb', eyefighter:'eye-fighter.glb',
+    cosmicperson:'cosmic-person.glb'
   };
   MA.SKIN_MODELS = MA.SKIN_MODELS || {};
-  Object.keys(ULTIMATE_MONSTERS).forEach(id => {
+  Object.keys(POLYGONAL_MIND).forEach(id => {
     if (MA.SKIN_MODELS[id]) return;
-    const model = ULTIMATE_MONSTERS[id];
     MA.SKIN_MODELS[id] = {
-      url: 'assets/skins/quaternius/' + model[0],
-      mode: 'full',
-      height: 2.62,
-      rotY: Math.PI,
-      clip: model[1],
-      hide: 'all'
+      url: 'assets/skins/polygonal-mind/' + POLYGONAL_MIND[id],
+      mode: 'full', height: 2.62, rotY: 0, clip: 'idle', hide: 'all'
     };
   });
 
@@ -238,20 +221,24 @@
     return p;
   }
 
-  /* Carrega tudo que estiver registrado. Chamado no boot para que as
-     miniaturas da loja (que renderizam de forma síncrona) já peguem os
-     modelos prontos. Nunca rejeita. */
-  function preload() {
+  /* No boot, carrega apenas a skin inicial/equipada e os quatro NPCs. As
+     outras skins entram sob demanda ao abrir loja/inventário. Isso evita
+     transferir o catálogo inteiro (~5 MB) antes do primeiro jogo. */
+  function preload(ids) {
     const urls = [];
-    (MA.SKINS || []).forEach(s => {
+    const wanted = new Set(Array.isArray(ids) ? ids : []);
+    const starter = (MA.SKINS || []).find(s => s.starter);
+    if (starter) wanted.add(starter.id);
+    if (MA.Profile && MA.Profile.data && MA.Profile.data.equipped) {
+      wanted.add(MA.Profile.data.equipped.skin);
+    }
+    (MA.SKINS || []).filter(s => wanted.has(s.id)).forEach(s => {
       const sp = specFor(s);
       if (sp && urls.indexOf(sp.url) < 0) urls.push(sp.url);
     });
-    [MA.SKIN_MODELS, MA.ENEMY_MODELS].forEach(registry => {
-      Object.keys(registry || {}).forEach(id => {
-        const sp = normalize(registry[id]);
-        if (sp && urls.indexOf(sp.url) < 0) urls.push(sp.url);
-      });
+    Object.keys(MA.ENEMY_MODELS || {}).forEach(id => {
+      const sp = normalize(MA.ENEMY_MODELS[id]);
+      if (sp && urls.indexOf(sp.url) < 0) urls.push(sp.url);
     });
     if (!urls.length) return Promise.resolve(0);
     return Promise.all(urls.map(load)).then(list => list.filter(Boolean).length);

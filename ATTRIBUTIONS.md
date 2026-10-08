@@ -17,21 +17,22 @@ implica participação ou endosso ao jogo.
 - **Cópia da licença:** `assets/kaykit-city/LICENSE.txt`
 - **Data de acesso registrada:** 7 de outubro de 2026
 
-## Quaternius Ultimate Monsters
+## Polygonal Mind 100 Avatars R1/R2
 
-- **Arquivos no projeto:** 24 GLBs autocontidos em `assets/skins/quaternius/`
-- **Título na fonte:** Ultimate Monsters
-- **Autor:** Quaternius
-- **Página oficial:** [quaternius.com/packs/ultimatemonsters.html](https://quaternius.com/packs/ultimatemonsters.html)
-- **Conteúdo oficial:** 50 modelos totalmente animados nos formatos glTF, FBX, OBJ e Blend.
-- **Licença:** [Creative Commons Zero 1.0 Universal (CC0 1.0)](https://creativecommons.org/publicdomain/zero/1.0/)
-- **Atribuição obrigatória:** não; crédito registrado voluntariamente.
-- **Seleção usada:** animais, plantas, criaturas voadoras, blobs e monstros de geometrias e rigs diferentes; 24 aparências jogáveis no total.
-- **Cópias recuperadas:** [OuroborosCollective/Wasd](https://github.com/OuroborosCollective/Wasd), commit `1140770331b125fa4c6f8c95dd859d1ce472c54a`, e [Benson-LU77/Claude.guide](https://github.com/Benson-LU77/Claude.guide), commit `25b5bc22f997dfa4d3fea5c77fc2484f5d589264`.
-- **Transformações:** conversão para GLB, seleção de clipes, reamostragem, deduplicação, remoção de dados sem uso e quantização de normais/UVs/pesos. Oito atlas `big_*` foram reduzidos de 1024×1024 para 256×256; os demais atlas 32×32 foram preservados.
-- **Integração no jogo:** identidades próprias de loja, escala, rotação, sombras e ligação dos estados idle/corrida/salto/ataque/morte às animações disponíveis.
-- **Registros completos:** `assets/skins/quaternius/LICENSE.txt` e `assets/skins/quaternius/SOURCE.md`, incluindo o mapeamento de cada arquivo e os commits de recuperação.
-- **Data de acesso registrada:** 7 de outubro de 2026
+- **Files in the project:** 33 self-contained GLBs in `assets/skins/polygonal-mind/`
+- **Collections:** 100 Avatars R1 and 100 Avatars R2
+- **Author:** Polygonal Mind team
+- **Official source:** [PolygonalMind/100Avatars](https://github.com/PolygonalMind/100Avatars), commit `ff07c2ad0017819c4e5366656ee1e5bcc4029bd4`
+- **Official release:** [v24.02.1](https://github.com/PolygonalMind/100Avatars/releases/tag/v24.02.1)
+- **License followed:** [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/), as supplied in the official repository’s `CCLicense.md`.
+- **Attribution requirement:** yes; author, source, license and changes are recorded here and in the asset folder.
+- **Transformations:** selected R1/R2 VRMs were converted to GLB; expression morph targets and VRM-only metadata were removed; textures were capped at 512×512; geometry was welded, deduplicated, pruned and quantized; and `idle`, `run` and `punch` clips were authored from the retained Mixamo rigs.
+- **Integration:** 33 playable skins with English public names, explicit rarity/acquisition/value metadata, lazy loading and fixed player-market values. NPC models remain separate and non-playable.
+- **Detailed record:** `assets/skins/polygonal-mind/SOURCE.md`
+- **License copy:** `assets/skins/polygonal-mind/LICENSE.md`
+- **Access date:** October 7, 2026
+
+The Poly Pizza R1/R2 bundle pages label the mirrors as CC0, while the official repository distributes CC BY 4.0 terms. This project conservatively follows the official repository’s stricter CC BY 4.0 license.
 
 ## DOGE
 

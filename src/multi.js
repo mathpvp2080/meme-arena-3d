@@ -126,7 +126,7 @@
         id: cid,
         uid: (MA.Net.user && MA.Net.user.id) || null,
         name: p.username, level: p.level,
-        skin: (p.equipped && p.equipped.skin) || 'cactopraia',
+        skin: (p.equipped && p.equipped.skin) || 'coolfries',
         armor: (p.equipped && p.equipped.armor) || 'hoodie',
         sticker: (p.equipped && p.equipped.sticker) || '', team: null
       };

@@ -8,36 +8,52 @@
 
 create table if not exists public.season67_items (
   item text primary key,
-  item_type text not null check (item_type in ('skin','armor','weapon','ability')),
+  item_type text not null check (item_type='skin'),
   name text not null,
   icon text not null,
-  rarity text not null check (rarity in ('common','rare','epic','legendary','mythic')),
-  weight int not null check (weight > 0)
+  rarity text not null,
+  weight int not null check (weight>0),
+  acquisition text not null default 'both'
 );
 
-insert into public.season67_items (item,item_type,name,icon,rarity,weight) values
-  ('skin:ouricoradio',       'skin',    'Ouriço Radioativo',     '☢',  'rare',      34),
-  ('skin:abelhachefe',       'skin',    'Abelha-Chefe',           '🐝', 'epic',      17),
-  ('skin:hywirl',            'skin',    'Hipnose Ambulante',      '🌀', 'legendary',  8),
-  ('skin:glubturbo',         'skin',    'Glub Turbo',             '👾', 'mythic',     4),
-  ('armor:protocol67',      'armor',   'Protocolo 6·7',        '🛡', 'legendary',  8),
-  ('armor:orbit6',          'armor',   'Colete Órbita 6',      '🛡', 'rare',      34),
-  ('armor:prism7',          'armor',   'Bastião Prisma 7',     '🛡', 'legendary',  8),
-  ('weapon:pulse67',        'weapon',  'Pulso Seis-Sete',      '6⁷', 'legendary',  8),
-  ('weapon:boomerang',      'weapon',  'Bumerangue 67',        '↩',  'rare',      34),
-  ('weapon:gravity6',       'weapon',  'Orbe Gravitacional 6', '◉',  'epic',      17),
-  ('weapon:prism7',         'weapon',  'Prisma Sete',          '7✦', 'legendary',  8),
-  ('ability:repulse6',      'ability', 'Repulsão 6',           '⑥',  'rare',      34),
-  ('ability:blink7',        'ability', 'Passo 7',              '⑦',  'epic',      17),
-  ('ability:overclock67',   'ability', 'Sobrecarga 67',        '67', 'legendary',  8)
-on conflict (item) do update set
-  item_type=excluded.item_type,name=excluded.name,icon=excluded.icon,
-  rarity=excluded.rarity,weight=excluded.weight;
+alter table public.season67_items drop constraint if exists season67_items_rarity_check;
+alter table public.season67_items add column if not exists acquisition text not null default 'both';
+alter table public.season67_items drop constraint if exists season67_items_acquisition_check;
+alter table public.season67_items add constraint season67_items_rarity_check
+  check (rarity in ('uncommon','legendary','mythical','ultimate','secret'));
+alter table public.season67_items add constraint season67_items_acquisition_check
+  check (acquisition in ('box','boss','both'));
+delete from public.season67_items;
+insert into public.season67_items(item,item_type,name,icon,rarity,weight,acquisition) values
+  ('skin:pizza','skin','Pizza','🍕','uncommon',400,'box'),
+  ('skin:taco','skin','Taco','🌮','uncommon',400,'boss'),
+  ('skin:coolramen','skin','Cool Ramen','🍜','uncommon',400,'both'),
+  ('skin:avocado','skin','Avocado','🥑','uncommon',400,'boss'),
+  ('skin:sunflower','skin','Sunflower','🌻','legendary',295,'box'),
+  ('skin:baguette','skin','Cool Baguette','🥖','legendary',295,'boss'),
+  ('skin:goldfishbag','skin','Goldfish Bag','🐠','legendary',295,'both'),
+  ('skin:captainlantern','skin','Captain Lantern','🏮','mythical',200,'box'),
+  ('skin:sharkperson','skin','Shark Person','🦈','mythical',200,'boss'),
+  ('skin:moongirl','skin','Moon Girl','🌙','ultimate',100,'box'),
+  ('skin:alienskeleton','skin','Alien Skeleton','☠️','ultimate',100,'boss'),
+  ('skin:robot','skin','Robot','🤖','secret',5,'boss'),
+  ('skin:tallguy','skin','Tall Guy','🕴️','secret',5,'box'),
+  ('skin:skeletoncostume','skin','Skeleton Costume','💀','secret',5,'boss'),
+  ('skin:burnvictim','skin','Burn Victim','🔥','secret',5,'box'),
+  ('skin:chaosbaby','skin','Chaos Baby','🍼','secret',5,'boss'),
+  ('skin:o','skin','O','⭕','secret',5,'box'),
+  ('skin:coolbananaguy','skin','Cool Banana Guy','🍌','secret',5,'box'),
+  ('skin:mousemisprint','skin','Mouse Misprint','🐭','secret',5,'boss'),
+  ('skin:ramon','skin','Ramon','🧙','secret',5,'box'),
+  ('skin:littlealienmenace','skin','Little Alien Menace','👽','secret',5,'boss'),
+  ('skin:eggplant','skin','Eggplant','🍆','secret',5,'box'),
+  ('skin:cosmicdweller','skin','Cosmic Dweller','🌌','secret',5,'box'),
+  ('skin:turtle','skin','Turtle','🐢','secret',5,'boss'),
+  ('skin:tnt','skin','TNT','🧨','secret',5,'box'),
+  ('skin:coolpolygonalmind','skin','Cool Polygonal Mind','🧠','secret',5,'boss'),
+  ('skin:eyefighter','skin','Eye Fighter','👁️','secret',5,'boss'),
+  ('skin:cosmicperson','skin','Cosmic Person','✨','secret',5,'box');
 
-delete from public.season67_items where item in (
-  'skin:sixtyseven','skin:sixorbit','skin:sevenbreak','skin:duo67',
-  'skin:crash','skin:mechred','skin:mechviolet','skin:shadow'
-);
 
 alter table public.season67_items enable row level security;
 drop policy if exists "catalogo sazonal leitura" on public.season67_items;
@@ -89,230 +105,6 @@ select id,
 from public.profiles
 on conflict (user_id) do nothing;
 
--- Seleção ponderada. Função interna: não é executável diretamente pela API.
-create or replace function public._season67_pick(
-  p_inventory jsonb,
-  p_only_missing boolean default false,
-  p_type text default null
-) returns text
-language plpgsql volatile security definer set search_path = public as $$
-declare escolhido text;
-begin
-  select s.item into escolhido
-    from public.season67_items s
-   where (p_type is null or s.item_type = p_type)
-     and (not p_only_missing or not (coalesce(p_inventory,'[]'::jsonb) ? s.item))
-   order by (-ln(greatest(random(), 0.0000001)) / s.weight)
-   limit 1;
-  return escolhido;
-end;
-$$;
-revoke all on function public._season67_pick(jsonb,boolean,text) from public, anon, authenticated;
-
-create or replace function public.season67_open_box(p_box text)
-returns jsonb
-language plpgsql security definer set search_path = public as $$
-declare
-  me uuid := auth.uid();
-  v_price int; v_count int; i int;
-  v_coins int; v_xp int; v_level int; v_inventory jsonb; v_stats jsonb; v_season jsonb;
-  v_pity int; v_boxes int; v_boosts int; v_fragments int; v_forged int;
-  v_roll numeric; v_amount int; v_item text; v_type text; v_name text; v_icon text; v_rarity text;
-  v_guaranteed boolean; v_results jsonb := '[]'::jsonb;
-  v_xp_gain int := 0; v_coin_gain int := 0; v_need int;
-begin
-  if me is null then return jsonb_build_object('error','Sem sessão.'); end if;
-  if now() < timestamptz '2026-10-03 00:00:00-03' or now() > timestamptz '2026-11-28 23:59:59-03' then
-    return jsonb_build_object('error','As Caixas 67 só ficam disponíveis durante a temporada.');
-  end if;
-  if p_box = 'box67' then v_price := 670; v_count := 1;
-  elsif p_box = 'vault67' then v_price := 1967; v_count := 3;
-  else return jsonb_build_object('error','Caixa desconhecida.'); end if;
-
-  select coins,xp,level,coalesce(inventory,'[]'::jsonb),coalesce(stats,'{}'::jsonb)
-    into v_coins,v_xp,v_level,v_inventory,v_stats
-    from public.profiles where id=me for update;
-  if not found then return jsonb_build_object('error','Perfil não encontrado.'); end if;
-  if v_coins < v_price then return jsonb_build_object('error','Moedas insuficientes.'); end if;
-
-  perform set_config('app.trusted','on',true);
-  insert into public.season67_progress(user_id) values(me) on conflict (user_id) do nothing;
-  select pity,boxes_opened,boosts,fragments,forged
-    into v_pity,v_boxes,v_boosts,v_fragments,v_forged
-    from public.season67_progress where user_id=me for update;
-  v_season := coalesce(v_stats->'season67','{}'::jsonb);
-  v_coins := v_coins - v_price;
-
-  for i in 1..v_count loop
-    v_boxes := v_boxes + 1;
-    v_guaranteed := v_pity >= 6;
-    v_roll := random()*100;
-
-    if v_guaranteed or v_roll < 18 then
-      if v_guaranteed then
-        v_item := public._season67_pick(v_inventory,true,null);
-      else
-        v_type := case when v_roll < 5 then 'skin' when v_roll < 9 then 'armor'
-                       when v_roll < 14 then 'weapon' else 'ability' end;
-        v_item := public._season67_pick(v_inventory,false,v_type);
-      end if;
-      if v_item is null then v_item := public._season67_pick(v_inventory,false,null); end if;
-      select item_type,name,icon,rarity into v_type,v_name,v_icon,v_rarity
-        from public.season67_items where item=v_item;
-      v_pity := 0;
-      if v_inventory ? v_item then
-        v_fragments := v_fragments + 67;
-        v_results := v_results || jsonb_build_array(jsonb_build_object(
-          'type','fragments','icon','⬡','name','67 FRAGMENTOS','amount',67,
-          'rarity','legendary','guaranteed',v_guaranteed,
-          'desc','Item repetido convertido em fragmentos.'));
-      else
-        v_inventory := v_inventory || to_jsonb(v_item);
-        v_results := v_results || jsonb_build_array(jsonb_build_object(
-          'type','item','itemKey',v_item,'itemType',v_type,'name',v_name,'icon',v_icon,
-          'rarity',v_rarity,'guaranteed',v_guaranteed,
-          'desc',case when v_guaranteed then 'GARANTIA DA 7ª CAIXA' else 'ITEM EXCLUSIVO DA TEMPORADA' end));
-      end if;
-    else
-      v_pity := least(6,v_pity+1);
-      if v_roll < 60 then
-        v_amount := (array[167,267,367])[1+floor(random()*3)::int];
-        v_coin_gain := v_coin_gain + v_amount;
-        v_results := v_results || jsonb_build_array(jsonb_build_object(
-          'type','coins','icon','🪙','name',v_amount||' MOEDAS','amount',v_amount,'rarity','common'));
-      elsif v_roll < 83 then
-        v_amount := (array[167,267,367,467])[1+floor(random()*4)::int];
-        v_xp_gain := v_xp_gain + v_amount;
-        v_results := v_results || jsonb_build_array(jsonb_build_object(
-          'type','xp','icon','✦','name',v_amount||' XP','amount',v_amount,'rarity','rare'));
-      else
-        v_amount := case when random() < .67 then 1 else 2 end;
-        v_boosts := v_boosts + v_amount;
-        v_results := v_results || jsonb_build_array(jsonb_build_object(
-          'type','boost','icon','⚡','name','IMPULSO 67 ×'||v_amount,'amount',v_amount,'rarity','epic',
-          'desc','+67% de moedas e XP nas próximas partidas.'));
-      end if;
-    end if;
-  end loop;
-
-  v_coins := v_coins + v_coin_gain;
-  v_xp := v_xp + v_xp_gain;
-  while v_level < 60 loop
-    v_need := round(120*power(v_level::numeric,1.42));
-    exit when v_xp < v_need;
-    v_xp := v_xp-v_need; v_level := v_level+1;
-  end loop;
-
-  v_season := v_season || jsonb_build_object(
-    'pity',v_pity,'boxesOpened',v_boxes,'boosts',v_boosts,
-    'fragments',v_fragments,'forged',v_forged);
-  v_stats := v_stats || jsonb_build_object('season67',v_season);
-  update public.season67_progress set pity=v_pity,boxes_opened=v_boxes,
-    boosts=v_boosts,fragments=v_fragments,forged=v_forged,updated_at=now()
-    where user_id=me;
-  update public.profiles set coins=v_coins,xp=v_xp,level=v_level,
-    inventory=v_inventory,stats=v_stats where id=me;
-
-  return jsonb_build_object('ok',true,'results',v_results,'progress',v_season);
-end;
-$$;
-
-create or replace function public.season67_forge_box()
-returns jsonb
-language plpgsql security definer set search_path = public as $$
-declare
-  me uuid := auth.uid(); v_inventory jsonb; v_stats jsonb; v_season jsonb;
-  v_fragments int; v_boxes int; v_forged int;
-  v_item text; v_type text; v_name text; v_icon text; v_rarity text;
-begin
-  if me is null then return jsonb_build_object('error','Sem sessão.'); end if;
-  if now() < timestamptz '2026-10-03 00:00:00-03' or now() > timestamptz '2026-11-28 23:59:59-03' then
-    return jsonb_build_object('error','A Caixa Garantida só fica disponível durante a temporada.');
-  end if;
-  select coalesce(inventory,'[]'::jsonb),coalesce(stats,'{}'::jsonb)
-    into v_inventory,v_stats from public.profiles where id=me for update;
-  if not found then return jsonb_build_object('error','Perfil não encontrado.'); end if;
-  perform set_config('app.trusted','on',true);
-  insert into public.season67_progress(user_id) values(me) on conflict (user_id) do nothing;
-  select fragments,boxes_opened,forged into v_fragments,v_boxes,v_forged
-    from public.season67_progress where user_id=me for update;
-  v_season := coalesce(v_stats->'season67','{}'::jsonb);
-  if v_fragments < 67 then return jsonb_build_object('error','Você precisa de 67 fragmentos.'); end if;
-  v_item := public._season67_pick(v_inventory,true,null);
-  if v_item is null then return jsonb_build_object('error','Você já possui todos os itens da Temporada 67.'); end if;
-  select item_type,name,icon,rarity into v_type,v_name,v_icon,v_rarity from public.season67_items where item=v_item;
-
-  v_inventory := v_inventory || to_jsonb(v_item);
-  v_fragments := v_fragments-67; v_boxes := v_boxes+1; v_forged := v_forged+1;
-  v_season := v_season || jsonb_build_object(
-    'fragments',v_fragments,'pity',0,'boxesOpened',v_boxes,'forged',v_forged);
-  v_stats := v_stats || jsonb_build_object('season67',v_season);
-  update public.season67_progress set fragments=v_fragments,pity=0,
-    boxes_opened=v_boxes,forged=v_forged,updated_at=now() where user_id=me;
-  update public.profiles set inventory=v_inventory,stats=v_stats where id=me;
-  return jsonb_build_object('ok',true,'reward',jsonb_build_object(
-    'type','item','itemKey',v_item,'itemType',v_type,'name',v_name,'icon',v_icon,
-    'rarity',v_rarity,'guaranteed',true,'desc','CAIXA GARANTIDA DE FRAGMENTOS'),
-    'progress',v_season);
-end;
-$$;
-
-create or replace function public.season67_boss_reward()
-returns jsonb
-language plpgsql security definer set search_path = public as $$
-declare
-  me uuid := auth.uid(); v_inventory jsonb; v_stats jsonb; v_season jsonb;
-  v_last timestamptz; v_item text; v_type text; v_name text; v_icon text; v_rarity text;
-  v_fragments int; v_reward jsonb; v_drops int; v_bosses int;
-begin
-  if me is null then return jsonb_build_object('error','Sem sessão.'); end if;
-  if now() < timestamptz '2026-10-03 00:00:00-03' or now() > timestamptz '2026-11-28 23:59:59-03' then
-    return jsonb_build_object('error','Temporada encerrada.');
-  end if;
-  select coalesce(inventory,'[]'::jsonb),coalesce(stats,'{}'::jsonb)
-    into v_inventory,v_stats from public.profiles where id=me for update;
-  if not found then return jsonb_build_object('error','Perfil não encontrado.'); end if;
-  perform set_config('app.trusted','on',true);
-  insert into public.season67_progress(user_id) values(me) on conflict (user_id) do nothing;
-  select fragments,boss_drops,bosses_defeated,last_boss_reward_at
-    into v_fragments,v_drops,v_bosses,v_last
-    from public.season67_progress where user_id=me for update;
-  v_season := coalesce(v_stats->'season67','{}'::jsonb);
-  if v_last is not null and now()-v_last < interval '4 minutes' then
-    return jsonb_build_object('error','Recompensa de chefe em recarga no servidor.');
-  end if;
-  v_bosses := v_bosses+1;
-
-  if random() < .67 then
-    v_item := public._season67_pick(v_inventory,false,null);
-    select item_type,name,icon,rarity into v_type,v_name,v_icon,v_rarity from public.season67_items where item=v_item;
-    v_drops := v_drops+1;
-    if v_inventory ? v_item then
-      v_fragments := v_fragments+67;
-      v_reward := jsonb_build_object('type','fragments','icon','⬡','name','67 FRAGMENTOS','amount',67,
-        'rarity','legendary','desc','Drop repetido convertido em fragmentos.');
-    else
-      v_inventory := v_inventory || to_jsonb(v_item);
-      v_reward := jsonb_build_object('type','item','itemKey',v_item,'itemType',v_type,'name',v_name,'icon',v_icon,
-        'rarity',v_rarity,'desc','DROP ALEATÓRIO DE CHEFE');
-    end if;
-  else
-    v_fragments := v_fragments+7;
-    v_reward := jsonb_build_object('type','fragments','icon','⬡','name','7 FRAGMENTOS','amount',7,
-      'rarity','rare','desc','Fragmentos de recompensa do chefe.');
-  end if;
-
-  v_last := now();
-  v_season := v_season || jsonb_build_object('fragments',v_fragments,'bossDrops',v_drops,
-    'bossesDefeated',v_bosses,'lastBossRewardAt',v_last);
-  v_stats := v_stats || jsonb_build_object('season67',v_season);
-  update public.season67_progress set fragments=v_fragments,boss_drops=v_drops,
-    bosses_defeated=v_bosses,last_boss_reward_at=v_last,updated_at=now() where user_id=me;
-  update public.profiles set inventory=v_inventory,stats=v_stats where id=me;
-  return jsonb_build_object('ok',true,'reward',v_reward,'progress',v_season);
-end;
-$$;
-
 create or replace function public.season67_consume_boost()
 returns jsonb
 language plpgsql security definer set search_path = public as $$
@@ -339,6 +131,191 @@ begin
   return jsonb_build_object('ok',true,'remaining',p.boosts);
 end;
 $$;
+
+-- ---------------------------------------------------------------------
+-- Sorteio Polygonal Mind: primeiro 50% skin / 50% recursos. Somente no
+-- ramo skin aplica 40 / 29,5 / 20 / 10 / 0,5 por cento de raridade.
+-- ---------------------------------------------------------------------
+create or replace function public._season67_skin_rarity(p_roll numeric)
+returns text language sql immutable set search_path = public as $$
+  select case
+    when p_roll < .400 then 'uncommon'
+    when p_roll < .695 then 'legendary'
+    when p_roll < .895 then 'mythical'
+    when p_roll < .995 then 'ultimate'
+    else 'secret'
+  end
+$$;
+revoke all on function public._season67_skin_rarity(numeric) from public,anon,authenticated;
+
+create or replace function public._season67_pick_skin(
+  p_inventory jsonb, p_only_missing boolean, p_source text, p_rarity text default null
+) returns text language sql volatile set search_path = public as $$
+  select s.item from public.season67_items s
+  where (p_rarity is null or s.rarity=p_rarity)
+    and (s.acquisition=p_source or s.acquisition='both')
+    and (not p_only_missing or not (coalesce(p_inventory,'[]'::jsonb) ? s.item))
+  order by random() limit 1
+$$;
+revoke all on function public._season67_pick_skin(jsonb,boolean,text,text) from public,anon,authenticated;
+
+create or replace function public.season67_open_box(p_box text)
+returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  me uuid := auth.uid(); v_price int; v_count int; i int;
+  v_coins int; v_xp int; v_level int; v_inventory jsonb; v_stats jsonb; v_season jsonb;
+  v_boxes int; v_item text; v_type text; v_name text; v_icon text; v_rarity text;
+  v_amount int; v_kind numeric; v_reward jsonb; v_results jsonb := '[]'::jsonb;
+  v_need int;
+begin
+  if me is null then return jsonb_build_object('error','Sem sessão.'); end if;
+  if now() < timestamptz '2026-10-03 00:00:00-03' or now() > timestamptz '2026-11-28 23:59:59-03' then
+    return jsonb_build_object('error','As Caixas 67 só ficam disponíveis durante a temporada.');
+  end if;
+  if p_box='box67' then v_price:=670; v_count:=1;
+  elsif p_box='vault67' then v_price:=1830; v_count:=3;
+  else return jsonb_build_object('error','Caixa desconhecida.'); end if;
+
+  select coins,xp,level,coalesce(inventory,'[]'::jsonb),coalesce(stats,'{}'::jsonb)
+    into v_coins,v_xp,v_level,v_inventory,v_stats from public.profiles where id=me for update;
+  if not found then return jsonb_build_object('error','Perfil não encontrado.'); end if;
+  if v_coins < v_price then return jsonb_build_object('error','Moedas insuficientes.'); end if;
+  perform set_config('app.trusted','on',true);
+  insert into public.season67_progress(user_id) values(me) on conflict(user_id) do nothing;
+  select boxes_opened into v_boxes from public.season67_progress where user_id=me for update;
+  v_season := coalesce(v_stats->'season67','{}'::jsonb);
+  v_coins := v_coins-v_price;
+
+  for i in 1..v_count loop
+    v_boxes := v_boxes+1;
+    if random() < .5 then
+      v_rarity := public._season67_skin_rarity(random());
+      v_item := public._season67_pick_skin(v_inventory,true,'box',v_rarity);
+      if v_item is null then v_item := public._season67_pick_skin(v_inventory,false,'box',v_rarity); end if;
+      select item_type,name,icon,rarity into v_type,v_name,v_icon,v_rarity
+        from public.season67_items where item=v_item;
+      if v_inventory ? v_item then
+        select greatest(250,round(min_price*.1)::int) into v_amount
+          from public.market_price_limits where item=v_item;
+        v_amount := coalesce(v_amount,250); v_coins := v_coins+v_amount;
+        v_reward := jsonb_build_object('type','coins','icon','🪙','name',v_amount||' MOEDAS',
+          'amount',v_amount,'rarity',v_rarity,'converted',true,
+          'desc','SKIN REPETIDA CONVERTIDA AUTOMATICAMENTE');
+      else
+        v_inventory := v_inventory || to_jsonb(v_item);
+        v_reward := jsonb_build_object('type','item','itemKey',v_item,'itemType',v_type,
+          'name',v_name,'icon',v_icon,'rarity',v_rarity,'desc','DROP DE CAIXA');
+      end if;
+    else
+      v_kind := random();
+      if v_kind < .4 then
+        v_amount := (array[250,500,750])[1+floor(random()*3)::int];
+        v_coins := v_coins+v_amount;
+        v_reward := jsonb_build_object('type','coins','icon','🪙','name',v_amount||' MOEDAS',
+          'amount',v_amount,'rarity','common','desc','RECURSO AUTOMÁTICO');
+      elsif v_kind < .75 then
+        v_amount := (array[200,400,600])[1+floor(random()*3)::int];
+        v_xp := v_xp+v_amount;
+        v_reward := jsonb_build_object('type','xp','icon','✦','name',v_amount||' XP',
+          'amount',v_amount,'rarity','uncommon','desc','RECURSO AUTOMÁTICO');
+      else
+        v_amount := 250; v_coins := v_coins+v_amount; v_xp := v_xp+v_amount;
+        v_reward := jsonb_build_object('type','both','icon','⚡','name','250 MOEDAS + 250 XP',
+          'amount',v_amount,'coins',v_amount,'xp',v_amount,'rarity','legendary',
+          'desc','RECURSOS AUTOMÁTICOS');
+      end if;
+    end if;
+    v_results := v_results || jsonb_build_array(v_reward);
+  end loop;
+
+  while v_level < 60 loop
+    v_need := round(120*power(v_level::numeric,1.42)); exit when v_xp < v_need;
+    v_xp:=v_xp-v_need; v_level:=v_level+1;
+  end loop;
+  v_season := v_season || jsonb_build_object('pity',0,'boxesOpened',v_boxes);
+  v_stats := v_stats || jsonb_build_object('season67',v_season);
+  update public.season67_progress set pity=0,boxes_opened=v_boxes,updated_at=now() where user_id=me;
+  update public.profiles set coins=v_coins,xp=v_xp,level=v_level,inventory=v_inventory,stats=v_stats where id=me;
+  return jsonb_build_object('ok',true,'results',v_results,'progress',v_season);
+end;
+$$;
+
+create or replace function public.season67_forge_box()
+returns jsonb
+language sql security definer set search_path = public as $$
+  select jsonb_build_object('error','A forja de fragmentos foi encerrada. Caixas e chefes usam o sorteio 50/50.')
+$$;
+
+create or replace function public.season67_boss_reward()
+returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  me uuid:=auth.uid(); v_coins int; v_xp int; v_level int; v_need int;
+  v_inventory jsonb; v_stats jsonb; v_season jsonb; v_last timestamptz;
+  v_item text; v_name text; v_icon text; v_rarity text; v_amount int; v_kind numeric;
+  v_reward jsonb; v_drops int; v_bosses int;
+begin
+  if me is null then return jsonb_build_object('error','Sem sessão.'); end if;
+  if now() < timestamptz '2026-10-03 00:00:00-03' or now() > timestamptz '2026-11-28 23:59:59-03' then
+    return jsonb_build_object('error','Temporada encerrada.'); end if;
+  select coins,xp,level,coalesce(inventory,'[]'::jsonb),coalesce(stats,'{}'::jsonb)
+    into v_coins,v_xp,v_level,v_inventory,v_stats from public.profiles where id=me for update;
+  if not found then return jsonb_build_object('error','Perfil não encontrado.'); end if;
+  perform set_config('app.trusted','on',true);
+  insert into public.season67_progress(user_id) values(me) on conflict(user_id) do nothing;
+  select boss_drops,bosses_defeated,last_boss_reward_at into v_drops,v_bosses,v_last
+    from public.season67_progress where user_id=me for update;
+  if v_last is not null and now()-v_last < interval '20 seconds' then
+    return jsonb_build_object('error','Recompensa de chefe já registrada.'); end if;
+  v_bosses:=v_bosses+1;
+
+  if random()<.5 then
+    v_rarity:=public._season67_skin_rarity(random());
+    v_item:=public._season67_pick_skin(v_inventory,true,'boss',v_rarity);
+    if v_item is null then v_item:=public._season67_pick_skin(v_inventory,false,'boss',v_rarity); end if;
+    select name,icon,rarity into v_name,v_icon,v_rarity from public.season67_items where item=v_item;
+    if v_inventory ? v_item then
+      select greatest(250,round(min_price*.1)::int) into v_amount from public.market_price_limits where item=v_item;
+      v_amount:=coalesce(v_amount,250); v_coins:=v_coins+v_amount;
+      v_reward:=jsonb_build_object('type','coins','icon','🪙','name',v_amount||' MOEDAS','amount',v_amount,
+        'rarity',v_rarity,'converted',true,'desc','SKIN REPETIDA CONVERTIDA AUTOMATICAMENTE');
+    else
+      v_inventory:=v_inventory||to_jsonb(v_item); v_drops:=v_drops+1;
+      v_reward:=jsonb_build_object('type','item','itemKey',v_item,'itemType','skin','name',v_name,
+        'icon',v_icon,'rarity',v_rarity,'desc','DROP DE CHEFE');
+    end if;
+  else
+    v_kind:=random();
+    if v_kind<.4 then
+      v_amount:=(array[500,1000,1500])[1+floor(random()*3)::int]; v_coins:=v_coins+v_amount;
+      v_reward:=jsonb_build_object('type','coins','icon','🪙','name',v_amount||' MOEDAS','amount',v_amount,
+        'rarity','common','desc','RECURSO AUTOMÁTICO');
+    elsif v_kind<.75 then
+      v_amount:=(array[400,800,1200])[1+floor(random()*3)::int]; v_xp:=v_xp+v_amount;
+      v_reward:=jsonb_build_object('type','xp','icon','✦','name',v_amount||' XP','amount',v_amount,
+        'rarity','uncommon','desc','RECURSO AUTOMÁTICO');
+    else
+      v_amount:=500; v_coins:=v_coins+v_amount; v_xp:=v_xp+v_amount;
+      v_reward:=jsonb_build_object('type','both','icon','⚡','name','500 MOEDAS + 500 XP','amount',v_amount,
+        'coins',v_amount,'xp',v_amount,'rarity','legendary','desc','RECURSOS AUTOMÁTICOS');
+    end if;
+  end if;
+  while v_level<60 loop
+    v_need:=round(120*power(v_level::numeric,1.42)); exit when v_xp<v_need;
+    v_xp:=v_xp-v_need; v_level:=v_level+1;
+  end loop;
+  v_last:=now();
+  v_season:=coalesce(v_stats->'season67','{}'::jsonb)||jsonb_build_object(
+    'pity',0,'bossDrops',v_drops,'bossesDefeated',v_bosses,'lastBossRewardAt',v_last);
+  v_stats:=v_stats||jsonb_build_object('season67',v_season);
+  update public.season67_progress set pity=0,boss_drops=v_drops,bosses_defeated=v_bosses,
+    last_boss_reward_at=v_last,updated_at=now() where user_id=me;
+  update public.profiles set coins=v_coins,xp=v_xp,level=v_level,inventory=v_inventory,stats=v_stats where id=me;
+  return jsonb_build_object('ok',true,'reward',v_reward,'progress',v_season);
+end;
+$$;
+
 
 -- Bloqueia a inclusão direta de item sazonal. Somente as funções acima e as
 -- funções confiáveis do mercado usam app.trusted=on.

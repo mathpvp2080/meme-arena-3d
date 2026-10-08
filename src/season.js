@@ -16,29 +16,24 @@
     startsAt: '2026-10-03T00:00:00-03:00',
     endsAt: '2026-11-28T23:59:59-03:00',
     nextStartsAt: '2026-11-29T00:00:00-03:00',
-    odds: { coins: 42, xp: 23, boost: 17, item: 18 },
-    itemKeys: [
-      'skin:ouricoradio', 'skin:abelhachefe', 'skin:hywirl', 'skin:glubturbo',
-      'armor:protocol67', 'armor:orbit6', 'armor:prism7',
-      'weapon:pulse67', 'weapon:boomerang', 'weapon:gravity6', 'weapon:prism7',
-      'ability:repulse6', 'ability:blink7', 'ability:overclock67'
-    ],
+    odds: { resources: 50, skin: 50 },
+    rarityOdds: Object.assign({}, MA.SKIN_DROP_ODDS),
+    itemKeys: MA.SKINS.filter(skin => skin.rarity !== 'common').map(skin => 'skin:' + skin.id),
     boxes: [
       {
         id: 'box67', name: 'CAIXA 67', icon: '67', price: 670, count: 1,
-        desc: 'Uma abertura. Pode conter equipamento sazonal, moedas, XP ou Impulso 67.'
+        desc: 'Uma abertura: 50% de skin ou 50% de moedas, XP ou ambos.'
       },
       {
         id: 'vault67', name: 'COFRE 67', icon: '6+7', price: 1967, count: 3,
-        desc: 'Três aberturas com desconto. Cada abertura avança a garantia da 7ª caixa.'
+        desc: 'Três aberturas com desconto. Cada uma sorteia skin ou recursos separadamente.'
       }
     ]
   };
   MA.SEASON = SEASON;
 
-  /* Conteúdo sazonal. As quatro skins sazonais também pertencem ao pacote
-     Quaternius e já são declaradas no catálogo principal; armaduras e armas ainda
-     são construções próprias da Temporada 67. */
+  /* Armaduras e armas sazonais continuam próprias da Temporada 67. As skins
+     agora vêm exclusivamente do catálogo Polygonal Mind R1/R2 aprovado. */
   if (!MA.ARMORS.some(a => a.id === 'protocol67')) {
     MA.ARMORS.push({
       id: 'protocol67', name: 'Protocolo 6·7', rarity: 'legendary', price: 8670, level: 1,
@@ -141,97 +136,86 @@
       return { ok: true, box, results, progress: p };
     },
 
-    _roll() {
-      const p = this.progress();
-      p.boxesOpened++;
-      const guaranteed = p.pity >= 6;
-      const roll = Math.random() * 100;
+    _rollRarity(roll) {
+      const n = Math.max(0, Math.min(99.999999, Number(roll)));
+      if (n < 40) return 'uncommon';
+      if (n < 69.5) return 'legendary';
+      if (n < 89.5) return 'mythical';
+      if (n < 99.5) return 'ultimate';
+      return 'secret';
+    },
 
-      /* 18% de item sazonal. Sem item em seis aberturas, a sétima garante
-         um dos itens da coleção ainda não possuídos. */
-      if (guaranteed || roll < 18) {
-        p.pity = 0;
-        return this._itemReward(guaranteed, roll);
-      }
-
-      p.pity = Math.min(6, p.pity + 1);
-      if (roll < 60) {
-        const values = [167, 267, 367];
+    _resourceReward(source) {
+      const boss = source === 'boss';
+      const roll = Math.random();
+      if (roll < .4) {
+        const values = boss ? [500, 1000, 1500] : [250, 500, 750];
         const amount = values[Math.floor(Math.random() * values.length)];
         MA.Profile.addCoins(amount);
-        return { type: 'coins', icon: '🪙', name: amount + ' MOEDAS', amount,
-          rarity: 'common', log: '🪙 +' + amount + ' moedas' };
+        return { type:'coins', icon:'🪙', name:amount + ' MOEDAS', amount,
+          rarity:'common', desc:'RECURSO AUTOMÁTICO', log:'🪙 +' + amount + ' moedas' };
       }
-      if (roll < 83) {
-        const values = [167, 267, 367, 467];
+      if (roll < .75) {
+        const values = boss ? [400, 800, 1200] : [200, 400, 600];
         const amount = values[Math.floor(Math.random() * values.length)];
         const levels = MA.Profile.addXp(amount);
-        return { type: 'xp', icon: '✦', name: amount + ' XP', amount, levels,
-          rarity: 'rare', log: '✦ +' + amount + ' XP' };
+        return { type:'xp', icon:'✦', name:amount + ' XP', amount, levels,
+          rarity:'uncommon', desc:'RECURSO AUTOMÁTICO', log:'✦ +' + amount + ' XP' };
       }
-
-      const amount = Math.random() < .67 ? 1 : 2;
-      p.boosts += amount;
-      return {
-        type: 'boost', icon: '⚡', name: 'IMPULSO 67 ×' + amount, amount,
-        desc: '+67% de moedas e XP nas próximas ' + amount + ' partida' + (amount > 1 ? 's' : '') + '.',
-        rarity: 'epic', log: '⚡ Impulso 67 ×' + amount
-      };
+      const amount = boss ? 500 : 250;
+      MA.Profile.addCoins(amount);
+      const levels = MA.Profile.addXp(amount);
+      return { type:'both', icon:'⚡', name:amount + ' MOEDAS + ' + amount + ' XP',
+        amount, coins:amount, xp:amount, levels, rarity:'legendary',
+        desc:'RECURSOS AUTOMÁTICOS', log:'⚡ +' + amount + ' moedas e XP' };
     },
 
-    _choices() {
-      return SEASON.itemKeys.map(key => {
-        const parts = key.split(':');
-        return { key, type: parts[0], id: parts[1], item: MA.findItem(parts[0], parts[1]) };
-      }).filter(choice => choice.item);
+    _skinChoices(source, rarity) {
+      return MA.SKINS.filter(skin => skin.rarity === rarity &&
+        (source === 'boss'
+          ? skin.acquisition === 'boss' || skin.acquisition === 'both'
+          : skin.acquisition === 'box' || skin.acquisition === 'both'));
     },
 
-    _pickWeighted(pool) {
-      const rarityWeight = { common: 67, rare: 34, epic: 17, legendary: 8, mythic: 4 };
-      const total = pool.reduce((sum, choice) => sum + (rarityWeight[choice.item.rarity] || 8), 0);
-      let roll = Math.random() * total;
-      for (let i = 0; i < pool.length; i++) {
-        roll -= rarityWeight[pool[i].item.rarity] || 8;
-        if (roll <= 0) return pool[i];
+    _skinReward(source, forcedRarity) {
+      const rarity = forcedRarity || this._rollRarity(Math.random() * 100);
+      const pool = this._skinChoices(source || 'box', rarity);
+      if (!pool.length) return this._resourceReward(source);
+      const missing = pool.filter(skin => !MA.Profile.owns('skin', skin.id));
+      const candidates = missing.length ? missing : pool;
+      const selected = candidates[Math.floor(Math.random() * candidates.length)];
+
+      /* O inventário atual é unitário. Depois de completar uma faixa inteira,
+         uma repetida vira recursos imediatamente, sem criar uma segunda skin. */
+      if (MA.Profile.owns('skin', selected.id)) {
+        const amount = Math.max(250, Math.round(selected.marketValue * .1));
+        MA.Profile.addCoins(amount);
+        return { type:'coins', icon:'🪙', name:amount + ' MOEDAS', amount,
+          rarity, converted:true, desc:'SKIN REPETIDA CONVERTIDA AUTOMATICAMENTE',
+          log:'🪙 +' + amount + ' moedas (skin repetida)' };
       }
-      return pool[pool.length - 1];
+
+      MA.Profile.grant('skin', selected.id, true);
+      return { type:'item', icon:selected.face || '🎁', name:selected.name,
+        item:selected, itemKey:'skin:' + selected.id, itemType:'skin', rarity,
+        desc:source === 'boss' ? 'DROP DE CHEFE' : 'DROP DE CAIXA',
+        log:'🎁 ' + selected.name + (source === 'boss' ? ' (chefe)' : ' (caixa)') };
     },
 
-    _itemReward(guaranteed, roll, source) {
-      const choices = this._choices();
-      const missing = choices.filter(x => !MA.Profile.owns(x.type, x.id));
-      let selected;
-      if (guaranteed && missing.length) {
-        selected = this._pickWeighted(missing);
-      } else {
-        /* Dentro dos 18%: 5% skin, 4% armadura, 5% arma e 4% habilidade. */
-        const itemRoll = guaranteed ? Math.random() * 18 : Math.max(0, Math.min(17.999, roll));
-        const type = itemRoll < 5 ? 'skin' : itemRoll < 9 ? 'armor' : itemRoll < 14 ? 'weapon' : 'ability';
-        const pool = choices.filter(choice => choice.type === type);
-        selected = this._pickWeighted(pool) || choices[0];
-      }
+    _roll(source) {
+      const p = this.progress();
+      if (source !== 'boss') p.boxesOpened++;
+      p.pity = 0; // mantido no formato do perfil apenas por compatibilidade
+      return Math.random() < .5 ? this._skinReward(source || 'box') : this._resourceReward(source || 'box');
+    },
 
-      if (MA.Profile.owns(selected.type, selected.id)) {
-        const amount = 67;
-        const p = this.progress();
-        p.fragments += amount;
-        return {
-          type: 'fragments', icon: '⬡', name: '67 FRAGMENTOS', amount,
-          desc: 'Item repetido convertido. Use 67 fragmentos para abrir uma caixa garantida.',
-          rarity: 'legendary', guaranteed,
-          log: '⬡ +67 fragmentos (item repetido)'
-        };
-      }
-
-      MA.Profile.grant(selected.type, selected.id, true);
-      return {
-        type: 'item', icon: selected.item.icon || selected.item.face || '67',
-        name: selected.item.name, item: selected.item, itemType: selected.type,
-        rarity: selected.item.rarity || 'legendary', guaranteed,
-        desc: source === 'boss' ? 'DROP ALEATÓRIO DE CHEFE' :
-          (guaranteed ? 'GARANTIA DA 7ª CAIXA' : 'ITEM EXCLUSIVO DA TEMPORADA'),
-        log: '🎁 ' + selected.item.name + (source === 'boss' ? ' (chefe)' : '')
-      };
+    _choices(source) {
+      const wanted = source || 'box';
+      return MA.SKINS.filter(skin => skin.rarity !== 'common' &&
+        (wanted === 'boss'
+          ? skin.acquisition === 'boss' || skin.acquisition === 'both'
+          : skin.acquisition === 'box' || skin.acquisition === 'both'))
+        .map(item => ({ key:'skin:' + item.id, type:'skin', id:item.id, item }));
     },
 
     _enrichServerReward(reward) {
@@ -250,6 +234,7 @@
         if (r.type === 'item') r.log = '🎁 ' + r.name;
         else if (r.type === 'coins') r.log = '🪙 +' + r.amount + ' moedas';
         else if (r.type === 'xp') r.log = '✦ +' + r.amount + ' XP';
+        else if (r.type === 'both') r.log = '⚡ +' + r.coins + ' moedas e +' + r.xp + ' XP';
         else if (r.type === 'boost') r.log = '⚡ Impulso 67 ×' + r.amount;
         else r.log = '⬡ +' + r.amount + ' fragmentos';
       }
@@ -267,49 +252,15 @@
       }
       const p = this.progress();
       p.bossesDefeated++;
-      if (Math.random() >= .67) {
-        p.fragments += 7;
-        const fallback = {
-          type: 'fragments', icon: '⬡', name: '7 FRAGMENTOS', amount: 7,
-          desc: 'O chefe não deixou um item desta vez. Fragmentos adicionados à Caixa Garantida.',
-          rarity: 'rare', log: '⬡ +7 fragmentos (chefe)'
-        };
-        p.lastRewards = p.lastRewards.concat(fallback.log).slice(-12);
-        MA.Profile.save(true);
-        return fallback;
-      }
-      const reward = this._itemReward(false, Math.random() * 18, 'boss');
-      p.bossDrops++;
+      const reward = this._roll('boss');
+      if (reward.type === 'item') p.bossDrops++;
       p.lastRewards = p.lastRewards.concat(reward.log).slice(-12);
       MA.Profile.save(true);
       return reward;
     },
 
     async forge() {
-      if (!MA.Profile || !MA.Profile.data) return { error: 'Entre em uma conta primeiro.' };
-      if (!this.active()) return { error: 'A Caixa Garantida só fica disponível durante a temporada.' };
-      if (MA.Net && MA.Net.online) {
-        const remote = await MA.Net.seasonForgeBox();
-        if (!remote) return { error: 'Servidor sazonal indisponível.' };
-        if (remote.error) return { error: remote.error };
-        await MA.Net.refreshProfile();
-        const reward = this._enrichServerReward(remote.reward);
-        return { ok: true, item: reward.item, type: reward.itemType, reward };
-      }
-      const p = this.progress();
-      if (p.fragments < 67) return { error: 'Você precisa de 67 fragmentos.' };
-      const missing = this._choices().filter(choice => !MA.Profile.owns(choice.type, choice.id));
-      if (!missing.length) return { error: 'Você já possui todos os itens da Temporada 67.' };
-      /* Fragmentos não entregam um item diretamente: eles abrem uma Caixa 67
-         com a mesma garantia da sétima abertura. */
-      p.fragments -= 67;
-      p.forged++;
-      p.boxesOpened++;
-      p.pity = 0;
-      const reward = this._itemReward(true, Math.random() * 18, 'box');
-      p.lastRewards = p.lastRewards.concat(reward.log).slice(-12);
-      MA.Profile.save(true);
-      return { ok: true, item: reward.item, type: reward.itemType, reward };
+      return { error: 'A forja de fragmentos foi encerrada. Caixas e chefes agora usam o sorteio 50/50.' };
     },
 
     rewardMultiplier() {

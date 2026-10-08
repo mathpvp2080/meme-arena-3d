@@ -1,16 +1,9 @@
 /* MEME ARENA 3D — service worker (offline-first) */
-const CACHE = 'meme-arena-3d-v50';
+const CACHE = 'meme-arena-3d-v51';
 const ASSETS = [
   './', './index.html', './css/style.css', './css/season67.css', './css/hub.css', './manifest.webmanifest', './privacidade.html', './termos.html',
   './assets/favicon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/splash-season67.jpg', './assets/hub-season67.jpg', './assets/screens/00-season67.jpg', './assets/skins/doge.glb', './assets/skins/tralalero.glb', './assets/skins/tung.glb', './assets/skins/bombardiro.glb',
-  './assets/skins/quaternius/abelha-chefe.glb', './assets/skins/quaternius/alpaca-rei.glb', './assets/skins/quaternius/cacto-praia.glb',
-  './assets/skins/quaternius/coelho-maromba.glb', './assets/skins/quaternius/cogumelo-bugado.glb', './assets/skins/quaternius/cranio-flutuante.glb',
-  './assets/skins/quaternius/dino-coach.glb', './assets/skins/quaternius/dragao-caos.glb', './assets/skins/quaternius/et-bombado.glb',
-  './assets/skins/quaternius/galinha-caos.glb', './assets/skins/quaternius/gato-sus.glb', './assets/skins/quaternius/glub-turbo.glb',
-  './assets/skins/quaternius/hywirl.glb', './assets/skins/quaternius/lula-lunar.glb', './assets/skins/quaternius/mago-geleia.glb',
-  './assets/skins/quaternius/monstro-boleto.glb', './assets/skins/quaternius/ninja-meme.glb', './assets/skins/quaternius/ourico-radioativo.glb',
-  './assets/skins/quaternius/passaro-pistola.glb', './assets/skins/quaternius/peixe-fora.glb', './assets/skins/quaternius/pombo-correio.glb',
-  './assets/skins/quaternius/rei-cogumelo.glb', './assets/skins/quaternius/sapo-pix.glb', './assets/skins/quaternius/yeti-bolso.glb',
+  './assets/skins/polygonal-mind/cool-fries.glb',
   './lib/three.min.js', './lib/GLTFLoader.js', './lib/SkeletonUtils.js',
   './src/utils.js', './src/config.js', './src/data.js', './src/maps.js', './src/items.js', './src/season.js',
   './src/audio.js', './src/faces.js', './src/textures.js', './src/cityassets.js', './src/world.js', './src/builds.js', './src/weapons3d.js', './src/armor3d.js', './src/skinmodels.js', './src/entities.js',

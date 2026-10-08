@@ -18,7 +18,7 @@
       d.inventory = d.inventory || [];
       d.equipped = d.equipped || {};
 
-      /* O elenco Quaternius substitui os dois catálogos anteriores. Mapeia
+      /* O elenco Polygonal Mind substitui os catálogos jogáveis anteriores. Mapeia
          inventário e equipamento sem apagar as compras já feitas pelo jogador. */
       const skinMap = MA.SKIN_ID_MIGRATION || {};
       d.inventory = Array.from(new Set(d.inventory.map(key => {
@@ -29,7 +29,7 @@
       d.equipped.skin = skinMap[previousSkin] || previousSkin;
       if (!MA.SKINS.some(s => s.id === d.equipped.skin)) {
         const starter = MA.SKINS.find(s => s.starter) || MA.SKINS[0];
-        d.equipped.skin = starter ? starter.id : 'cactopraia';
+        d.equipped.skin = starter ? starter.id : 'coolfries';
       }
       d.equipped.armor = d.equipped.armor || 'hoodie';
       d.equipped.weapons = d.equipped.weapons || [];
@@ -128,7 +128,11 @@
     /* -------------------------------------------------------------- loja */
     canBuy(item) {
       if (this.owns(item.type, item.id)) return { error: 'Você já tem esse item.' };
-      if (item.boxOnly) return { error: 'Item sazonal: obtenha em uma Caixa 67 ou no drop aleatório de um chefe.' };
+      if (item.boxOnly) {
+        const source = item.acquisition === 'boss' ? 'derrotando chefes' :
+          item.acquisition === 'box' ? 'abrindo caixas' : 'abrindo caixas ou derrotando chefes';
+        return { error: 'Esta skin não é vendida pela loja: obtenha ' + source + '.' };
+      }
       if (this.data.level < (item.level || 1)) return { error: 'Precisa ser nível ' + item.level + '.' };
       if (this.data.coins < item.price) return { error: 'Moedas insuficientes.' };
       return { ok: true };
