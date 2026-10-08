@@ -144,13 +144,27 @@
   };
 
   const ANCHORS = ['head', 'hat', 'body', 'back', 'handL', 'handR', 'gun'];
-  const cache = new Map();   /* url -> { scene, animations } | null (falhou) */
-  const inflight = new Map();/* url -> Promise                                */
+  const cache = new Map();    /* url -> { scene, animations } (só sucesso)    */
+  const inflight = new Map(); /* url -> Promise                                */
+  const failures = new Map(); /* url -> timestamp da última falha              */
   let loader = null;
+  let loaderBroken = false;
+
+  /* Falha não é sentença: o cache só guarda SUCESSO. Um erro de rede/parse
+     fica registrado em `failures` com cooldown — enquanto o cooldown vigora
+     a gente não martela a rede, mas depois de 5s qualquer load/apply tenta
+     de novo. Assim uma oscilação nunca trava a skin no boneco procedural
+     para sempre (nem nas miniaturas, nem no jogo). */
+  const FAIL_COOLDOWN = 5000;
 
   function getLoader() {
     if (loader) return loader;
-    if (typeof THREE === 'undefined' || !THREE.GLTFLoader) return null;
+    if (loaderBroken) return null;
+    if (typeof THREE === 'undefined' || !THREE.GLTFLoader) {
+      loaderBroken = true;
+      console.warn('[MemeArena] GLTFLoader indisponível — skins .glb desativadas');
+      return null;
+    }
     loader = new THREE.GLTFLoader();
     return loader;
   }
@@ -194,31 +208,44 @@
 
   /* ----------------------------------------------------------- loading -- */
   function load(url) {
-    if (cache.has(url)) return Promise.resolve(cache.get(url));
+    const hit = cache.get(url);
+    if (hit) return Promise.resolve(hit);
     if (inflight.has(url)) return inflight.get(url);
-    const l = getLoader();
-    if (!l) {
-      console.warn('[MemeArena] GLTFLoader indisponível — skins .glb desativadas');
-      cache.set(url, null);
+    /* Falha recente: respeita o cooldown e deixa tentar de novo depois. */
+    const failedAt = failures.get(url);
+    if (failedAt && performance.now() - failedAt < FAIL_COOLDOWN) {
       return Promise.resolve(null);
     }
+    const l = getLoader();
+    if (!l) return Promise.resolve(null);
     const p = new Promise(resolve => {
       l.load(url,
         gltf => {
           const entry = { scene: gltf.scene || (gltf.scenes && gltf.scenes[0]), animations: gltf.animations || [] };
-          if (!entry.scene) { cache.set(url, null); resolve(null); return; }
+          if (!entry.scene) { failures.set(url, performance.now()); resolve(null); return; }
+          failures.delete(url);
           cache.set(url, entry);
           resolve(entry);
         },
         undefined,
         err => {
           console.warn('[MemeArena] não consegui carregar a skin 3D:', url, err && err.message ? err.message : err);
-          cache.set(url, null);
+          failures.set(url, performance.now());
           resolve(null);
         });
     }).then(r => { inflight.delete(url); return r; });
     inflight.set(url, p);
     return p;
+  }
+
+  /* Milissegundos restantes de cooldown após uma falha (0 = pode tentar
+     agora). Permite que quem agenda repetições (miniaturas) espere o tempo
+     certo em vez de gastar tentativas dentro do cooldown. */
+  function retryDelay(url) {
+    const failedAt = failures.get(url);
+    if (!failedAt) return 0;
+    const left = FAIL_COOLDOWN - (performance.now() - failedAt);
+    return left > 0 ? left : 0;
   }
 
   /* No boot, carrega apenas a skin inicial/equipada e os quatro NPCs. As
@@ -431,7 +458,8 @@
     if (!sp) return false;
     const ready = cache.get(sp.url);
     if (ready) { mount(ctx, sp, ready); return true; }
-    if (cache.has(sp.url)) return false; /* já falhou antes: segue procedural */
+    /* Ainda não carregou (ou falhou e está no cooldown): tenta carregar e
+       encaixa assim que chegar. Falhas antigas são retomadas pelo cooldown. */
     load(sp.url).then(entry => {
       if (!entry || !ctx.g || !ctx.g.parent) return;
       try { mount(ctx, sp, entry); } catch (e) { console.warn('[MemeArena] modelo da skin falhou:', sp.url, e); }
@@ -446,7 +474,6 @@
     if (!sp) return false;
     const ready = cache.get(sp.url);
     if (ready) { mount(ctx, sp, ready); return true; }
-    if (cache.has(sp.url)) return false;
     load(sp.url).then(entry => {
       if (!entry || !ctx.g || !ctx.g.parent) return;
       try { mount(ctx, sp, entry); } catch (e) { console.warn('[MemeArena] modelo do NPC falhou:', sp.url, e); }
@@ -477,7 +504,7 @@
   }
 
   MA.SkinModels = {
-    specFor, enemySpecFor, apply, applyEnemy, preload, load, hasLoaded, setState,
+    specFor, enemySpecFor, apply, applyEnemy, preload, load, hasLoaded, setState, retryDelay,
     register(id, spec) { MA.SKIN_MODELS[id] = spec; return load(normalize(spec).url); },
     registerEnemy(id, spec) { MA.ENEMY_MODELS[id] = spec; return load(normalize(spec).url); },
     get loaded() { return cache; }

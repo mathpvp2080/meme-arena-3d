@@ -4,6 +4,12 @@
    Um único renderer produz imagens dos modelos reais do jogo aos poucos.
    Assim os cards mostram o que será equipado, sem criar dezenas de WebGL
    contexts nem depender de arquivos de imagem externos.
+
+   Regra de ouro das skins com GLB: a foto só sai com o modelo real
+   encaixado. Enquanto o GLB ainda está carregando (ou em cooldown de
+   falha), o card mantém o placeholder e o trabalho é re-agendado com
+   backoff. O boneco procedural de fallback nunca é fotografado nem
+   armazenado no cache de miniaturas.
    ===================================================================== */
 (function (MA) {
   'use strict';
@@ -75,6 +81,21 @@
       this.drain();
     },
 
+    /* Quantas tentativas o card faz (com backoff) até abrir mão de
+       fotografar. O cache nunca guarda fallback procedural: quem desiste
+       fica com o placeholder e a próxima abertura da loja recomeça tudo. */
+    MAX_ATTEMPTS: 8,
+
+    /* Skin do job quando ela tem GLB registrado (null para jobs sem modelo
+       ou de outros tipos de item). */
+    glbSkinFor(job) {
+      if (!MA.SkinModels) return null;
+      if (!(job.type === 'skin' || job.type === 'avatar')) return null;
+      const skinId = job.type === 'avatar' ? String(job.id).split('|')[0] : job.id;
+      const skin = MA.findItem('skin', skinId);
+      return (skin && MA.SkinModels.specFor(skin)) ? skin : null;
+    },
+
     drain() {
       if (this.busy || !this.queue.length) return;
       if (!this.init()) return;
@@ -82,24 +103,51 @@
       const next = async () => {
         const job = this.queue.shift();
         if (!job) { this.busy = false; return; }
-        let url = '';
+        /* Repetição agendada com backoff: na tentativa anterior o modelo
+           ainda não estava pronto. Volta para o fim da fila até a espera. */
+        if (job.nextAt && performance.now() < job.nextAt) {
+          this.queue.push(job);
+          if (this.queue.length) requestAnimationFrame(next);
+          return;
+        }
+        let url = null;
+        let spec = null;
         try {
-          /* O boot carrega só a skin equipada. Antes de fotografar outro card,
-             espera seu GLB sob demanda; do contrário o fallback procedural
-             seria fotografado e ficaria preso no cache da miniatura. */
-          if (MA.SkinModels && (job.type === 'skin' || job.type === 'avatar')) {
-            const skinId = job.type === 'avatar' ? String(job.id).split('|')[0] : job.id;
-            const skin = MA.findItem('skin', skinId);
-            const spec = skin && MA.SkinModels.specFor(skin);
-            if (spec && !MA.SkinModels.hasLoaded(skin)) await MA.SkinModels.load(spec.url);
+          /* O boot carrega só a skin equipada. Antes de fotografar outro
+             card, espera o GLB sob demanda — e só fotografa com o modelo
+             real encaixado (snapshot devolve null enquanto não estiver). */
+          const skin = this.glbSkinFor(job);
+          if (skin) {
+            spec = MA.SkinModels.specFor(skin);
+            if (!MA.SkinModels.hasLoaded(skin)) await MA.SkinModels.load(spec.url);
           }
           url = this.snapshot(job.type, job.id);
-        } catch (err) { console.warn('[MemeArena] falha na miniatura', job.key, err); }
-        if (url) this.cache[job.key] = url;
-        (this.pending[job.key] || []).forEach(el => {
-          if (url && el.isConnected) this.apply(el, url);
-        });
-        delete this.pending[job.key];
+        } catch (err) {
+          console.warn('[MemeArena] falha na miniatura', job.key, err);
+          url = ''; /* erro de render: abandona este card sem repetir */
+        }
+        if (url) {
+          this.cache[job.key] = url;
+          (this.pending[job.key] || []).forEach(el => {
+            if (el.isConnected) this.apply(el, url);
+          });
+          delete this.pending[job.key];
+        } else if (url === null && spec) {
+          /* GLB ainda não pronto (carregando ou em cooldown de falha):
+             reagenda com backoff — a espera cobre o cooldown de falha,
+             sem gastar tentativas à toa. O placeholder continua no card:
+             o fallback procedural NUNCA vira miniatura. */
+          job.attempts = (job.attempts || 0) + 1;
+          if (job.attempts < this.MAX_ATTEMPTS) {
+            const wait = Math.max(Math.min(4000, 350 * job.attempts), MA.SkinModels.retryDelay(spec.url));
+            job.nextAt = performance.now() + wait;
+            this.queue.push(job);
+          } else {
+            delete this.pending[job.key];
+          }
+        } else {
+          delete this.pending[job.key];
+        }
         /* uma miniatura por quadro evita travar a abertura da loja */
         if (this.queue.length) requestAnimationFrame(next);
         else this.busy = false;
@@ -220,7 +268,20 @@
         const armor = (type === 'armor' || portrait)
           ? (MA.findItem('armor', armorId) || MA.ARMORS[0])
           : MA.ARMORS[0];
-        const avatar = MA.createPlayer(stage, skin, armor);
+        /* Card de armadura fotografa o boneco base + armadura: o GLB da skin
+           (modo full) esconderia a peça em exibição. */
+        const avatar = MA.createPlayer(stage, skin, armor,
+          type === 'armor' ? { skipSkinModel: true } : undefined);
+        /* Skin com GLB registrado: só fotografamos com o modelo real
+           encaixado. Se o GLB ainda não chegou, devolvemos null e o drain
+           reagenda a tentativa — o fallback procedural NUNCA entra no cache
+           de miniaturas. */
+        const glbSpec = (type === 'skin' || portrait)
+          && MA.SkinModels && MA.SkinModels.specFor(skin);
+        if (glbSpec && !avatar.obj.userData.customModel) {
+          this.clearStage();
+          return null;
+        }
         if (portrait) {
           const wi = MA.WEAPONS.findIndex(w => w.id === weaponId);
           avatar.weapon = wi >= 0 ? wi : 0;

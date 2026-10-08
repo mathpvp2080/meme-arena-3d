@@ -185,9 +185,10 @@
     return geo;
   }
 
-  function createPlayer(scene, skin, armorDef) {
+  function createPlayer(scene, skin, armorDef, opts) {
     skin = skin || MA.SKINS[0];
     armorDef = armorDef || MA.ARMORS[0];
+    opts = opts || {};
     const g = new THREE.Group();
     const trans = !!skin.ghost;
     const bulk = skin.bulky ? 1.18 : 1;
@@ -469,8 +470,10 @@
     }
     /* Skin modelada à mão (.glb) — opcional. Quando a skin tem um modelo
        registrado em MA.SKIN_MODELS, ele substitui (mode 'full') ou completa
-       (mode 'part') o boneco procedural acima. Ver docs/SKINS_CUSTOM.md. */
-    if (MA.SkinModels && MA.SkinModels.specFor(skin)) {
+       (mode 'part') o boneco procedural acima. Ver docs/SKINS_CUSTOM.md.
+       `opts.skipSkinModel` força o boneco procedural (miniaturas de
+       armadura precisam do corpo base para exibir a armadura). */
+    if (!opts.skipSkinModel && MA.SkinModels && MA.SkinModels.specFor(skin)) {
       try {
         MA.SkinModels.apply({
           g, body, head, neck, hood, hips, armL, armR, legL, legR, gun,
